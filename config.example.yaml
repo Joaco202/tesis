@@ -1,0 +1,13 @@
+detection:
+  model: yolov8n.pt
+  confidence: 0.25
+  iou: 0.45
+  classes: null
+ocr:
+  lang: es
+  use_angle_cls: true
+runtime:
+  device: cpu
+  save_annotated: true
+  default_camera_id: cam-acceso-1
+  default_event_type: entrada

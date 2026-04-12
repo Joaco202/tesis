@@ -1,0 +1,802 @@
+
+
+===== PAGE 1 =====
+1  
+ 
+ 
+UNIVERSIDAD DEL BÍO-BÍO 
+FACULTAD DE CIENCIAS EMPRESARIALES 
+ESCUELA DE INGENIERÍA CIVIL EN INFORMÁTICA 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ Sistema de apoyo a la gestión del estacionamiento en 
+Campus Fernando May  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Estudiante 
+ 
+Joaquin Antonio Contreras Bustamante 
+ 
+ 
+ 
+19 de diciembre de 2025 
+Chillán - Chile 
+ 
+
+===== PAGE 2 =====
+2  
+ 
+Resumen 
+Este proyecto se presenta para dar conformidad a los requisitos exigidos por la Universidad 
+del Bío-Bío en el proceso de titulación para la carrera Ingeniería Civil en Informática. El 
+proyecto titulado “Sistema de apoyo a la gestión del estacionamiento en Campus Fernando 
+May”. 
+ 
+Este proyecto posee como finalidad diseñar y desarrollar una aplicación web que aborde la 
+gestión del estacionamiento interno de la universidad, además de permitir al usuario, en este 
+caso aquel que hace uso del estacionamiento, una mejor gestión de su tiempo a la hora de 
+estacionar su vehículo. La problemática actual es la ausencia de registro y monitoreo en 
+tiempo real de la disponibilidad, con control visual por parte de un guardia. En horas punta o 
+eventos se generan demoras, búsqueda innecesaria de espacios y dificultad para tomar 
+decisiones informadas, el software además proveerá de reportes y estadísticas que 
+facilitaran la toma de decisiones. 
+ 
+ 
+ 
+  
+
+===== PAGE 3 =====
+3  
+ 
+Abstract 
+This project is presented to comply with the requirements demanded by the University of 
+Bío-Bío in the degree process for the Civil Engineering in Computer Science program. The 
+project is titled “Parking Management Support System at the Fernando May Campus.” 
+ 
+The purpose of this project is to design and develop a web application that addresses the 
+management of the university's internal parking, as well as allowing users, in this case those 
+who use the parking lot, to better manage their time when parking their vehicles. The 
+current problem is the lack of real -time registration and monitoring of availability, with 
+visual control by a guard. During peak hours or events, this leads to delays, unnecessary 
+searching for spaces, and difficulty in making informed decisions. The software will also 
+provide reports and statistics to facilitate decision-making. 
+ 
+ 
+
+===== PAGE 4 =====
+4  
+ 
+Índice General 
+1 INTRODUCCIÓN ............................................................................................................................. 7 
+2 DEFINICION DE LA EMPRESA O INSTITUCIÓN ................................................................................. 8 
+2.1 DESCRIPCIÓN DE LA EMPRESA ............................................................................................................. 8 
+2.2 DESCRIPCIÓN DEL ÁREA DE ESTUDIO ..................................................................................................... 9 
+2.3 DESCRIPCIÓN DE LA PROBLEMÁTICA ................................................................................................... 10 
+2.4 PROCESO DEL NEGOCIO ACTUAL ........................................................................................................ 11 
+3 DEFINICIÓN PROYECTO ................................................................................................................ 12 
+3.1 OBJETIVOS DEL PROYECTO ............................................................................................................... 12 
+3.2 AMBIENTE DE INGENIERÍA DE SOFTWARE ............................................................................................ 12 
+3.2.1 METODOLOGÍA DE DESARROLLO ............................................................................................................... 12 
+3.2.2 HERRAMIENTAS DE APOYO AL DESARROLLO ................................................................................................ 13 
+3.2.3 AMBIENTES ............................................................................................................................................ 13 
+4 FACTIBILIDAD ............................................................................................................................... 14 
+4.1 FACTIBILIDAD TÉCNICA. ................................................................................................................... 14 
+4.2 FACTIBILIDAD OPERATIVA. ............................................................................................................... 15 
+4.3 FACTIBILIDAD ECONÓMICA. ............................................................................................................. 16 
+4.4 CONCLUSIÓN DE LA FACTIBILIDAD ...................................................................................................... 18 
+5 ANÁLISIS ...................................................................................................................................... 19 
+5.1 HISTORIAS DE USUARIOS ................................................................................................................. 19 
+5.2 MODELAMIENTO DE DATOS ............................................................................................................. 22 
+ 
+ 
+ 
+ 
+
+===== PAGE 5 =====
+5  
+ 
+Índice Tablas 
+ 
+Tabla 1: Factibilidad técnica – Hardware para Desarrollo ....................................................................................... 14 
+Tabla 2: Factibilidad técnica - Requisitos Usuario ........................................................................................................ 14 
+Tabla 3: Factibilidad operativa - Roles de los actores ................................................................................................. 15 
+Tabla 4: Factibilidad económica - Beneficios del Proyecto ...................................................................................... 16 
+Tabla 5: Factibilidad económica - Costo de la Inversión ........................................................................................... 16 
+Tabla 6: Factibilidad económica - Costo de Mantenimiento del Sistema ......................................................... 17 
+Tabla 7: Factibilidad económica - Flujo de caja del Proyecto ................................................................................. 17 
+Tabla 8: Requisitos Funcionales ............................................................................................................................................. 19 
+Tabla 9: Historia de usuario - Ver Ocupación en Tiempo Real ............................................................................... 19 
+Tabla 10: Historia de usuario - Generar Reportes y Estadísticas.......................................................................... 20 
+Tabla 11: Historia de usuario - Registrar y Resolver Incidencias ......................................................................... 20 
+Tabla 12: Historia de usuario - Administrar Usuarios y Roles ............................................................................... 20 
+Tabla 13: Historia de usuario - Exportar Datos .............................................................................................................. 21 
+Tabla 14: Historia de usuario - Mapa de calor ................................................................................................................ 21 
+Tabla 15: Historia de usuario - Panel de KPIs ................................................................................................................. 21 
+ 
+
+===== PAGE 6 =====
+6  
+ 
+Índice Ilustraciones 
+Ilustración 1: Extracto del organigrama de la VRAE, Región Ñuble. ...................................................................... 9 
+Ilustración 2: BPMN de la gestión actual del estacionamiento en Aula Magna ............................................. 11 
+Ilustración 3 Modelo Entidad Relación ............................................................................................................................... 22 
+ 
+ 
+
+===== PAGE 7 =====
+7  
+ 
+1 INTRODUCCIÓN  
+En la actualidad, el uso de las tecnologías de la información juega un rol fundamental en la 
+optimización de la gestión de recursos dentro de las organizaciones. En particular, las 
+instituciones de educación superior enfrentan el desafío de administrar de manera eficiente 
+sus recursos físicos, entre los cuales el estacionamiento vehicular es un elemento crítico para 
+la movilidad, la seguridad y la experiencia diaria de estudiantes, funcionarios, docentes y 
+visitantes. 
+ 
+En el Campus Fernando May de la Universidad del Bío-Bío, la gestión del estacionamiento se 
+realiza principalmente de forma manual, basada en la supervisión visual por parte del 
+personal de seguridad, sin contar con registros digitales ni información en tiempo real sobre 
+la disponibilidad de espacios. Esta situación genera dificultades en horarios de alta 
+concurrencia, tales como congestión vehicular y tiempos de espera prolongados. 
+ 
+Frente al presente contexto, la solución propuesta consiste en una aplicación web orientada 
+a automatizar el registro de ingreso y salida de vehículos, dentro del estacionamiento del 
+aula magna del campus Fdo. May, permitir la visualización de la ocupación y generar 
+reportes estadísticos que apoyen la gestión operativa. Para ello, se integran tecnologías de 
+software libre, bases de datos y herramientas de reconocimiento automático de placas 
+patentes, con el fin de mejorar la eficiencia del proceso y optimizar el uso de los espacios 
+disponibles. 
+ 
+El desarrollo de este sistema busca contribuir a una mejor experiencia para los usuarios del 
+estacionamiento, reduciendo tiempos de búsqueda y congestión, así como facilitar la labor 
+del personal encargado mediante información clara, trazable y oportuna. 
+ 
+
+===== PAGE 8 =====
+8  
+ 
+2 DEFINICION DE  LA EMPRESA  O INSTITUCIÓN  
+2.1 Descripción de la empresa  
+Antecedentes generales de la Empresa 
+▪ Nombre: Universidad del Bío-Bío (UBB). 
+▪ Dirección: Campus Fernando May, Chillán, Región de Ñuble, Chile. 
+▪ Rubro: Institución estatal y pública de educación superior. 
+▪ Productos/Servicios que ofrece: Formación profesional y técnica en diversas áreas 
+del conocimiento; investigación científica y tecnológica; vinculación con el medio 
+regional y nacional. 
+Entorno 
+▪ Competencia directa: Otras universidades con presencia en la Región de Ñuble y 
+Biobío, como la Universidad de Concepción, la Universidad Católica de la Santísima 
+Concepción, entre otras instituciones de educación superior. 
+▪ Cuota de mercado: La Universidad del Bío-Bío es una de las principales instituciones 
+estatales en la zona centro-sur de Chile, con un fuerte posicionamiento regional en 
+Ñuble y Biobío. Su carácter público le otorga una presencia significativa en la 
+matrícula de estudiantes locales. 
+ 
+Misión 
+La Universidad del Bío-Bío es una institución de educación superior, comprometida con su 
+rol estatal, que colabora en aquellas políticas, planes y programas que fomenten el desarrollo 
+sostenible, preferentemente en los territorios de las regiones del Bío -Bío y de Ñuble, 
+proyectando su labor al resto del país y a nivel internacional. Su misión es cultivar, 
+desarrollar y transmitir el saber superior, en las diversas áreas del conocimiento y de las 
+culturas, por medio de la docencia, investigación, creación, extensión y transferencia 
+tecnológica, expresados de manera innovadora bajo principios éticos y valóricos, 
+convocando y apoyando la construcción de ideales sociales direccionados al bien común y al 
+respeto irrestricto de los derechos humanos. 
+ 
+La Universidad del Bío -Bío se identifica como una comunidad pluralista, con sentido 
+democrático, abierta al libre intercambio de ideas, participativa y colaborativa, que fomenta 
+la interculturalidad, la inclusión de la discapacidad, protege el desarrollo pleno y el 
+reconocimiento de la dignidad de las personas, basado en la justicia social desde una 
+perspectiva de género, facilitando la igualdad de oportunidades y la promoción e 
+incorporación de las culturas de los pueblos originarios y de los/as inmigrantes. 
+ 
+Asimismo, como elemento constitutivo e ineludible de su misión, la Universidad del Bío-Bío 
+reconoce la educación como un derecho que incentiva la movilidad social, por ello, asume su 
+compromiso con vocación de excelencia, promoviendo una experiencia de enseñanza -
+aprendizaje transformadora, que legitima al otro en la convivencia, para la formación de 
+profesionales que atiendan los problemas y necesidades del país a través de su quehacer 
+interdisciplinario, con espíritu crítico, inclusivo, reflexivo y dialógico. La Universidad del Bío-
+Bío fomentará la formación de personas empáticas, colaborativas, respetuosas del entorno 
+en toda su diversidad, con inteligencia cultural y actitudes de liderazgo, preocupadas por la 
+salud y bienestar propio como de los demás, con el fin de forjar una ciudadanía solidaria y 
+democrática 
+
+===== PAGE 9 =====
+9  
+ 
+ 
+ 
+Visión 
+Ser una Universidad comprometida con su carácter estatal y birregional, innovadora, 
+inclusiva y compleja, con proyección nacional e internacional, que contribuye al progreso 
+sostenible de su territorio y sus habitantes, de excelencia en la formación de personas y con 
+sentido de equidad social y de género. 
+ 
+Objetivos: 
+ 
+▪ Formar profesionales íntegros y altamente capacitados. 
+▪ Fomentar la investigación y el desarrollo científico-tecnológico. 
+▪ Impulsar la innovación y la transferencia de conocimiento. 
+▪ Potenciar la vinculación con el entorno social, productivo y cultural. 
+ 
+ 
+Ilustración 1: Extracto del organigrama de la VRAE, Región Ñuble. 
+ 
+2.2 Descripción del área de estudio 
+Funciones y cargos relacionados con el proyecto 
+• El área de estudio corresponde a la administración del Campus Fernando May de la 
+Universidad del Bío-Bío, particularmente en lo que respecta a la gestión de los 
+recursos físicos y servicios generales, dentro de los cuales se encuentra el uso y 
+control del estacionamiento. 
+• Entre los cargos más relacionados con este proyecto se encuentra Don Ronald Lagos 
+Ruiz, quien, se desempeña en el Departamento de Bienes y Servicios bajo la 
+Dirección de Administración y Presupuesto. Su rol está vinculado a la supervisión de 
+espacios comunes e infraestructura del campus, incluyendo la coordinación del uso 
+de los estacionamientos. 
+Objetivo del área. 
+▪ El objetivo principal del área vinculada al estacionamiento es garantizar la 
+disponibilidad y correcta administración de los espacios destinados a vehículos 
+
+===== PAGE 10 =====
+10  
+ 
+dentro del campus, facilitando la movilidad de docentes, funcionarios estudiantes y 
+visitantes.  
+ 
+Estructura organizativa específica del área y descripción de funciones. 
+▪ Dentro de la estructura organizativa del campus, la gestión del estacionamiento se 
+encuentra vinculada jerárquicamente a la Vicerrectoría de Asuntos Económicos 
+(VRAE), de ella depende la Dirección de Administración y Presupuesto, esta a su vez 
+supervisa al Departamento de Bienes y Servicios, liderado por Ronald Lagos Ruiz, 
+quien es responsable de los servicios generales y de la coordinación de espacios 
+físicos como los estacionamientos, además del personal asociado a su operación y 
+mantenimiento. 
+2.3 Descripción de la problemática  
+En la actualidad, la gestión del estacionamiento del Campus se realiza de manera informal, 
+sin presentar un sistema que permita registrar, controlar o informar en tiempo real la 
+disponibilidad de los espacios. El acceso de vehículos se efectúa únicamente mediante el 
+resguardo del personal de seguridad, quienes verifican de manera visual la entrada y salida, 
+sin llevar un registro de los vehículos que utilizan el recinto. 
+ 
+Esta situación provoca que, en horarios de alta concurrencia , especialmente durante la 
+mañana y al mediodía, la demanda de estacionamientos supere la capacidad disponible, 
+generando tiempos de espera prolongados, congestión vehicular en los accesos y frustración 
+en los usuarios al no contar con información previa sobre la disponibilidad de cupos. 
+ 
+La ausencia de herramientas tecnológicas de control dificulta la toma de decisiones para 
+optimizar el uso del estacionamiento, impide proyectar políticas de ordenamiento vehicular 
+más eficientes y limita la posibilidad de ofrecer una mejor experiencia a sus usuarios. 
+ 
+En consecuencia, la problemática principal se centra en la falta de un sistema automatizado 
+que permita gestionar de manera eficiente la disponibilidad del estacionamiento, lo que 
+motiva la necesidad de implementar un proyecto basado en cámaras y algoritmos de 
+reconocimiento automático de placas patentes, apoyado en una base de datos que registre el 
+ingreso y salida de vehículos en tiempo real. 
+ 
+
+===== PAGE 11 =====
+11  
+ 
+2.4 Proceso del negocio actual 
+ 
+Ilustración 2: BPMN de la gestión actual del estacionamiento en Aula Magna 
+
+===== PAGE 12 =====
+12  
+ 
+3 DEFINICIÓN PROYECTO  
+3.1 Objetivos del proyecto 
+Implementar una solución para la gestión del estacionamiento del Aula Magna del Campus 
+Fernando May, que permita a los usuarios que tan ocupado está además de permitir al 
+personal de la universidad generar registros, calcular la ocupación y entregar reportes para 
+la toma de decisiones. 
+ 
+Objetivos específicos 
+ 
+1. Desarrollar una aplicación web que muestre la información del estacionamiento a los 
+usuarios. 
+2. Almacenar datos del uso del estacionamiento para generación de reportes y estadísticas. 
+3. Diseñar la arquitectura técnica con software libre y bajo costo. 
+4. Proveer una visualización de la ocupación en tiempo real (actualización cada 30 s). 
+ 
+3.2 Ambiente de Ingeniería de Software 
+3.2.1 Metodología de desarrollo 
+ 
+Para el proyecto se optó por utilizar una metodología ágil basada en Scrum, debido a su 
+flexibilidad, simplicidad y adecuada adaptación a proyectos de desarrollo de software 
+realizados por un único desarrollador. Scrum permite organizar el trabajo en iteraciones 
+cortas, priorizar funcionalidades y obtener resultados incrementales, facilitando el control 
+del avance y la adaptación a cambios durante el desarrollo. 
+ 
+ 
+La metodología Scrum resulta especialmente apropiada para este proyecto, ya que el sistema 
+se construye de manera progresiva, validando funcionalidades como el registro de eventos, 
+visualización de ocupación y generación de reportes en ciclos iterativos. El desarrollo se 
+estructura en sprints de una a dos semanas, al término de los cuales se obtiene un 
+incremento funcional del sistema. 
+ 
+Dentro de las prácticas de Scrum aplicadas en este proyecto se consideran: 
+ 
+• Gestión del Product Backlog, donde se priorizan los requerimientos y 
+funcionalidades del sistema según su valor e impacto. 
+• Planificación de Sprint, definiendo los objetivos y tareas a desarrollar en cada 
+iteración. 
+• Desarrollo incremental, permitiendo construir el sistema de forma progresiva y 
+controlada. 
+• Revisión de Sprint, evaluando los avances logrados y validando los resultados 
+obtenidos. 
+• Retrospectiva de Sprint, identificando oportunidades de mejora en el proceso de 
+desarrollo. 
+ 
+
+===== PAGE 13 =====
+13  
+ 
+Este enfoque metodológico asegura que el sistema final sea funcional, adaptable, mantenible 
+y alineado con los objetivos del proyecto y las necesidades reales del campus. 
+ 
+3.2.2 Herramientas de apoyo al desarrollo 
+Para el desarrollo se utilizarán las siguientes herramientas, indicando su propósito: 
+ 
+Visual Studio Code 
+• Entorno de desarrollo para backend en Python y frontend. 
+• Para edición de código, depurar y gestionar extensiones para el desarrollo. 
+ 
+GitHub / GitLab 
+• Repositorio remoto del proyecto. 
+• Para control  de versiones, revisión de código y almacenamiento seguro  del 
+desarrollo. 
+ 
+Supabase (PostgreSQL + autenticación + Realtime) 
+• Servicio gestionado de base de datos y API. 
+• Almacenar usuarios, zonas, incidencias y eventos, además de manejar autenticación 
+y sincronización en tiempo casi real para el tablero de ocupación. 
+ 
+Render 
+• Plataforma de despliegue del backend (API en Python) y del frontend. 
+• Hospedamiento del sistema en un entorno accesible vía web, con  despliegues 
+automatizables desde el repositorio. 
+ 
+YOLOv8 +OpenCV + PaddleOCR 
+• Librerías de visión por computador para Python. 
+• Procesamiento las imágenes de la cámara, detec ción de presencia de vehículos y 
+reconocimiento de las placas patentes para registrar entradas y salidas. 
+3.2.3 Ambientes 
+Ambiente de desarrollo 
+• Windows 10 
+• AMD Ryzen 5 / 12 GB RAM 
+• VS Code 
+• Supabase conectado en modo desarrollo 
+Ambiente de Pruebas 
+• Despliegue temporal en Render o Supabase Edge 
+• Base de datos de pruebas 
+• Cámara conectada para validaciones en terreno 
+Ambiente de Producción 
+• Hosting en Render / Supabase 
+• Base de datos PostgreSQL en Supabase 
+• Cámara instalada en el acceso del estacionamiento 
+• Acceso para guardias, encargados y visitantes 
+
+===== PAGE 14 =====
+14  
+ 
+4 FACTIBILIDAD  
+4.1 Factibilidad técnica.  
+El desarrollo del sistema es viable ya que se tiene uso de software libre y multiplataforma, lo 
+que reduce costos y garantiza la independencia tecnológica. 
+ 
+El proyecto se construirá con los siguientes softwares: 
+• Lenguaje y framework: Python para backend y JavaScript para frontend, haciendo 
+uso de vs code como IDE. 
+• Base de datos: PostgreSQL, gestionada mediante Supabase con su plan gratuito. 
+• Reconocimiento de patentes: con librería YOLOv8 para su detección, OpenCV para 
+preprocesamiento y corrección de imagen y PaddleOCR para leer los caracteres de la 
+placa patente,  
+Factibilidad de hardware para desarrollo 
+ 
+Requisito Descripción 
+Sistema Operativo Windows 10 
+ 
+CPU AMD Ryzen 5 3500U 
+GPU AMD Radeon Vega 8 
+RAM 12 GB a 2400 MHz 
+Almacenamiento 500 GB 
+Cámara Webcam 
+Tabla 1: Factibilidad técnica – Hardware para Desarrollo 
+ 
+Factibilidad de hardware y software para usuario 
+      
+Requisito Descripción 
+Sistema Operativo Android, IOS, Linux, Windows 
+Internet Acceso a internet 
+Navegador web Chrome, Firefox, Safari 
+ 
+RAM >2 GB 
+Almacenamiento >200 Mb para caché 
+Tabla 2: Factibilidad técnica - Requisitos Usuario 
+ 
+El procesamiento de imágenes del sistema se ejecutará en el servidor, donde se alojará el 
+módulo de detección de placas basado en YOLOv8, de esta forma el flujo de video 
+proveniente de la cámara no requiere enviarse a la nube, así se reduce la latencia y 
+manteniendo la seguridad de los datos. El servidor realizará el análisis de las imágenes, el 
+registro de las entradas y salidas, para enviar los resultados al backend.  
+
+===== PAGE 15 =====
+15  
+ 
+ 
+En cuanto a la estrategia de respaldo y mantenimiento, se implementarán las siguientes 
+medidas: 
+ 
+• Copias de seguridad automáticas de la base de datos en Supabase. 
+• Registro de logs de los eventos registrados y accesos. 
+• Monitoreo periódico de la cámara para verificar la conectividad y funcionamiento. 
+• Si el sistema pierde conexión con la base de datos, los eventos se almacenan 
+temporalmente en una cola local y se sincronizan una vez restablecida la conexión. 
+• Mantenimiento preventivo anual de la cámara y del software. 
+4.2 Factibilidad operativa.  
+Desde el punto de vista operativo, el sistema propuesto mejora los procesos actuales de 
+gestión vehicular en el estacionamiento del Aula Magna del Campus Fernando May. 
+Actualmente, el control no se registra digital ni física de las entradas y salidas de vehículos, lo 
+que genera, principalmente en eventos una  congestión y falta de información sobre la 
+disponibilidad de espacios, por eso lo que se propone con el nuevo sistema es permitir: 
+ 
+• Registro de forma automática mediante las placa patente con una cámara instalada. 
+• Visualizar en tiempo real la ocupación del estacionamiento. 
+• Generar reportes y analíticas sobre uso de espacios. 
+• Facilitar la toma de decisiones al personal encargado y de usuarios. 
+ 
+El cambio si bien no implica grandes alteraciones en la estructura organizativa, ya que se 
+integrará en las funciones actuales del personal administrativo, además en el software se 
+tomará en cuenta el tener una interfaz intuitiva, diseñada para todo tipo de usuarios.  
+ 
+Esto también ayudará en la trazabilidad y resolución de incidentes ya que se generarán 
+registros históricos, por ejemplo de la patente del vehículo. 
+ 
+Rol/ Actor Función principal dentro del sistema 
+Guardia Supervisa el acceso vehicular, monitorea la 
+ocupación en tiempo real y reporta 
+incidencias. 
+Encargado Administra el sistema, revisa reportes, 
+genera estadísticas y aprueba solicitudes o 
+incidencias. 
+Administrador TI Configura el sistema, mantiene la cámara, 
+usuarios y base de datos. 
+Usuario visitante  Accede al estacionamiento y puede visualizar 
+el estado de disponibilidad mediante interfaz 
+pública. 
+Tabla 3: Factibilidad operativa - Roles de los actores 
+
+===== PAGE 16 =====
+16  
+ 
+4.3 Factibilidad económica.  
+La evaluación de la factibilidad económica del proyecto es crucial para determinar la 
+viabilidad financiera y la capacidad de generar beneficios a largo plazo. En este apartado, se 
+presenta la propuesta del proyecto como se observa en la tabla, también se muestra el Valor 
+Actual Neto (VAN).  
+ 
+Se tiene como principal beneficiario a Don Gustavo Córdova ya que él es el encargado de los 
+estacionamientos dentro del campus, este proyecto principalmente le ahorraría 7,5 horas a 
+la semana en cuando a la gestión, se tomó que su sueldo bruto mensual en promedio es de 
+$950.000, con un valor por hora de $5.398, tomando en cuenta unas 7,5 horas a la semana en 
+el que le dedica su tiempo a los reportes, incidentes y gestiones correspondientes con el 
+software se tendría un ahorro de $1.983.665 al año. 
+ 
+Beneficios 
+Promedio sueldo bruto mensual $950.000 
+Valor por hora $5.398 
+Costo de tiempo por año $1.983.665 
+Tabla 4: Factibilidad económica - Beneficios del Proyecto 
+ 
+Además de los beneficios financieros cuantificables, el proyecto presenta una serie de 
+beneficios intangibles que fortalecen su justificación: 
+ 
+• Ahorro de tiempo operativo: Se reducen las tareas manuales de control y reporte 
+del encargado en aproximadamente 7,5 horas semanales. 
+• Satisfacción de los usuarios: Los conductores acceden a información clara sobre 
+la disponibilidad, evitando pérdidas de tiempo y frustración. 
+• Mejora en la gestión interna:  Los reportes automáticos permiten tomar 
+decisiones más informadas sobre horarios punta, mantenimiento y asignación de 
+espacios, etc. 
+• Mayor trazabilidad y transparencia: Los registros históricos permiten auditar 
+accesos y resolver reclamos con evidencia. 
+ 
+Costos de inversión 
+ 
+• Costo de equipos: El costo de la cámara es de $115.310 más los costos de la instalación 
+correspondiente se suman $30.000 en costos como cables, entre otros. 
+• Costo de desarrollador : La remuneración del informático durante 3 meses que 
+implementa el sistema. 
+ 
+Costos Inversión 
+Costo de equipos $145.310 
+Costo de desarrollador $4.500.000 
+Total $4.645.310 
+Tabla 5: Factibilidad económica - Costo de la Inversión 
+ 
+ 
+ 
+
+===== PAGE 17 =====
+17  
+ 
+Costos de operación 
+ 
+En la tabla se muestra un resumen de los costos de operación que se necesitará cumplir en cada 
+año 
+• Técnico en informática: Para mantener tanto el sitio web y la cámara se requiere de un 
+técnico, en este caso uno externo el costo por hora en promedio es de $60.000, se requiere 
+de unas 2 horas y 4 visitas al año lo que nos da un costo de $480.000 y unos $30.000 para 
+los materiales requeridos para el mantenimiento de la cámara. 
+• Domino: Se debe considerar el costo de un dominio Web para la aplicación, este tiene un 
+valor aproximado de $9.900 en NIC Chile. 
+• Hosting: Un plan básico de hosting varía entre $40.000 y $61.000 anuales, por lo que en 
+promedio el servidor tiene un valor de $50.500 anuales. 
+ 
+Gastos de operación 
+Mantenimiento $510.000 
+Dominio  $9.900 
+Hosting $50.500 
+Total $570.400 
+Tabla 6: Factibilidad económica - Costo de Mantenimiento del Sistema 
+ 
+ Año 0 Año 1 Año 2 Año 3 Año 4 Año 5 
+Beneficios  $1.983.665 $1.983.665 $1.983.665 $1.983.665 $1.983.665 
+Costos de 
+desarrollo 
+$4. 645.310 0 0 0 0 0 
+Gastos de 
+operación 
+ $570.400 $570.400 $570.400 $570.400 $570.400 
+Total -$4. 645.310 -$3.232.045 -$1.818.780 -$405.516 $1.007.749 $2.421.014 
+Tabla 7: Factibilidad económica - Flujo de caja del Proyecto 
+ 
+ 
+
+===== PAGE 18 =====
+18  
+ 
+4.4 Conclusión de la factibilidad 
+En resumen, se demuestra que el proyecto es operativa y económicamente viable, 
+representando una mejora significativa respecto al sistema manual actualmente utilizado en 
+el estacionamiento del Aula Magna. 
+ 
+En cuanto a la factibilidad operativa, el sistema permitirá registrar automáticamente los 
+accesos mediante reconocimiento de patentes, visualizar la ocupación en tiempo real, 
+generar reportes y facilitar la toma de decisiones. Estas funciones optimizan la gestión del 
+encargado sin requerir cambios organizacionales importantes. Además, la existencia de 
+registros históricos mejora la trazabilidad y agiliza la resolución de incidentes. 
+ 
+Desde la perspectiva económica, aunque la inversión inicial es de $4.645.310 y existen costos 
+operativos anuales de $250.400, los beneficios anuales estimados de $1.983.665 por el 
+ahorro de tiempo y eficiencia generan un impacto positivo. El cálculo de la VAN arroja 
+$1.925.472, lo que indica que la inversión se recupera y entrega rentabilidad en el periodo 
+evaluado. A esto se suman beneficios intangibles como mejor satisfacción de usuarios, 
+reducción de congestión y mejor toma de decisiones. 
+
+===== PAGE 19 =====
+19  
+ 
+5 ANÁLISIS  
+5.1 Historias de usuarios 
+ID Nombre Descripción 
+RF_01 Ver ocupación en tiempo real Permitir visualizar la 
+ocupación actual y los últimos 
+eventos en el tablero. 
+RF_02 Generar reportes y estadísticas Permitir generar reportes de 
+demanda, ocupación e 
+incidencias, con opción de 
+exportar. 
+RF_03 Registrar y resolver 
+incidencias 
+Permitir crear incidencias, 
+actualizarlas y cerrarlas, 
+calculando tiempo de 
+resolución. 
+RF_04 Administrar usuarios y roles Permitir la gestión de usuarios 
+y la asignación de roles. 
+RF_05 Exportar datos Permitir la exportación de 
+Eventos y KPIs a CSV para un 
+rango seleccionado. 
+RF_06 Visualizar estado de 
+estacionamiento 
+Como usuario, quiero ver el 
+estado del estacionamiento 
+para orientarme al ingresar. 
+RF_07 Panel ejecutivo Proveer KPIs, cambio de 
+periodo de tiempo. 
+Tabla 8: Requisitos Funcionales 
+ 
+Historia de usuario - Ver Ocupación en Tiempo Real 
+ID HU: HU01 ID Requisito:  RF_01 
+Nombre: Ver Ocupación en Tiempo Real 
+Descripción: Como guardia, quiero visualizar la ocupación actual del estacionamiento 
+y los últimos movimientos, para decidir el acceso y prevenir congestión. 
+Criterios de aceptación: 
+N° Escenario Nombre Contexto Resultado 
+1 Carga correcta del 
+tablero 
+El guardia abre el 
+tablero. 
+El sistema muestra 
+ocupación actual y 
+últimos ingresos. 
+2 Actualización por 
+evento 
+Se registra una nueva 
+entrada y salida. 
+El tablero se actualiza 
+automáticamente y 
+refleja el nuevo 
+conteo. 
+Tabla 9: Historia de usuario - Ver Ocupación en Tiempo Real 
+ 
+ 
+ 
+ 
+
+===== PAGE 20 =====
+20  
+ 
+Historia de usuario - Generar Reportes y Estadísticas 
+ID HU: HU02   ID Requisito: RF_02 
+Nombre: Generar Reportes y Estadísticas 
+Descripción: Como encargado, quiero generar reportes de ocupación, picos, rotación y 
+permanencia, para planificar señalética y apoyo en eventos. 
+Criterios de aceptación: 
+N° Escenario Nombre Contexto Resultado 
+1 Reporte estándar El encargado 
+selecciona rango de 
+fechas. 
+El sistema calcula KPIs 
+y muestra 
+gráficos/tabla. 
+2 Exportación El encargado solicita 
+exportar. 
+Se descarga CSV/PDF 
+y se registra auditoría 
+de descarga. 
+Tabla 10: Historia de usuario - Generar Reportes y Estadísticas 
+ 
+Historia de usuario - Registrar y Resolver Incidencias 
+ID HU: HU03 ID Requisito: RF_03 
+Nombre: Registrar y Resolver Incidencias 
+Descripción: Como encargado, quiero registrar incidencias asociadas a una patente o 
+evento, para dar seguimiento y cerrar con evidencia. 
+Criterios de aceptación: 
+N° Escenario Nombre Contexto Resultado 
+1 Levantamiento de 
+incidencia 
+El actor crea la 
+incidencia, 
+registrando placa o 
+evento. 
+El sistema registra la 
+incidencia con fecha 
+exacta 
+automáticamente. 
+2 Actualización Se añade actualización 
+del estado. 
+La bitácora se 
+actualiza y conserva 
+un historial. 
+Tabla 11: Historia de usuario - Registrar y Resolver Incidencias 
+ 
+Historia de usuario - Administrar Usuarios y Roles 
+ID HU: HU04 ID Requisito: RF_04 
+Nombre: Administrar Usuarios y Roles 
+Descripción: Como administrador, quiero crear usuarios y asignar roles para asegurar 
+accesos según funciones. 
+Criterios de aceptación: 
+N° Escenario Nombre Contexto Resultado 
+1 Levantamiento de 
+usuario 
+El administrador 
+ingresa datos y rol 
+válido. 
+Usuario creado; recibe 
+credenciales; queda 
+auditado. 
+2 Cambio de rol Se modifica rol de un 
+usuario activo. 
+Permisos aplicados de 
+inmediato; se registra 
+auditoría. 
+3 Baja de usuario Se desactiva un 
+usuario. 
+No puede acceder; su 
+historial se conserva. 
+Tabla 12: Historia de usuario - Administrar Usuarios y Roles 
+ 
+ 
+
+===== PAGE 21 =====
+21  
+ 
+Historia de usuario - Exportar Datos 
+ID HU: HU05 ID Requisito: RF_05 
+Nombre: Exportar Datos 
+Descripción: ▪ Como encargado, quiero exportar eventos e indicadores para uso en 
+informes institucionales. 
+Criterios de aceptación: 
+N° Escenario Nombre Contexto Resultado 
+1 Exportación CSV Se selecciona rango de 
+fechas e información a 
+exportar 
+Descarga CSV válida y 
+registro en auditoría. 
+2 Exportación power bi Se solicita versión en 
+power bi para mejor 
+representación visual. 
+De obtienen gráficos, 
+KPIs y otras analíticas. 
+Tabla 13: Historia de usuario - Exportar Datos 
+ 
+Historia de usuario - Mapa de calor 
+ID HU: HU06 ID Requisito: RF_06 
+Nombre: Visualizar estado de estacionamiento 
+Descripción: ▪ Como usuario externo, quiero ver el estado del estacionamiento para 
+orientarme al ingresar. 
+Criterios de aceptación: 
+N° Escenario Nombre Contexto Resultado 
+1 Espacios disponibles El usuario revisa la 
+web para ver si aún 
+quedan espacios para 
+estacionarse. 
+Se muestra si quedan 
+cupos dentro del 
+estacionamiento. 
+2 Sin espacios El estacionamiento se 
+encuentra en su 
+máxima capacidad. 
+El usuario se retira 
+rápidamente, se evita 
+frustración y ahorra 
+tiempo. 
+Tabla 14: Historia de usuario - Mapa de calor 
+ 
+Historia de usuario - Panel de KPIs 
+ID HU: HU07 ID Requisito: RF_07 
+Nombre: Panel ejecutivo 
+Descripción: ▪ Como encargado, quiero un panel con KPIs que contengan ocupación 
+máxima, promedio por día, incidencias, para evaluar la gestión. 
+Criterios de aceptación: 
+N° Escenario Nombre Contexto Resultado 
+1 Visualizar KPIs El encargado ingresa 
+al panel. 
+Ve KPIs del periodo 
+con tendencias. 
+2 Cambiar periodo Selecciona algún otro 
+rango. 
+Se recalculan KPIs y 
+gráficos. 
+Tabla 15: Historia de usuario - Panel de KPIs 
+
+===== PAGE 22 =====
+22  
+ 
+5.2 Modelamiento de datos 
+ 
+Ilustración 3 Modelo Entidad Relación 
+ 

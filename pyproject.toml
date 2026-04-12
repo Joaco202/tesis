@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vision-ocr-pipeline"
+version = "0.1.0"
+description = "CPU-first YOLOv8 + OpenCV + PaddleOCR pipeline"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+authors = [{ name = "Proyecto Tesis" }]
+dependencies = [
+  "ultralytics>=8.3.0",
+  "opencv-python-headless==4.10.0.84",
+  "paddleocr==2.8.1",
+  "paddlepaddle==2.6.2",
+  "pydantic>=2.9.0",
+  "pyyaml>=6.0.2",
+  "numpy>=1.26.0,<2.0",
+  "typer>=0.12.5",
+  "rich>=13.9.2"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3.3",
+  "ruff>=0.6.9"
+]
+
+[project.scripts]
+vision-ocr = "vision_ocr_pipeline.cli:app"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"

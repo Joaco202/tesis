@@ -1,0 +1,9 @@
+ultralytics>=8.3.0
+opencv-python-headless==4.10.0.84
+paddleocr==2.8.1
+paddlepaddle==2.6.2
+pydantic>=2.9.0
+pyyaml>=6.0.2
+numpy>=1.26.0,<2.0
+typer>=0.12.5
+rich>=13.9.2

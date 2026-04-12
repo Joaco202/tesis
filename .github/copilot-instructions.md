@@ -1,0 +1,5 @@
+- Proyecto Python CPU-only para pipeline de vision + OCR.
+- Priorizar compatibilidad con servidores modestos (sin CUDA).
+- Mantener entrada por CLI y salida en JSON + imagen anotada.
+- Ajustar clases, umbrales y formato final segun el PDF de tesis cuando se provea.
+- Conservar codigo modular: deteccion, OCR, pipeline y configuracion separados.
