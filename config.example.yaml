@@ -11,3 +11,10 @@ runtime:
   save_annotated: true
   default_camera_id: cam-acceso-1
   default_event_type: entrada
+supabase:
+  enabled: false
+  url: "https://TU-PROYECTO.supabase.co"
+  service_key: "TU_SERVICE_ROLE_KEY"
+  timeout_seconds: 10
+  vehicles_table: vehiculos
+  accesses_table: accesos

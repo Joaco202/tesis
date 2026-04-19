@@ -4,14 +4,17 @@ import json
 from datetime import datetime, timezone
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 
 import cv2
 import numpy as np
 
 from .config import AppConfig
+from .db import SupabaseClient
 from .detector import Detection, YoloDetector
 from .ocr_engine import OCRText, PaddleOCREngine
 from .postprocess import best_plate_from_ocr, preprocess_plate_crop
+from .repository import AccessEventResult, SupabaseRepository
 
 
 @dataclass(slots=True)
@@ -22,11 +25,31 @@ class DetectionResult:
     plate_confidence: float | None
 
 
+@dataclass(slots=True)
+class PersistenceSummary:
+    enabled: bool
+    saved_events: list[AccessEventResult]
+    errors: list[str]
+
+
 class VisionOCRPipeline:
     def __init__(self, cfg: AppConfig) -> None:
         self.cfg = cfg
         self.detector = YoloDetector(cfg.detection, device=cfg.runtime.device)
         self.ocr = PaddleOCREngine(cfg.ocr)
+        self.repository: SupabaseRepository | None = None
+
+        if cfg.supabase.enabled:
+            client = SupabaseClient(
+                base_url=cfg.supabase.url,
+                service_key=cfg.supabase.service_key,
+                timeout_seconds=cfg.supabase.timeout_seconds,
+            )
+            self.repository = SupabaseRepository(
+                client=client,
+                vehicles_table=cfg.supabase.vehicles_table,
+                accesses_table=cfg.supabase.accesses_table,
+            )
 
     def process_image(self, image_path: str | Path) -> tuple[np.ndarray, list[DetectionResult]]:
         image_path = Path(image_path)
@@ -53,6 +76,46 @@ class VisionOCRPipeline:
 
         return image, output
 
+    def persist_results(
+        self,
+        *,
+        results: list[DetectionResult],
+        event_type: str,
+        camera_id: str,
+        image_origin: str,
+        timestamp_utc: datetime | None = None,
+    ) -> PersistenceSummary:
+        if self.repository is None:
+            return PersistenceSummary(enabled=False, saved_events=[], errors=[])
+
+        persisted: list[AccessEventResult] = []
+        errors: list[str] = []
+        seen_plates: set[str] = set()
+
+        for item in results:
+            if not item.plate_text:
+                continue
+
+            plate = item.plate_text.strip().upper()
+            if not plate or plate in seen_plates:
+                continue
+            seen_plates.add(plate)
+
+            try:
+                saved = self.repository.guardar_acceso(
+                    patente=plate,
+                    event_type=event_type,
+                    camera_id=camera_id,
+                    confianza=item.plate_confidence,
+                    image_origin=image_origin,
+                    timestamp_utc=timestamp_utc,
+                )
+                persisted.append(saved)
+            except (HTTPError, URLError, TimeoutError, ValueError) as exc:
+                errors.append(f"{plate}: {exc}")
+
+        return PersistenceSummary(enabled=True, saved_events=persisted, errors=errors)
+
     def save_outputs(
         self,
         image: np.ndarray,
@@ -61,6 +124,7 @@ class VisionOCRPipeline:
         stem: str,
         camera_id: str,
         event_type: str,
+        persistence: PersistenceSummary | None = None,
         save_annotated: bool = True,
     ) -> tuple[Path, Path | None]:
         output_dir = Path(output_dir)
@@ -73,6 +137,11 @@ class VisionOCRPipeline:
             "timestamp_utc": datetime.now(timezone.utc).isoformat(),
             "total_detections": len(results),
             "events": [],
+            "database": {
+                "enabled": persistence.enabled if persistence else False,
+                "saved_events": [asdict(x) for x in persistence.saved_events] if persistence else [],
+                "errors": persistence.errors if persistence else [],
+            },
         }
         for item in results:
             payload["events"].append(

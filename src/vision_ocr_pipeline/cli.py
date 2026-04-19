@@ -41,6 +41,13 @@ def run_command(
     selected_camera_id = camera_id or cfg.runtime.default_camera_id
 
     image, results = pipeline.process_image(source)
+    persistence = pipeline.persist_results(
+        results=results,
+        event_type=selected_event_type,
+        camera_id=selected_camera_id,
+        image_origin=str(source),
+    )
+
     json_path, annotated_path = pipeline.save_outputs(
         image=image,
         results=results,
@@ -48,6 +55,7 @@ def run_command(
         stem=source.stem,
         camera_id=selected_camera_id,
         event_type=selected_event_type,
+        persistence=persistence,
         save_annotated=cfg.runtime.save_annotated,
     )
 
@@ -55,6 +63,12 @@ def run_command(
     if annotated_path is not None:
         console.print(f"[green]OK[/green] Imagen anotada: {annotated_path}")
     console.print(f"[cyan]Detecciones:[/cyan] {len(results)}")
+    if persistence.enabled:
+        console.print(f"[cyan]Eventos guardados en BD:[/cyan] {len(persistence.saved_events)}")
+        if persistence.errors:
+            console.print("[yellow]Advertencias DB:[/yellow]")
+            for err in persistence.errors:
+                console.print(f"- {err}")
 
 
 if __name__ == "__main__":
