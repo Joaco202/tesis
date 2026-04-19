@@ -74,6 +74,30 @@ class VisionOCRPipeline:
                 )
             )
 
+        # Fallback: si no se obtuvo ninguna patente util, ejecutar OCR sobre imagen completa.
+        if not any(item.plate_text for item in output):
+            full_ocr_input = preprocess_plate_crop(image)
+            full_ocr_text = self.ocr.read_text(full_ocr_input)
+            full_plate_text, full_plate_conf = best_plate_from_ocr(full_ocr_text)
+            if full_ocr_text:
+                h, w = image.shape[:2]
+                output.append(
+                    DetectionResult(
+                        detection=Detection(
+                            cls_id=-1,
+                            cls_name="full_image_ocr",
+                            confidence=1.0,
+                            x1=0,
+                            y1=0,
+                            x2=max(w - 1, 0),
+                            y2=max(h - 1, 0),
+                        ),
+                        ocr=full_ocr_text,
+                        plate_text=full_plate_text,
+                        plate_confidence=full_plate_conf,
+                    )
+                )
+
         return image, output
 
     def persist_results(
@@ -111,7 +135,10 @@ class VisionOCRPipeline:
                     timestamp_utc=timestamp_utc,
                 )
                 persisted.append(saved)
-            except (HTTPError, URLError, TimeoutError, ValueError) as exc:
+            except HTTPError as exc:
+                err_body = exc.read().decode("utf-8", errors="ignore")
+                errors.append(f"{plate}: HTTP {exc.code} - {err_body}")
+            except (URLError, TimeoutError, ValueError) as exc:
                 errors.append(f"{plate}: {exc}")
 
         return PersistenceSummary(enabled=True, saved_events=persisted, errors=errors)
@@ -144,10 +171,13 @@ class VisionOCRPipeline:
             },
         }
         for item in results:
+            best_ocr_raw = max(item.ocr, key=lambda x: x.confidence) if item.ocr else None
             payload["events"].append(
                 {
                     "detection": asdict(item.detection),
                     "ocr": [asdict(x) for x in item.ocr],
+                    "ocr_best_raw_text": best_ocr_raw.text if best_ocr_raw else None,
+                    "ocr_best_raw_confidence": best_ocr_raw.confidence if best_ocr_raw else None,
                     "plate_text": item.plate_text,
                     "plate_confidence": item.plate_confidence,
                 }

@@ -42,12 +42,32 @@ def is_likely_plate(text: str) -> bool:
 def best_plate_from_ocr(items: list[OCRText]) -> tuple[str | None, float | None]:
     best_text: str | None = None
     best_conf: float | None = None
+
+    normalized_items: list[tuple[str, float]] = []
     for item in items:
         candidate = normalize_plate_text(item.text)
+        if candidate:
+            normalized_items.append((candidate, item.confidence))
+
         if not is_likely_plate(candidate):
             continue
         if best_conf is None or item.confidence > best_conf:
             best_text = candidate
             best_conf = item.confidence
+
+    # Si OCR separa la patente en varios trozos, intentar recomponer tokens contiguos.
+    for i in range(len(normalized_items)):
+        token_text = ""
+        token_conf_sum = 0.0
+        for j in range(i, min(i + 3, len(normalized_items))):
+            piece_text, piece_conf = normalized_items[j]
+            token_text += piece_text
+            token_conf_sum += piece_conf
+            avg_conf = token_conf_sum / (j - i + 1)
+            if not is_likely_plate(token_text):
+                continue
+            if best_conf is None or avg_conf > best_conf:
+                best_text = token_text
+                best_conf = avg_conf
 
     return best_text, best_conf

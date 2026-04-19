@@ -35,7 +35,13 @@ def run_command(
         help="Identificador de camara para trazabilidad",
     ),
 ) -> None:
-    cfg = load_config(config)
+    config_path = config
+    if config_path is None:
+        default_config = Path("config.yaml")
+        if default_config.exists():
+            config_path = default_config
+
+    cfg = load_config(config_path)
     pipeline = VisionOCRPipeline(cfg)
     selected_event_type = event_type or cfg.runtime.default_event_type
     selected_camera_id = camera_id or cfg.runtime.default_camera_id
