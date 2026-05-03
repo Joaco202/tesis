@@ -681,25 +681,162 @@ $ python -m vision_ocr_pipeline imagen.jpg --output output.json
 
 ---
 
-## 8. Línea de Comandos
+## 8. Interfaz CLI Unificada (Refactorización - Mayo 3, 2026)
 
-### 8.1 Uso Básico
+### 8.0 Consolidación de Scripts
 
-```bash
-# Procesar imagen única (usa config.yaml automáticamente)
-python -m vision_ocr_pipeline imagen.jpg
+Se han consolidado **18+ scripts individuales** bajo un CLI unificado centralizado para simplificar el flujo de trabajo:
 
-# Con salida personalizada
-python -m vision_ocr_pipeline imagen.jpg --output resultado.json
-
-# Con configuración custom
-python -m vision_ocr_pipeline imagen.jpg --config custom.yaml --output resultado.json
-
-# Ver ayuda
-python -m vision_ocr_pipeline --help
+```
+python -m vision_ocr_pipeline
+├── generate   (5 subcomandos: dataset creation & processing)
+├── train      (4 subcomandos: training with multiple profiles)
+├── run        (4 subcomandos: inference & evaluation)
+└── verify     (system checks & validation)
 ```
 
-### 8.2 Salida Esperada
+**Ventajas:**
+- ✅ Interfaz consistente: mismo `--help` para todos
+- ✅ Flujo más limpio: menos archivos en `scripts/`
+- ✅ Mantenibilidad mejorada: cambios centralizados
+- ✅ Documentación unificada: todos los comandos disponibles
+
+**Scripts archivados:** `scripts/archived/` (17 scripts)
+
+### 8.1 Comando: `generate` - Preparación de Datasets
+
+```bash
+# Generar 1,000 imágenes sintéticas
+python -m vision_ocr_pipeline generate synthetic --count 1000 --output data/synthetic
+
+# Descargar CCPD2019 (requiere ~40 GB)
+python -m vision_ocr_pipeline generate download
+
+# Procesar anotaciones CCPD2019 a formato estándar
+python -m vision_ocr_pipeline generate process --input data/CCPD2019
+
+# Convertir anotaciones COCO a formato YOLO
+python -m vision_ocr_pipeline generate convert --input data
+
+# Crear splits train/val/test y data.yaml para YOLO
+python -m vision_ocr_pipeline generate split
+```
+
+**Scripts equivalentes archivados:**
+- `generate_synthetic_plates.py` → `generate synthetic`
+- `download_ccpd.py` → `generate download`
+- `process_ccpd.py` → `generate process`
+- `batch_convert_coco.py` → `generate convert`
+- `create_dataset_yaml_and_splits.py` → `generate split`
+
+### 8.2 Comando: `train` - Entrenamiento de Modelos
+
+```bash
+# Smoke test (2 épocas) - validación rápida
+python -m vision_ocr_pipeline train short
+
+# Quick training (6 épocas) - mejora baseline
+python -m vision_ocr_pipeline train quick
+
+# Full training en CPU (lento pero portable)
+python -m vision_ocr_pipeline train full-cpu
+
+# Full training en GPU (si está disponible)
+python -m vision_ocr_pipeline train full-gpu
+```
+
+| Perfil | Épocas | Tiempo Est. | Uso |
+|--------|--------|-----------|-----|
+| short | 2 | ~30 min | Validación pipeline |
+| quick | 6 | ~4 horas | Mejora rápida |
+| full-cpu | 50+ | ~30+ horas | Producción (portabilidad) |
+| full-gpu | 50+ | ~3-5 horas | Producción (futuro) |
+
+**Scripts equivalentes archivados:**
+- `train_yolo_short.py` → `train short`
+- `train_yolo_quick_6epochs.py` → `train quick`
+- `train_yolo_full_cpu_optimized.py` → `train full-cpu`
+- `train_yolo_full_gpu.py` → `train full-gpu`
+
+### 8.3 Comando: `run` - Inferencia y Evaluación
+
+#### 8.3.1 Subcomando: `infer` - Pipeline estándar
+
+```bash
+# Procesar imagen o directorio
+python -m vision_ocr_pipeline run infer --source inputs/raw --output outputs
+
+# Con debug output
+python -m vision_ocr_pipeline run infer --source inputs/raw --debug
+
+# Con configuración personalizada
+python -m vision_ocr_pipeline run infer --source inputs/raw --config custom.yaml
+```
+
+**Salida:**
+```
+outputs/
+├── results_raw.json         # JSON con detecciones
+└── annotated/
+    ├── imagen1_annot.jpg    # Imagen anotada
+    ├── imagen2_annot.jpg
+    └── ...
+```
+
+#### 8.3.2 Subcomando: `option5` - Fallback OCR-Regions
+
+Cuando YOLO no detecta, usa OCR en toda la imagen como fallback:
+
+```bash
+# Detectar placas con OCR fallback
+python -m vision_ocr_pipeline run option5 --source inputs/raw/5.jpg
+
+# En directorio (procesa todos)
+python -m vision_ocr_pipeline run option5 --source inputs/raw
+```
+
+**Ejemplo: Recuperó placa `CRJC39` en imagen 5 (YOLO no detectó)**
+
+#### 8.3.3 Subcomando: `compare` - Evaluación de Modelos
+
+Compara base `yolov8n.pt` vs mejor modelo entrenado:
+
+```bash
+python -m vision_ocr_pipeline run compare --source inputs/raw
+```
+
+**Scripts equivalentes archivados:**
+- `run_on_inputs.py` → `run infer --source inputs`
+- `run_on_inputs_raw.py` → `run infer --source inputs/raw`
+- `try_option5_image5.py` → `run option5 --source inputs/raw`
+- `compare_models.py` → `run compare`
+
+### 8.4 Comando: `verify` - Validación del Sistema
+
+```bash
+# Verificar soporte CUDA y GPU
+python -m vision_ocr_pipeline verify --check cuda
+```
+
+**Scripts equivalentes archivados:**
+- `verify_cuda.py` → `verify --check cuda`
+
+### 8.5 CLI Legacy - Single-Image Inference
+
+Para procesamiento avanzado de imagen única (configuración granular):
+
+```bash
+# Procesar imagen con config específica
+python -m vision_ocr_pipeline run imagen.jpg --config config.example.yaml --output outputs
+
+# Con event-type y camera-id (para persistencia)
+python -m vision_ocr_pipeline run imagen.jpg --event-type entrada --camera-id cam-acceso-1 --output outputs
+
+# O instalado como comando
+vision-ocr run --source imagen.jpg --config config.example.yaml --output outputs
+```
+
+### 8.6 Salida Esperada
 
 **JSON Output:**
 ```json
