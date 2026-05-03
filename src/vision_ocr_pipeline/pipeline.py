@@ -57,17 +57,21 @@ class VisionOCRPipeline:
         if image is None:
             raise ValueError(f"No se pudo leer la imagen: {image_path}")
 
-        detections = self.detector.detect(image)
+        detections = sorted(self.detector.detect(image), key=lambda det: det.confidence, reverse=True)
         output: list[DetectionResult] = []
 
-        for det in detections:
-            crop = image[max(det.y1, 0) : max(det.y2, 0), max(det.x1, 0) : max(det.x2, 0)]
+        if detections:
+            primary_detection = detections[0]
+            crop = image[
+                max(primary_detection.y1, 0) : max(primary_detection.y2, 0),
+                max(primary_detection.x1, 0) : max(primary_detection.x2, 0),
+            ]
             ocr_input = preprocess_plate_crop(crop) if crop.size else crop
             ocr_text = self.ocr.read_text(ocr_input) if crop.size else []
             plate_text, plate_conf = best_plate_from_ocr(ocr_text)
             output.append(
                 DetectionResult(
-                    detection=det,
+                    detection=primary_detection,
                     ocr=ocr_text,
                     plate_text=plate_text,
                     plate_confidence=plate_conf,

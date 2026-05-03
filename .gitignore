@@ -38,3 +38,11 @@ Thumbs.db
 
 # Local output artifacts
 outputs/
+
+inputs/
+
+data/
+
+CCPD2019.tar.xz
+
+APT_JoaquinContreras.pdf

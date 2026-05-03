@@ -1,9 +1,3 @@
--- =========================================================
--- schema.sql
--- Sistema de gestión de estacionamiento + OCR de patentes
--- Compatible con PostgreSQL / Supabase
--- =========================================================
-
 create extension if not exists pgcrypto;
 
 -- =========================================================
