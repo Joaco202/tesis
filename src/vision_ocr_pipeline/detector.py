@@ -29,7 +29,24 @@ class YoloDetector:
                 "ultralytics no esta instalado. Ejecuta: pip install -r requirements.txt"
             ) from exc
 
-        self._model = YOLO(cfg.model)
+        # Try to use trained plate detector model if available, fallback to default
+        model_path = self._find_best_model(cfg.model)
+        self._model = YOLO(model_path)
+        self._model_path = model_path
+
+    @staticmethod
+    def _find_best_model(default_model: str) -> str:
+        """Find the best trained plate detector model, fallback to default."""
+        from pathlib import Path
+        
+        runs_dir = Path("runs/detect")
+        if runs_dir.exists():
+            # Look for latest training run with best.pt
+            models = sorted(runs_dir.glob("train-*/weights/best.pt"), key=lambda x: x.stat().st_mtime, reverse=True)
+            if models:
+                return str(models[0].absolute())
+        
+        return default_model
 
     def detect(self, image: np.ndarray) -> list[Detection]:
         results = self._model.predict(

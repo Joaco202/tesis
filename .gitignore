@@ -1,5 +1,6 @@
 # Python bytecode and caches
 __pycache__/
+*.pyc
 *.py[cod]
 *.pyo
 *.pyd
@@ -46,3 +47,9 @@ data/
 CCPD2019.tar.xz
 
 APT_JoaquinContreras.pdf
+
+runs/
+
+# Training logs
+train_log.txt
+train_quick.txt

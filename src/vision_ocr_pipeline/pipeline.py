@@ -78,31 +78,159 @@ class VisionOCRPipeline:
                 )
             )
 
-        # Fallback: si no se obtuvo ninguna patente util, ejecutar OCR sobre imagen completa.
+        # Fallback: detectar patente via OCR regions (opción 5) si YOLO no detectó nada.
         if not any(item.plate_text for item in output):
-            full_ocr_input = preprocess_plate_crop(image)
-            full_ocr_text = self.ocr.read_text(full_ocr_input)
-            full_plate_text, full_plate_conf = best_plate_from_ocr(full_ocr_text)
-            if full_ocr_text:
-                h, w = image.shape[:2]
-                output.append(
-                    DetectionResult(
-                        detection=Detection(
-                            cls_id=-1,
-                            cls_name="full_image_ocr",
-                            confidence=1.0,
-                            x1=0,
-                            y1=0,
-                            x2=max(w - 1, 0),
-                            y2=max(h - 1, 0),
-                        ),
-                        ocr=full_ocr_text,
-                        plate_text=full_plate_text,
-                        plate_confidence=full_plate_conf,
-                    )
-                )
+            fallback_result = self._detect_plate_via_ocr_regions(image)
+            if fallback_result:
+                output.append(fallback_result)
 
         return image, output
+
+    def _detect_plate_via_ocr_regions(self, image: np.ndarray) -> DetectionResult | None:
+        """
+        Fallback: Detectar patente analizando regiones de texto en la imagen.
+        Usa OCR para encontrar cajas de texto, filtra por geometría (aspect ratio, área),
+        luego busca patentes válidas dentro de cada región candidata.
+        Opción 5: Para casos donde YOLO no detecta pero hay texto visible.
+        """
+        try:
+            from paddleocr import PaddleOCR
+        except ImportError:
+            return None
+
+        h, w = image.shape[:2]
+        ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, use_gpu=False)
+
+        # Detectar cajas de texto con OCR
+        try:
+            raw = ocr.ocr(image, cls=True)
+        except Exception:
+            return None
+
+        word_boxes: list[tuple[int, int, int, int]] = []
+        if raw:
+            for line in raw:
+                if not line:
+                    continue
+                for item in line:
+                    if len(item) < 2:
+                        continue
+                    poly = item[0]
+                    txt, conf = item[1]
+                    xs = [int(p[0]) for p in poly]
+                    ys = [int(p[1]) for p in poly]
+                    x1, y1, x2, y2 = min(xs), min(ys), max(xs), max(ys)
+                    bw = max(1, x2 - x1)
+                    bh = max(1, y2 - y1)
+                    ar = bw / bh
+                    area = bw * bh
+
+                    # Filtrar regiones plausibles para patente
+                    if conf < 0.35:
+                        continue
+                    if ar < 1.5 or ar > 8.0:
+                        continue
+                    if area < 700:
+                        continue
+
+                    word_boxes.append((x1, y1, x2, y2))
+
+        if not word_boxes:
+            return None
+
+        # Agrupar cajas horizontalmente cercanas
+        merged_boxes = self._merge_horizontally_close_boxes(word_boxes)
+
+        # Para cada región candidata, expandir y buscar patente
+        best_plate_text: str | None = None
+        best_plate_conf: float | None = None
+        best_detection: Detection | None = None
+
+        for box in merged_boxes:
+            ex1, ey1, ex2, ey2 = self._expand_box(box, w, h)
+            crop = image[ey1:ey2, ex1:ex2]
+            if crop.size == 0:
+                continue
+
+            try:
+                crop_raw = ocr.ocr(crop, cls=True)
+            except Exception:
+                continue
+
+            ocr_items: list[OCRText] = []
+            if crop_raw:
+                for line in crop_raw:
+                    if not line:
+                        continue
+                    for item in line:
+                        if len(item) < 2:
+                            continue
+                        text, conf = item[1]
+                        ocr_items.append(OCRText(text=str(text), confidence=float(conf)))
+
+            plate_text, plate_conf = best_plate_from_ocr(ocr_items)
+            if plate_text and (best_plate_conf is None or plate_conf > best_plate_conf):
+                best_plate_text = plate_text
+                best_plate_conf = plate_conf
+                best_detection = Detection(
+                    cls_id=-1,
+                    cls_name="ocr_region_fallback",
+                    confidence=plate_conf or 0.0,
+                    x1=ex1,
+                    y1=ey1,
+                    x2=ex2,
+                    y2=ey2,
+                )
+
+        if best_detection and best_plate_text:
+            return DetectionResult(
+                detection=best_detection,
+                ocr=[OCRText(text=best_plate_text, confidence=best_plate_conf or 0.0)],
+                plate_text=best_plate_text,
+                plate_confidence=best_plate_conf,
+            )
+
+        return None
+
+    @staticmethod
+    def _merge_horizontally_close_boxes(boxes: list[tuple[int, int, int, int]]) -> list[tuple[int, int, int, int]]:
+        """Agrupar cajas de texto que están en la misma línea y cercanas."""
+        if not boxes:
+            return []
+        boxes = sorted(boxes, key=lambda b: (b[1], b[0]))
+        merged: list[tuple[int, int, int, int]] = []
+
+        for b in boxes:
+            x1, y1, x2, y2 = b
+            if not merged:
+                merged.append(b)
+                continue
+
+            mx1, my1, mx2, my2 = merged[-1]
+            h_overlap = min(y2, my2) - max(y1, my1)
+            min_h = max(1, min(y2 - y1, my2 - my1))
+            gap = x1 - mx2
+
+            if h_overlap / min_h > 0.5 and gap < max(20, int(0.08 * (mx2 - mx1))):
+                merged[-1] = (min(mx1, x1), min(my1, y1), max(mx2, x2), max(my2, y2))
+            else:
+                merged.append(b)
+
+        return merged
+
+    @staticmethod
+    def _expand_box(box: tuple[int, int, int, int], w: int, h: int, padx: float = 0.12, pady: float = 0.35) -> tuple[int, int, int, int]:
+        """Expandir caja de texto para capturar contexto alrededor."""
+        x1, y1, x2, y2 = box
+        bw = x2 - x1
+        bh = y2 - y1
+        ex = int(bw * padx)
+        ey = int(bh * pady)
+        nx1 = max(0, x1 - ex)
+        ny1 = max(0, y1 - ey)
+        nx2 = min(w - 1, x2 + ex)
+        ny2 = min(h - 1, y2 + ey)
+        return nx1, ny1, nx2, ny2
 
     def persist_results(
         self,
