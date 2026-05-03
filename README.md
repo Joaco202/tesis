@@ -28,19 +28,80 @@ pip install -r requirements.txt
 
 ## Ejecucion
 
+El proyecto ahora usa un CLI unificado que consolida 18+ scripts en subcomandos organizados:
+
 ```bash
 python -m vision_ocr_pipeline --help
+```
+
+### Generar o procesar datasets
+
+```bash
+# Generar 1000 imagenes sinteticas de patentes
+python -m vision_ocr_pipeline generate synthetic --count 1000 --output data/synthetic
+
+# Descargar CCPD2019 (necesita ~40 GB)
+python -m vision_ocr_pipeline generate download
+
+# Procesar anotaciones CCPD2019 a formato estandar
+python -m vision_ocr_pipeline generate process --input data/CCPD2019
+
+# Convertir anotaciones COCO a formato YOLO
+python -m vision_ocr_pipeline generate convert --input data
+
+# Crear splits train/val/test y data.yaml para YOLO
+python -m vision_ocr_pipeline generate split
+```
+
+### Entrenar modelos
+
+```bash
+# Entrenamiento rapido (2 epochs) para validar pipeline
+python -m vision_ocr_pipeline train short
+
+# Entrenamiento rapido (6 epochs) para mejora baseline
+python -m vision_ocr_pipeline train quick
+
+# Entrenamiento completo en CPU (lento pero portable)
+python -m vision_ocr_pipeline train full-cpu
+
+# Entrenamiento completo en GPU (si hay GPU disponible)
+python -m vision_ocr_pipeline train full-gpu
+```
+
+### Inferencia y evaluacion
+
+```bash
+# Procesar imagen o directorio con pipeline standard
+python -m vision_ocr_pipeline run infer --source inputs/raw --output outputs
+
+# Usar fallback OCR cuando YOLO no detecta (opcion 5)
+python -m vision_ocr_pipeline run option5 --source inputs/raw/5.jpg
+
+# Comparar modelo base (yolov8n.pt) vs mejor modelo entrenado
+python -m vision_ocr_pipeline run compare --source inputs/raw
+
+# Con debug output
+python -m vision_ocr_pipeline run infer --source inputs/raw --debug
+```
+
+### Verificacion del sistema
+
+```bash
+# Verificar soporte CUDA y GPU
+python -m vision_ocr_pipeline verify --check cuda
+```
+
+### CLI Legacy (single-image inference)
+
+Para procesamiento de una imagen con configuracion avanzada:
+
+```bash
 python -m vision_ocr_pipeline run --source ruta/a/imagen.jpg --config config.example.yaml --output outputs
 python -m vision_ocr_pipeline run --source ruta/a/imagen.jpg --event-type entrada --camera-id cam-acceso-1 --output outputs
 ```
 
-Si activas Supabase en config o variables de entorno, el flujo queda:
-
-1. Detecta y hace OCR.
-2. Si hay patente, guarda evento en BD.
-3. Genera JSON + imagen anotada.
-
-Tambien puedes usar el script instalado:
+O instalado como comando:
 
 ```bash
 vision-ocr run --source ruta/a/imagen.jpg --config config.example.yaml --output outputs
@@ -51,6 +112,31 @@ vision-ocr run --source ruta/a/imagen.jpg --config config.example.yaml --output 
 - JSON de evento (camara, tipo entrada/salida, timestamp, detecciones, OCR y patente normalizada) en `outputs/<nombre>.json`
 - Imagen anotada en `outputs/<nombre>_annotated.jpg`
 - Si Supabase esta activo, el JSON incluye bloque `database` con resultados de persistencia.
+
+## Scripts consolidados bajo CLI
+
+El proyecto ha consolidado 18+ scripts individuales bajo un CLI unificado. Si necesitas referencia de funcionalidad antigua:
+
+| Script antiguo | Comando CLI actual |
+|---|---|
+| `generate_synthetic_plates.py` | `python -m vision_ocr_pipeline generate synthetic` |
+| `download_ccpd.py` | `python -m vision_ocr_pipeline generate download` |
+| `process_ccpd.py` | `python -m vision_ocr_pipeline generate process` |
+| `batch_convert_coco.py` | `python -m vision_ocr_pipeline generate convert` |
+| `create_dataset_yaml_and_splits.py` | `python -m vision_ocr_pipeline generate split` |
+| `train_yolo_short.py` | `python -m vision_ocr_pipeline train short` |
+| `train_yolo_quick_6epochs.py` | `python -m vision_ocr_pipeline train quick` |
+| `train_yolo_full_cpu_optimized.py` | `python -m vision_ocr_pipeline train full-cpu` |
+| `train_yolo_full_gpu.py` | `python -m vision_ocr_pipeline train full-gpu` |
+| `run_on_inputs.py` | `python -m vision_ocr_pipeline run infer --source inputs` |
+| `run_on_inputs_raw.py` | `python -m vision_ocr_pipeline run infer --source inputs/raw` |
+| `try_option5_image5.py` | `python -m vision_ocr_pipeline run option5 --source inputs/raw` |
+| `compare_models.py` | `python -m vision_ocr_pipeline run compare` |
+| `verify_cuda.py` | `python -m vision_ocr_pipeline verify --check cuda` |
+
+Scripts utilitarios que se mantienen separados:
+- `test_detector_integration.py`: prueba de integracion del detector
+- `debug_inspect_image5.py`: herramienta de debug para imagen especifica
 
 ## Supabase (opcional)
 
