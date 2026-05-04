@@ -38,9 +38,9 @@ htmlcov/
 Thumbs.db
 
 # Local output artifacts
-outputs/
+#outputs/
 
-inputs/
+#inputs/
 
 data/
 

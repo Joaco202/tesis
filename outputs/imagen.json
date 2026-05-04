@@ -1,0 +1,49 @@
+{
+  "camera_id": "cam-acceso-1",
+  "event_type": "entrada",
+  "timestamp_utc": "2026-04-19T18:54:51.204004+00:00",
+  "total_detections": 1,
+  "events": [
+    {
+      "detection": {
+        "cls_id": -1,
+        "cls_name": "full_image_ocr",
+        "confidence": 1.0,
+        "x1": 0,
+        "y1": 0,
+        "x2": 1356,
+        "y2": 511
+      },
+      "ocr": [
+        {
+          "text": "GK SB'",
+          "confidence": 0.8560065627098083
+        },
+        {
+          "text": "78",
+          "confidence": 0.99937903881073
+        },
+        {
+          "text": "C H I L E",
+          "confidence": 0.8250225782394409
+        }
+      ],
+      "ocr_best_raw_text": "78",
+      "ocr_best_raw_confidence": 0.99937903881073,
+      "plate_text": "GKSB78",
+      "plate_confidence": 0.9276928007602692
+    }
+  ],
+  "database": {
+    "enabled": true,
+    "saved_events": [
+      {
+        "plate_text": "GKSB78",
+        "event_type": "entrada",
+        "access_id": 2,
+        "status": "created"
+      }
+    ],
+    "errors": []
+  }
+}

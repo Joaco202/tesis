@@ -13,7 +13,7 @@ from .config import AppConfig
 from .db import SupabaseClient
 from .detector import Detection, YoloDetector
 from .ocr_engine import OCRText, PaddleOCREngine
-from .postprocess import best_plate_from_ocr, preprocess_plate_crop
+from .postprocess import PLATE_PATTERNS, best_plate_from_ocr, is_likely_plate, normalize_plate_text, preprocess_plate_crop
 from .repository import AccessEventResult, SupabaseRepository
 
 
@@ -61,28 +61,30 @@ class VisionOCRPipeline:
         output: list[DetectionResult] = []
 
         if detections:
-            primary_detection = detections[0]
-            crop = image[
-                max(primary_detection.y1, 0) : max(primary_detection.y2, 0),
-                max(primary_detection.x1, 0) : max(primary_detection.x2, 0),
-            ]
-            ocr_input = preprocess_plate_crop(crop) if crop.size else crop
-            ocr_text = self.ocr.read_text(ocr_input) if crop.size else []
-            plate_text, plate_conf = best_plate_from_ocr(ocr_text)
-            output.append(
-                DetectionResult(
-                    detection=primary_detection,
-                    ocr=ocr_text,
-                    plate_text=plate_text,
-                    plate_confidence=plate_conf,
+            # Procesar todas las detecciones (ordenadas por confianza), exponer OCR por cada una.
+            for det in detections:
+                crop = image[max(det.y1, 0) : max(det.y2, 0), max(det.x1, 0) : max(det.x2, 0)]
+                ocr_input = preprocess_plate_crop(crop) if crop.size else crop
+                ocr_text = self.ocr.read_text(ocr_input) if crop.size else []
+                plate_text, plate_conf = best_plate_from_ocr(ocr_text)
+                output.append(
+                    DetectionResult(
+                        detection=det,
+                        ocr=ocr_text,
+                        plate_text=plate_text,
+                        plate_confidence=plate_conf,
+                    )
                 )
-            )
 
-        # Fallback: detectar patente via OCR regions (opción 5) si YOLO no detectó nada.
-        if not any(item.plate_text for item in output):
+        # Fallback: ejecutar búsqueda por regiones OCR cuando ninguna detección tiene texto
+        # O cuando la detección primaria no devolvió texto — intentamos el fallback y lo
+        # priorizamos si encuentra una placa.
+        need_fallback = not any(item.plate_text for item in output) or (output and output[0].plate_text is None)
+        if need_fallback:
             fallback_result = self._detect_plate_via_ocr_regions(image)
             if fallback_result:
-                output.append(fallback_result)
+                # Priorizar el resultado del fallback insertándolo al frente.
+                output.insert(0, fallback_result)
 
         return image, output
 
@@ -108,6 +110,7 @@ class VisionOCRPipeline:
             return None
 
         word_boxes: list[tuple[int, int, int, int]] = []
+        full_items_with_boxes: list[tuple[OCRText, tuple[int, int, int, int]]] = []
         if raw:
             for line in raw:
                 if not line:
@@ -120,17 +123,20 @@ class VisionOCRPipeline:
                     xs = [int(p[0]) for p in poly]
                     ys = [int(p[1]) for p in poly]
                     x1, y1, x2, y2 = min(xs), min(ys), max(xs), max(ys)
+                    full_items_with_boxes.append(
+                        (OCRText(text=str(txt), confidence=float(conf)), (x1, y1, x2, y2))
+                    )
                     bw = max(1, x2 - x1)
                     bh = max(1, y2 - y1)
                     ar = bw / bh
                     area = bw * bh
 
-                    # Filtrar regiones plausibles para patente
-                    if conf < 0.35:
+                    # Filtrar regiones plausibles para patente (umbrales relajados para mayor recall)
+                    if conf < 0.20:
                         continue
-                    if ar < 1.5 or ar > 8.0:
+                    if ar < 1.2 or ar > 10.0:
                         continue
-                    if area < 700:
+                    if area < 300:
                         continue
 
                     word_boxes.append((x1, y1, x2, y2))
@@ -138,13 +144,55 @@ class VisionOCRPipeline:
         if not word_boxes:
             return None
 
+        def score_candidate(text: str | None, confidence: float | None) -> float:
+            if not text:
+                return -1.0
+            normalized = normalize_plate_text(text)
+            score = float(confidence or 0.0)
+            if any(pattern.match(normalized) for pattern in PLATE_PATTERNS):
+                score += 2.0
+            elif is_likely_plate(normalized):
+                score += 1.0
+            if len(normalized) == 6:
+                score += 0.25
+            return score
+
         # Agrupar cajas horizontalmente cercanas
         merged_boxes = self._merge_horizontally_close_boxes(word_boxes)
+
+        def bbox_for_plate(items_with_boxes: list[tuple[OCRText, tuple[int, int, int, int]]], plate_text: str | None) -> tuple[int, int, int, int] | None:
+            if not plate_text or not items_with_boxes:
+                return None
+
+            normalized_plate = normalize_plate_text(plate_text)
+            if not normalized_plate:
+                return None
+
+            for item, box in items_with_boxes:
+                if normalize_plate_text(item.text) == normalized_plate:
+                    return box
+
+            for start in range(len(items_with_boxes)):
+                token_text = ""
+                window_boxes: list[tuple[int, int, int, int]] = []
+                for end in range(start, min(start + 3, len(items_with_boxes))):
+                    item, box = items_with_boxes[end]
+                    token_text += normalize_plate_text(item.text)
+                    window_boxes.append(box)
+                    if normalize_plate_text(token_text) == normalized_plate:
+                        x1 = min(b[0] for b in window_boxes)
+                        y1 = min(b[1] for b in window_boxes)
+                        x2 = max(b[2] for b in window_boxes)
+                        y2 = max(b[3] for b in window_boxes)
+                        return x1, y1, x2, y2
+
+            return None
 
         # Para cada región candidata, expandir y buscar patente
         best_plate_text: str | None = None
         best_plate_conf: float | None = None
         best_detection: Detection | None = None
+        best_score = -1.0
 
         for box in merged_boxes:
             ex1, ey1, ex2, ey2 = self._expand_box(box, w, h)
@@ -158,6 +206,7 @@ class VisionOCRPipeline:
                 continue
 
             ocr_items: list[OCRText] = []
+            ocr_items_with_boxes: list[tuple[OCRText, tuple[int, int, int, int]]] = []
             if crop_raw:
                 for line in crop_raw:
                     if not line:
@@ -165,13 +214,24 @@ class VisionOCRPipeline:
                     for item in line:
                         if len(item) < 2:
                             continue
+                        poly = item[0]
                         text, conf = item[1]
-                        ocr_items.append(OCRText(text=str(text), confidence=float(conf)))
+                        xs = [int(p[0]) for p in poly]
+                        ys = [int(p[1]) for p in poly]
+                        x1b, y1b, x2b, y2b = min(xs), min(ys), max(xs), max(ys)
+                        ocr_text = OCRText(text=str(text), confidence=float(conf))
+                        ocr_items.append(ocr_text)
+                        ocr_items_with_boxes.append((ocr_text, (ex1 + x1b, ey1 + y1b, ex1 + x2b, ey1 + y2b)))
 
             plate_text, plate_conf = best_plate_from_ocr(ocr_items)
-            if plate_text and (best_plate_conf is None or plate_conf > best_plate_conf):
+            region_score = score_candidate(plate_text, plate_conf)
+            if region_score > best_score:
                 best_plate_text = plate_text
                 best_plate_conf = plate_conf
+                best_score = region_score
+                region_bbox = bbox_for_plate(ocr_items_with_boxes, plate_text)
+                if region_bbox is not None:
+                    ex1, ey1, ex2, ey2 = region_bbox
                 best_detection = Detection(
                     cls_id=-1,
                     cls_name="ocr_region_fallback",
@@ -180,6 +240,50 @@ class VisionOCRPipeline:
                     y1=ey1,
                     x2=ex2,
                     y2=ey2,
+                )
+
+        # También evaluar OCR en toda la imagen y comparar contra las regiones.
+        try:
+            full_raw = ocr.ocr(image, cls=True)
+        except Exception:
+            full_raw = None
+
+        if full_raw:
+            full_items: list[OCRText] = []
+            full_items_with_boxes = []
+            for line in full_raw:
+                if not line:
+                    continue
+                for item in line:
+                    if len(item) < 2:
+                        continue
+                    poly = item[0]
+                    text, conf = item[1]
+                    xs = [int(p[0]) for p in poly]
+                    ys = [int(p[1]) for p in poly]
+                    x1, y1, x2, y2 = min(xs), min(ys), max(xs), max(ys)
+                    full_items.append(OCRText(text=str(text), confidence=float(conf)))
+                    full_items_with_boxes.append((OCRText(text=str(text), confidence=float(conf)), (x1, y1, x2, y2)))
+
+            plate_text, plate_conf = best_plate_from_ocr(full_items)
+            full_score = score_candidate(plate_text, plate_conf)
+            if full_score > best_score:
+                best_plate_text = plate_text
+                best_plate_conf = plate_conf
+                best_score = full_score
+                full_bbox = bbox_for_plate(full_items_with_boxes, plate_text)
+                if full_bbox is not None:
+                    fx1, fy1, fx2, fy2 = full_bbox
+                else:
+                    fx1, fy1, fx2, fy2 = 0, 0, w - 1, h - 1
+                best_detection = Detection(
+                    cls_id=-1,
+                    cls_name="ocr_region_fallback_full",
+                    confidence=plate_conf or 0.0,
+                    x1=fx1,
+                    y1=fy1,
+                    x2=fx2,
+                    y2=fy2,
                 )
 
         if best_detection and best_plate_text:

@@ -6,6 +6,19 @@ detection:
 ocr:
   lang: es
   use_angle_cls: true
+  confusion_map:
+    "0": "O"
+    "1": "I"
+    "2": "Z"
+    "3": "B"
+    "4": "A"
+    "5": "S"
+    "6": "G"
+    "7": "T"
+    "8": "B"
+    "9": "G"
+  max_confusion_subs: 2
+  aggressive_confusion: true
 runtime:
   device: cpu
   save_annotated: true
