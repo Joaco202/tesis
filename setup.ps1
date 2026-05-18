@@ -36,8 +36,17 @@ $venvPython = Join-Path $projectRoot '.venv\Scripts\python.exe'
 Write-Host 'Actualizando pip...'
 & $venvPython -m ensurepip --upgrade | Out-Null
 
-Write-Host 'Instalando dependencias...'
-& $venvPython -m pip install -r requirements.txt -f 'https://www.paddlepaddle.org.cn/whl/windows/mkl/avx/stable.html'
+Write-Host 'Actualizando pip a version reciente...'
+& $venvPython -m pip install --upgrade pip | Out-Null
+
+Write-Host 'Instalando PyTorch 2.7+ con soporte CUDA 12.8 (RTX 5070 / Blackwell)...'
+& $venvPython -m pip install 'torch>=2.7.0' torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+
+Write-Host 'Instalando PaddlePaddle 3.x GPU (CUDA 12.6 wheel, compatible con RTX 5070)...'
+& $venvPython -m pip install paddlepaddle-gpu==3.0.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
+
+Write-Host 'Instalando resto de dependencias...'
+& $venvPython -m pip install ultralytics>=8.3.0 'opencv-python-headless==4.10.0.84' 'paddleocr>=2.8.1' 'pydantic>=2.9.0' 'pyyaml>=6.0.2' 'numpy>=1.26.0,<2.0' 'typer>=0.12.5' 'rich>=13.9.2'
 
 if (-not $SkipSmokeTest) {
     Write-Host 'Ejecutando prueba rapida...'

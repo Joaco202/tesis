@@ -53,3 +53,8 @@ runs/
 # Training logs
 train_log.txt
 train_quick.txt
+
+# Environment Variables
+.env
+.env.*
+*.env

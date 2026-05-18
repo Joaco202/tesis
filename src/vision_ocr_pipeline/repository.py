@@ -117,6 +117,21 @@ class SupabaseRepository:
         timestamp = timestamp_utc or datetime.now(timezone.utc)
         self.guardar_vehiculo_si_no_existe(patente)
 
+        if normalized_type == "auto":
+            # Verificar si existe un acceso abierto (sin fecha de salida)
+            opened = self.client.select(
+                self.accesses_table,
+                query_params={
+                    "select": "id",
+                    "vehiculo_patente": f"eq.{patente}",
+                    "fecha_salida": "is.null",
+                    "order": "fecha_entrada.desc",
+                    "limit": "1",
+                },
+            )
+            # Si hay un acceso abierto, es una salida. Si no, es una entrada.
+            normalized_type = "salida" if opened else "entrada"
+
         if normalized_type == "entrada":
             return self.registrar_entrada(
                 patente=patente,

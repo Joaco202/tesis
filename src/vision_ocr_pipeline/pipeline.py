@@ -36,7 +36,8 @@ class VisionOCRPipeline:
     def __init__(self, cfg: AppConfig) -> None:
         self.cfg = cfg
         self.detector = YoloDetector(cfg.detection, device=cfg.runtime.device)
-        self.ocr = PaddleOCREngine(cfg.ocr)
+        use_gpu = cfg.runtime.device.startswith("cuda") or cfg.runtime.device == "gpu"
+        self.ocr = PaddleOCREngine(cfg.ocr, use_gpu=use_gpu)
         self.repository: SupabaseRepository | None = None
 
         if cfg.supabase.enabled:
@@ -101,7 +102,8 @@ class VisionOCRPipeline:
             return None
 
         h, w = image.shape[:2]
-        ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, use_gpu=False)
+        use_gpu = self.cfg.runtime.device.startswith("cuda") or self.cfg.runtime.device == "gpu"
+        ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, use_gpu=use_gpu)
 
         # Detectar cajas de texto con OCR
         try:

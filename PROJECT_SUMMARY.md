@@ -1,8 +1,8 @@
 # Vision + OCR Pipeline para Detección de Placas - Documentación Completa
 
-**Fecha de generación:** Mayo 3, 2026  
+**Fecha de generación:** Mayo 3, 2026 · **Última actualización:** 17 de mayo de 2026  
 **Proyecto:** tesis (Detección de placas vehiculares con visión por computadora y reconocimiento óptico de caracteres)  
-**Estado:** Pausado — la ejecución de 6 épocas fue detenida; mantener `yolov8n.pt` (base) y el fallback OCR-region en producción
+**Estado:** ✅ GPU habilitada — PyTorch 2.11+cu128 · PaddleOCR 3.5.0 · PaddlePaddle-GPU 3.0.0 · Python 3.12.10
 
 ---
 
@@ -22,23 +22,25 @@ Este proyecto implementa un pipeline de **dos etapas** para detección y reconoc
 ### Especificaciones del Sistema
 - **SO:** Windows 11 Pro
 - **CPU:** AMD Ryzen 7 9800X3D (8 núcleos, 16 threads)
-- **GPU:** NVIDIA GeForce RTX 5070 (12.2GB VRAM, arquitectura Blackwell sm_120)
-  - *Nota:* No soportada aún por PyTorch 2.5.1; requiere PyTorch 2.6+ (pendiente Q1 2025)
-- **RAM:** 32GB
+- **GPU:** NVIDIA GeForce RTX 5070 (12 GB VRAM, arquitectura Blackwell sm_120)
+  - ✅ Soportada con PyTorch 2.11+cu128 y PaddlePaddle-GPU 3.0.0
+- **RAM:** 32 GB
 - **Python:** 3.12.10 en virtualenv (`.venv`)
 
-### Dependencias Instaladas
+### Dependencias Instaladas (actualizadas mayo 2026)
 
 ```
-ultralytics==8.4.46          # YOLOv8 detector y entrenador
-torch==2.5.1+cu121           # PyTorch (CPU optimizado, CUDA 13.2)
-torchvision==0.20.1+cu121    # Visión por computadora
-paddlepaddle==2.6.2          # Backend para OCR
-paddleocr==2.8.1             # Reconocimiento óptico de caracteres
-pillow==10.1.0               # Manipulación de imágenes
+ultralytics==8.4.46              # YOLOv8 — detector y entrenador
+torch==2.11.0+cu128              # PyTorch — GPU (CUDA 12.8, Blackwell)
+torchvision==0.22.0+cu128        # Visión por computadora — GPU
+paddlepaddle-gpu==3.0.0          # PaddlePaddle — GPU (cu126)
+paddleocr==3.5.0                 # PaddleOCR — compatible con Paddle 3.x
+nvidia-cuda-nvrtc-cu12==12.9.86  # NVRTC para resolución de DLLs CUDA
 ```
 
-**Archivo:** `requirements.txt`
+**Ubicación:** todos instalados en `.venv\Lib\site-packages\`  
+**Índice especial PyTorch:** `https://download.pytorch.org/whl/cu128`  
+**Índice especial Paddle:** `https://www.paddlepaddle.org.cn/packages/stable/cu126/`
 
 ### Configuración del Proyecto
 - **Archivo Principal:** `config.yaml`
@@ -351,47 +353,71 @@ runs/detect/train-3/weights/last.pt     (6.3 MB)
 
 ---
 
-### Fase 7: Intento de Entrenamiento con GPU (Pendiente)
+### Fase 7: Migración GPU — RTX 5070 Blackwell ✅ (Completado mayo 2026)
 
-#### 7.1 Problema Identificado
+#### 7.1 Problema Original
 **Hardware:** NVIDIA GeForce RTX 5070 (Blackwell, sm_120)  
-**PyTorch Disponible:** 2.5.1  
-**Soporte GPU:** Requiere PyTorch 2.6+ (aún no released)
+**PyTorch anterior:** 2.5.1+cu121 → `torch.cuda.is_available()` devolvía `False`  
+**Causa:** La arquitectura Blackwell (sm_120) no estaba soportada en PyTorch 2.5.x
 
-#### 7.2 Investigación Realizada
-```python
-import torch
-
-print(torch.__version__)
-# Output: 2.5.1+cu121
-
-print(torch.cuda.is_available())
-# Output: False (Blackwell no soportada)
-
-# Intentamos versión nightly
-pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
-# Resultado: Aún no incluye sm_120 support
-```
-
-#### 7.3 Solución Aplicada
-**Entrenamiento CPU-optimizado** con parámetros ajustados para máximo rendimiento:
-
-```python
-model.train(
-    batch=8,        # Reducido de 32 (memory constraints CPU)
-    workers=4,      # 4 threads (Ryzen 7 9800X3D: 8 cores)
-    cache=True,     # Cache de dataset en RAM
-    device='cpu'    # Forzar CPU explícitamente
-)
-```
-
-#### 7.4 Plan Futuro
-Cuando PyTorch 2.6+ esté disponible (Q1 2025):
+#### 7.2 Solución Aplicada — PyTorch 2.11+cu128
 ```bash
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
-python scripts/train_yolo_full_gpu.py
-# Aceleración esperada: 5-10x vs CPU
+# Actualización a PyTorch 2.11 con soporte CUDA 12.8 (Blackwell)
+pip install torch torchvision torchaudio \
+  --index-url https://download.pytorch.org/whl/cu128
+
+# Verificación:
+import torch
+print(torch.__version__)          # 2.11.0+cu128
+print(torch.cuda.is_available())  # True
+print(torch.cuda.get_device_name(0))  # NVIDIA GeForce RTX 5070
 ```
+
+#### 7.3 Actualización de PaddlePaddle a GPU
+```bash
+# PaddlePaddle GPU 3.0.0 (canal cu126 — funciona con CUDA 12.8)
+pip install paddlepaddle-gpu==3.0.0 \
+  -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
+
+# PaddleOCR 3.5.0 — compatible con PaddlePaddle 3.x
+# (versión anterior 2.8.1 era incompatible con Paddle 3.x)
+pip install "paddleocr>=3.0.0" --upgrade
+```
+
+#### 7.4 Fix de DLLs CUDA en Windows (WinError 127)
+En Windows, PaddlePaddle 3.0.0 falla con `OSError: [WinError 127]` al cargar
+`cudnn_cnn64_9.dll` porque el cargador de DLLs busca dependencias antes de que
+estén en memoria. Solución: patch en `paddle/__init__.py` que:
+
+1. Registra todos los dirs de `nvidia/*/bin` con `os.add_dll_directory()`
+2. Agrega esos dirs al `os.environ['PATH']` del proceso
+3. Precarga las DLLs en el **orden correcto de dependencias** con `ctypes.WinDLL`:
+   `cudart → cublas → cudnn_base → cudnn_ops → cudnn_adv → ... → cudnn_cnn`
+4. Ignora `WinError 126/127` en el bloque de carga de Paddle (ya precargadas)
+
+```python
+# Patch aplicado en:
+# .venv/Lib/site-packages/paddle/__init__.py  (líneas 36-83)
+# — se ejecuta antes de 'from .base import core'
+```
+
+**Paquete adicional necesario:**
+```bash
+pip install nvidia-cuda-nvrtc-cu12  # Dependencia de cadena cudnn
+```
+
+#### 7.5 Archivos modificados para soporte GPU
+
+| Archivo | Cambio |
+|---------|--------|
+| `requirements.txt` | torch→2.11+cu128, paddlepaddle-gpu, paddleocr≥3.0 |
+| `setup.ps1` | Instala desde índices cu128/cu126 |
+| `src/vision_ocr_pipeline/config.py` | `device` default: `"cpu"` → `"cuda"` |
+| `src/vision_ocr_pipeline/ocr_engine.py` | Detección automática GPU para PaddleOCR |
+| `src/vision_ocr_pipeline/pipeline.py` | Propaga `device` al detector YOLO y al OCR |
+| `src/vision_ocr_pipeline/__init__.py` | `add_dll_directory` patch (complementario) |
+| `.venv/.../paddle/__init__.py` | Patch DLL preload + error 127 bypass |
+| `env_gpu.ps1` | Script de activación con PATH de nvidia DLLs |
 
 ---
 
@@ -960,10 +986,11 @@ Error: Terminal timeout, sin feedback
 Solución: Monitoreo de carpeta con PowerShell, conteo de archivos
 ```
 
-### Problema 3: RTX 5070 no soportada en PyTorch 2.5
+### Problema 3: RTX 5070 no soportada en PyTorch 2.5 ✅ Resuelto
 ```
-Error: "CUDA device type 'cuda' is not supported"
-Solución: CPU-optimized training (batch=8, cache=true)
+Error: torch.cuda.is_available() → False (Blackwell sm_120 no soportado)
+Solución: pip install torch==2.11+cu128 --index-url .../cu128
+Resultado: GPU detectada, CUDA: True, GPU: NVIDIA GeForce RTX 5070
 ```
 
 ### Problema 4: Dataset scanning time muy largo
@@ -972,33 +999,54 @@ Error: ~1 hora para escanear 310k imágenes
 Solución: Cache habilitado después del primer escaneo
 ```
 
+### Problema 5: PaddleOCR 2.8.1 incompatible con Paddle 3.0 ✅ Resuelto
+```
+Error: RuntimeError / conflictos de API entre paddleocr 2.8.1 y paddlepaddle 3.0
+Solución: pip install "paddleocr>=3.0.0" → instaló paddleocr 3.5.0
+```
+
+### Problema 6: WinError 127 al cargar cudnn_cnn64_9.dll ✅ Resuelto
+```
+Error: OSError: [WinError 127] Error loading "nvidia\cudnn\bin\cudnn_cnn64_9.dll"
+Causa: Paddle carga DLLs en orden alfabético, sin cargar dependencias primero
+Solución (3 pasos):
+  1. pip install nvidia-cuda-nvrtc-cu12  (DLL faltante en cadena de deps)
+  2. Patch en paddle/__init__.py — precargar DLLs en orden de dependencias
+     con ctypes.WinDLL() antes de 'from .base import core'
+  3. Patch en paddle/__init__.py — ignorar WinError 127 en los raise err
+     del bloque Windows (DLLs ya en memoria por el paso 2)
+```
+
 ---
 
 ## 12. Próximos Pasos
 
-### Inmediato (Después del Entrenamiento Actual)
-1. ✅ Completar 6 épocas de entrenamiento
-2. ✅ Registrar métricas finales
-3. ✅ Validar integración con `test_detector_integration.py`
-4. ✅ Generar esta documentación completa
+### Completado en mayo 2026 ✅
+1. ✅ Migración a PyTorch 2.11+cu128 (soporte RTX 5070 Blackwell)
+2. ✅ Instalación PaddlePaddle-GPU 3.0.0 y PaddleOCR 3.5.0
+3. ✅ Resolución del bug de DLLs CUDA en Windows (WinError 127)
+4. ✅ Pipeline configurado para usar GPU por defecto (`device: cuda`)
+5. ✅ Verificación completa: PyTorch + Paddle + PaddleOCR + YOLOv8 en GPU
+
+### Inmediato
+- [ ] Ejecutar entrenamiento con GPU: `python -m vision_ocr_pipeline train short`
+- [ ] Validar inferencia GPU: `python -m vision_ocr_pipeline run infer --source inputs/raw --debug`
+- [ ] Medir speedup real GPU vs CPU en inferencia
 
 ### Corto Plazo (1-2 semanas)
-- [ ] Evaluar con dataset test (46,573 imágenes)
+- [ ] Evaluar con dataset test (46,573 imágenes) en GPU
+- [ ] Re-entrenar con GPU (train full-gpu, 50 épocas, ~3-5 horas)
 - [ ] Ajustar umbrales de confianza
-- [ ] Optimizar postprocesamiento OCR para caracteres específicos chilenos
-- [ ] Crear dataset chileno anotado (transfer learning)
+- [ ] Optimizar postprocesamiento OCR para caracteres chilenos
 
 ### Medio Plazo (1-3 meses)
-- [ ] PyTorch 2.6+ disponible → Re-entrenamiento con GPU (5-10x más rápido)
-- [ ] 50+ épocas con arquitectura optimizada
-- [ ] Fine-tuning en placas chilenas reales
-- [ ] Benchmarking: velocidad vs. precisión
+- [ ] Fine-tuning en dataset de placas chilenas reales
+- [ ] Benchmarking: velocidad GPU vs CPU vs precisión
+- [ ] Explorar PaddlePaddle 3.1+ cuando tenga soporte oficial Blackwell
 
 ### Largo Plazo (3-6 meses)
-- [ ] Deployment en servidor
-- [ ] API REST para inferencia
-- [ ] Caché de modelos distribuido
-- [ ] A/B testing de versiones de modelos
+- [ ] Deployment en servidor con GPU
+- [ ] API REST para inferencia en tiempo real
 - [ ] Monitoreo en producción (drift detection)
 
 ---
@@ -1073,28 +1121,32 @@ Fase 2-7: Entrenamiento (6 épocas, ~3 horas)
 
 ## Resumen Ejecutivo
 
-Este proyecto implementa un **pipeline de detección y OCR de placas vehiculares** completamente modular, CPU-compatible y escalable. A través de 8 fases de desarrollo:
+Este proyecto implementa un **pipeline de detección y OCR de placas vehiculares** completamente modular, acelerado por GPU y compatible con Python 3.12. Las 9 fases de desarrollo:
 
-1. ✅ Ambiente configurado con Python 3.12 + dependencias ML
+1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML
 2. ✅ 1,000 imágenes sintéticas generadas
 3. ✅ Dataset público CCPD (310k imágenes) descargado y procesado
 4. ✅ Conversión a formato YOLO completada (310k labels)
 5. ✅ Splits train/val/test generados (217k/47k/47k)
 6. ✅ Smoke test de entrenamiento validado (2 épocas)
-7. ✅ Investigación GPU realizada (Blackwell pendiente PyTorch 2.6+)
-8. ⏳ Entrenamiento principal en progreso (6 épocas, 310k imágenes)
+7. ✅ CLI unificado implementado (generate/train/run/verify)
+8. ✅ **Migración GPU completa** — PyTorch 2.11+cu128 · Paddle-GPU 3.0 · PaddleOCR 3.5
+9. ⏳ Entrenamiento completo en GPU pendiente (50+ épocas estimadas, ~3-5 horas)
 
-El sistema alcanzará producción con:
-- Modelo YOLOv8 entrenado en 310k imágenes reales
-- Auto-detección de modelos mejorados
-- Pipeline de dos etapas (detección → OCR) validado
-- Salida JSON + imagen anotada
-- Escalabilidad futura a GPU (5-10x aceleración)
+### Stack Tecnológico Final
 
-**Fecha de Documentación:** 3 de mayo de 2026  
-**Versión del Proyecto:** 0.8 (beta post-entrenamiento)  
-**Estado de Producción:** Beta → Ready for evaluation
+| Componente | Versión | Aceleración |
+|---|---|---|
+| Python | 3.12.10 | — |
+| YOLOv8 (ultralytics) | 8.4.46 | GPU ✅ |
+| PyTorch | 2.11.0+cu128 | RTX 5070 ✅ |
+| PaddlePaddle | 3.0.0 GPU | RTX 5070 ✅ |
+| PaddleOCR | 3.5.0 | GPU vía Paddle ✅ |
+
+**Fecha de Documentación:** 3 de mayo de 2026 · Actualizada: 17 de mayo de 2026  
+**Versión del Proyecto:** 0.9 (GPU-ready)  
+**Estado de Producción:** GPU habilitada — listo para entrenamiento de producción
 
 ---
 
-*Documentación generada automáticamente. Actualizar métricas finales cuando se complete el entrenamiento.*
+*Próximo paso recomendado: `python -m vision_ocr_pipeline train full-gpu` para entrenamiento de 50+ épocas en RTX 5070.*

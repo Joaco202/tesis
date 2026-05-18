@@ -5,15 +5,18 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "vision-ocr-pipeline"
 version = "0.1.0"
-description = "CPU-first YOLOv8 + OpenCV + PaddleOCR pipeline"
+description = "GPU-accelerated YOLOv8 + OpenCV + PaddleOCR pipeline (RTX 5070 / Blackwell ready)"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 authors = [{ name = "Proyecto Tesis" }]
 dependencies = [
+  # PyTorch 2.7+ con CUDA 12.8: instalar con --index-url https://download.pytorch.org/whl/cu128
+  # torch>=2.7.0 no se declara aqui porque requiere index especial; ver setup.ps1
   "ultralytics>=8.3.0",
   "opencv-python-headless==4.10.0.84",
-  "paddleocr==2.8.1",
-  "paddlepaddle==2.6.2",
+  "paddleocr>=2.8.1",
+  # PaddlePaddle GPU 3.x: instalar desde https://www.paddlepaddle.org.cn/packages/stable/cu126/
+  # paddlepaddle-gpu==3.0.0 no se declara aqui porque requiere index especial; ver setup.ps1
   "pydantic>=2.9.0",
   "pyyaml>=6.0.2",
   "numpy>=1.26.0,<2.0",

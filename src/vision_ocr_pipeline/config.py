@@ -38,7 +38,7 @@ class DetectionConfig(BaseModel):
 
 
 class RuntimeConfig(BaseModel):
-    device: str = "cpu"
+    device: str = "cuda"
     save_annotated: bool = True
     default_camera_id: str = "cam-acceso-1"
     default_event_type: str = "entrada"
