@@ -41,8 +41,8 @@ class YoloDetector:
         
         runs_dir = Path("runs/detect")
         if runs_dir.exists():
-            # Look for latest training run with best.pt
-            models = sorted(runs_dir.glob("train-*/weights/best.pt"), key=lambda x: x.stat().st_mtime, reverse=True)
+            # Look for latest training run with best.pt recursively
+            models = sorted(runs_dir.glob("**/weights/best.pt"), key=lambda x: x.stat().st_mtime, reverse=True)
             if models:
                 return str(models[0].absolute())
         

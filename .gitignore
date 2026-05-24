@@ -58,3 +58,5 @@ train_quick.txt
 .env
 .env.*
 *.env
+
+PROJECT_SUMMARY.md

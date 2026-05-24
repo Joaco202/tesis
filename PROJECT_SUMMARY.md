@@ -1,6 +1,6 @@
 # Vision + OCR Pipeline para Detección de Placas - Documentación Completa
 
-**Fecha de generación:** Mayo 3, 2026 · **Última actualización:** 17 de mayo de 2026  
+**Fecha de generación:** Mayo 3, 2026 · **Última actualización:** 24 de mayo de 2026  
 **Proyecto:** tesis (Detección de placas vehiculares con visión por computadora y reconocimiento óptico de caracteres)  
 **Estado:** ✅ GPU habilitada — PyTorch 2.11+cu128 · PaddleOCR 3.5.0 · PaddlePaddle-GPU 3.0.0 · Python 3.12.10
 
@@ -53,41 +53,45 @@ nvidia-cuda-nvrtc-cu12==12.9.86  # NVRTC para resolución de DLLs CUDA
 
 ```
 tesis/
-├── config.yaml                    # Configuración global
-├── pyproject.toml                 # Metadata del proyecto
-├── requirements.txt               # Dependencias de producción
-├── requirements-dev.txt           # Dependencias de desarrollo
-├── README.md                      # Documentación inicial
-├── yolov8n.pt                     # Modelo preentrenado YOLOv8 Nano
+├── backend/                        # Directorio principal del backend (IA y base de datos)
+│   ├── config.yaml                 # Configuración global
+│   ├── pyproject.toml              # Metadata del proyecto Python
+│   ├── requirements.txt            # Dependencias de producción
+│   ├── requirements-dev.txt        # Dependencias de desarrollo
+│   ├── yolov8n.pt                  # Modelo preentrenado YOLOv8 Nano
+│   ├── yolo26n.pt                  # Pesos adicionales
+│   ├── .venv/                      # Entorno virtual de Python
+│   │
+│   ├── src/vision_ocr_pipeline/    # Código fuente principal
+│   │   ├── __init__.py
+│   │   ├── __main__.py             # Entry point del paquete
+│   │   ├── pipeline.py             # Pipeline de dos etapas
+│   │   ├── postprocess.py          # Postprocesamiento de OCR
+│   │   ├── repository.py           # Persistencia Supabase
+│   │   └── db.py                   # Inicialización de BD
+│   │
+│   ├── scripts/                    # Scripts de utilidad
+│   │   ├── archived/               # Scripts legacy e históricos
+│   │   └── debug_inspect_image5.py
+│   │
+│   ├── data/plates/                # Dataset de placas
+│   │   ├── images/                 # Imágenes sintéticas y CCPD
+│   │   ├── labels/                 # Archivos de labels en formato YOLO
+│   │   └── data.yaml               # Config de YOLO (rutas corregidas)
+│   │
+│   ├── runs/detect/                # Outputs de entrenamiento de YOLOv8
+│   │   └── runs/detect/train-gpu-rtx5070/ # Pesos entrenados finales (50 épocas)
+│   │
+│   └── sql/schema.sql              # Schema de base de datos PostgreSQL
 │
-├── src/vision_ocr_pipeline/       # Paquete principal
-│   ├── __init__.py
-│   ├── __main__.py               # Entry point del paquete
-│   ├── pipeline.py               # Pipeline de dos etapas
-│   ├── postprocess.py            # Postprocesamiento de OCR
-│   ├── repository.py             # Persistencia Supabase
-│   └── db.py                     # Inicialización de BD
+├── frontend/                       # Aplicación web interactiva (React + Vite)
+│   ├── src/                        # Componentes, vistas e integración Supabase
+│   ├── package.json                # Configuración npm
+│   └── .env                        # Credenciales de Supabase Client
 │
-├── scripts/                       # Scripts de utilidad
-│   ├── process_ccpd.py           # Extrae y convierte dataset CCPD
-│   └── test_detector_integration.py # Validación del pipeline
-├── data/plates/                  # Dataset de placas
-│   ├── images/
-│   │   ├── synthetic/            # 1,000 imágenes sintéticas (generadas)
-│   │   └── ccpd/                 # 310,482 imágenes CCPD (descargadas)
-│   ├── labels/
-│   │   └── ccpd/                 # 310,482 archivos de label YOLO (.txt)
-│   └── data.yaml                 # Config YOLO (rutas absolutas)
-│
-├── runs/detect/                  # Outputs de entrenamiento
-│   ├── train-3/                  # Smoke test (2 épocas, 5k sample)
-│   └── train-quick-6epochs/      # En progreso (6 épocas, 310k full)
-│
-├── outputs/                      # Resultados de pipeline
-│   ├── imagen.json               # Ejemplo de salida JSON
-│   └── sample.json               # Ejemplo de salida JSON
-│
-└── sql/schema.sql                # Schema de base de datos
+├── README.md                       # Documentación inicial del proyecto completo
+├── PROJECT_SUMMARY.md              # Documentación técnica completa (este archivo)
+└── APT_JoaquinContreras.pdf        # Documento de tesis
 ```
 
 ---
@@ -493,6 +497,57 @@ runs/detect/train-quick-6epochs/
 ├── results.png      # Gráficos de loss/accuracy
 └── events.out.tfevents...  # Logs TensorBoard
 ```
+
+---
+
+### Fase 9: Entrenamiento Final en GPU - 50 Épocas (Completado Mayo 2026)
+
+**Objetivo:** Obtener un detector de placas de alta precisión aprovechando la potencia de la GPU RTX 5070 (arquitectura Blackwell).
+
+**Configuración:**
+- **Modelo:** YOLOv8 Nano (3.01M de parámetros)
+- **Épocas:** 50
+- **Batch size:** 32 (GPU optimizado)
+- **Dispositivo:** GPU (NVIDIA GeForce RTX 5070 con CUDA 12.8)
+- **Pesos generados:** `backend/runs/detect/runs/detect/train-gpu-rtx5070/weights/best.pt`
+
+**Métricas Finales en Época 50:**
+- **Precisión (P):** `0.999`
+- **Recall (R):** `0.999`
+- **mAP@0.5:** `0.994`
+- **mAP@0.5-0.95:** `0.762`
+- **Box Loss (Val):** `0.912`
+- **Cls Loss (Val):** `0.279`
+
+---
+
+### Fase 10: Desarrollo del Frontend e Integración Real con Supabase (Completado Mayo 2026)
+
+**Objetivo:** Desarrollar un panel de control web en tiempo real para guardias y directores TI, utilizando la base de datos Supabase como núcleo de persistencia.
+
+**Stack Utilizado:**
+- **Base:** Vite + React.js (JavaScript)
+- **Estilos:** CSS Puro con estética Glassmorphism, adaptada a la paleta institucional de la UBB (Azul/Naranja), soporte para modo oscuro automático.
+- **KPIs y Gráficos:** Implementación interactiva de gráficos de línea y área con Recharts.
+- **Iconografía:** Lucide React.
+
+**Características Clave:**
+1. **Autenticación e Identidad:** [AuthContext.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/context/AuthContext.jsx) implementa resolución de roles cruzando la tabla `usuarios` con la tabla `roles` en Supabase. Se restringe el acceso de forma segura según el rol (`guardia`, `encargado` o `admin`).
+2. **Dashboard de Guardia:** [GuardDashboard.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/GuardDashboard.jsx) ofrece una vista viva de Entradas y Salidas hoy, la capacidad actual de Aula Magna, y una tabla de flujo de vehículos con suscripción web sockets a la tabla `accesos` para actualizaciones instantáneas.
+3. **Panel de Encargado (Manager):** [ManagerDashboard.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/ManagerDashboard.jsx) calcula de forma dinámica en el cliente la ocupación pico del día, el número de vehículos únicos, la estadía promedio de los automóviles, y renderiza gráficos de ocupación por horas.
+4. **Gestión de Incidencias:** Se diseñó un panel interactivo que permite modificar el estado de las incidencias en tiempo real con un clic (`abierta` ➔ `en_revision` ➔ `cerrada`). Cuenta con un modal para registrar nuevas incidencias y aplica una lógica de auto-registro (`upsert`) sobre la patente en la tabla `vehiculos` para evitar fallas por restricciones de clave foránea.
+
+---
+
+### Fase 11: Reorganización del Repositorio en Subcarpetas (Completado Mayo 2026)
+
+**Objetivo:** Reestructurar el repositorio en directorios `/backend` y `/frontend` independientes para una mejor separación de responsabilidades y modularidad.
+
+**Acciones Tomadas:**
+1. **Migración de Archivos:** Traslado completo del código del pipeline de visión por computadora, entorno virtual de Python (`.venv`), scripts históricos, logs de ejecución, base de datos SQL y datasets (`data/plates`) a la subcarpeta `/backend`.
+2. **Corrección del Entorno Virtual (.venv):** Modificación de los scripts de activación (`activate.bat`, `activate`) y del archivo `pyvenv.cfg` para apuntar correctamente al nuevo directorio base `/backend/.venv`. Re-enlace del pipeline usando `pip install -e .` desde el directorio `/backend`.
+3. **Parchado de Rutas en Dataset (YOLO):** Corrección masiva de rutas absolutas de Windows dentro de [data.yaml](file:///c:/Users/joako/Documents/GitHub/tesis/backend/data/plates/data.yaml), y los archivos de splits (`train.txt`, `val.txt`, `test.txt`), inyectando el prefijo `/backend/` para evitar que la biblioteca Ultralytics pierda la referencia al dataset al entrenar.
+4. **Ajuste del CLI y verify_cuda:** Modificación de [cli.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/src/vision_ocr_pipeline/cli.py) para redirigir imports hacia `scripts.archived` y envoltura del script de comprobación CUDA [verify_cuda.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/scripts/archived/verify_cuda.py) dentro de una función `main()` para compatibilidad con la CLI.
 
 ---
 
@@ -956,14 +1011,14 @@ database:
   key: "${SUPABASE_KEY}"
 ```
 
-### 10.2 `data/plates/data.yaml` (YOLO)
+### 10.2 `backend/data/plates/data.yaml` (YOLO)
 
 ```yaml
 # YOLO Dataset Configuration
-path: C:/Users/joako/Documents/GitHub/tesis/data/plates
-train: C:/Users/joako/Documents/GitHub/tesis/data/plates/train.txt
-val: C:/Users/joako/Documents/GitHub/tesis/data/plates/val.txt
-test: C:/Users/joako/Documents/GitHub/tesis/data/plates/test.txt
+path: C:/Users/joako/Documents/GitHub/tesis/backend/data/plates
+train: C:/Users/joako/Documents/GitHub/tesis/backend/data/plates/train.txt
+val: C:/Users/joako/Documents/GitHub/tesis/backend/data/plates/val.txt
+test: C:/Users/joako/Documents/GitHub/tesis/backend/data/plates/test.txt
 
 # Classes
 nc: 1
@@ -1017,6 +1072,27 @@ Solución (3 pasos):
      del bloque Windows (DLLs ya en memoria por el paso 2)
 ```
 
+### Problema 7: Bloqueo de archivos en Windows al mover el entorno virtual (.venv) ✅ Resuelto
+```
+Error: PermissionError: [WinError 5] Acceso denegado
+Causa: No es posible reubicar la carpeta .venv mediante un script de Python si dicho script se ejecuta bajo el propio intérprete de ese entorno virtual (archivos dll y executables en uso).
+Solución: Delegar el movimiento físico de la carpeta .venv a un proceso PowerShell independiente de la instancia activa de Python.
+```
+
+### Problema 8: UnicodeEncodeError imprimiendo en consolas Windows (CP1252) ✅ Resuelto
+```
+Error: UnicodeEncodeError: 'charmap' codec can't encode character '\u2717' in position X
+Causa: La biblioteca Rich utiliza caracteres de formato Unicode (como "✗") para logs interactivos, lo cual causa errores al intentar imprimirlos en terminales Windows por defecto bajo codificación CP1252.
+Solución: Forzar el uso del modo UTF-8 en el intérprete de Python mediante la bandera '-X utf8' (ej: python -X utf8 -m vision_ocr_pipeline).
+```
+
+### Problema 9: Falla de Clave Foránea en Base de Datos al Registrar Incidencias de Patentes Nuevas ✅ Resuelto
+```
+Error: insert or update on table "incidencias" violates foreign key constraint "incidencias_patente_fkey"
+Causa: Al intentar reportar una incidencia para un vehículo cuya patente no existía previamente en la tabla "vehiculos", la base de datos rechazaba la operación por integridad referencial.
+Solución: Modificar el flujo del frontend (y asegurar la lógica en el backend) implementando una inserción previa o autoguardado ("upsert") del vehículo utilizando la patente antes de persistir el registro de la incidencia.
+```
+
 ---
 
 ## 12. Próximos Pasos
@@ -1027,21 +1103,18 @@ Solución (3 pasos):
 3. ✅ Resolución del bug de DLLs CUDA en Windows (WinError 127)
 4. ✅ Pipeline configurado para usar GPU por defecto (`device: cuda`)
 5. ✅ Verificación completa: PyTorch + Paddle + PaddleOCR + YOLOv8 en GPU
-
-### Inmediato
-- [ ] Ejecutar entrenamiento con GPU: `python -m vision_ocr_pipeline train short`
-- [ ] Validar inferencia GPU: `python -m vision_ocr_pipeline run infer --source inputs/raw --debug`
-- [ ] Medir speedup real GPU vs CPU en inferencia
+6. ✅ Entrenamiento final de 50 épocas completado en GPU
+7. ✅ Desarrollo de frontend interactivo React + Vite con estilos UBB
+8. ✅ Integración total en tiempo real con Supabase en todos los dashboards
+9. ✅ Reorganización de directorios en carpetas independientes `/backend` y `/frontend`
 
 ### Corto Plazo (1-2 semanas)
-- [ ] Evaluar con dataset test (46,573 imágenes) en GPU
-- [ ] Re-entrenar con GPU (train full-gpu, 50 épocas, ~3-5 horas)
-- [ ] Ajustar umbrales de confianza
-- [ ] Optimizar postprocesamiento OCR para caracteres chilenos
+- [ ] Optimizar postprocesamiento OCR para caracteres chilenos específicos (letras e identificadores)
+- [ ] Registrar y testear múltiples patentes de prueba en Supabase usando el pipeline real
 
 ### Medio Plazo (1-3 meses)
 - [ ] Fine-tuning en dataset de placas chilenas reales
-- [ ] Benchmarking: velocidad GPU vs CPU vs precisión
+- [ ] Benchmarking exhaustivo: velocidad GPU vs CPU vs precisión
 - [ ] Explorar PaddlePaddle 3.1+ cuando tenga soporte oficial Blackwell
 
 ### Largo Plazo (3-6 meses)
@@ -1068,11 +1141,11 @@ Solución (3 pasos):
 
 ---
 
-## 14. Estado Final - Actualizar después de entrenamiento
+## 14. Estado Final
 
-### Entrenamiento: 6 Épocas en Dataset Completo
+### Entrenamiento: 50 Épocas en GPU (Dataset Completo)
 
-**Estado:** ⏳ EN PROGRESO
+**Estado:** ✅ COMPLETADO
 
 **Parámetros:**
 ```
@@ -1083,70 +1156,62 @@ Dataset: CCPD2019 (310,482 imágenes)
 
 Modelo: YOLOv8 Nano (3.01M parameters)
 Configuración:
-  - Epochs: 6
-  - Batch size: 8 (CPU)
+  - Epochs: 50
+  - Batch size: 32
   - Image size: 1280x1280
   - Optimizer: AdamW
-  - Device: CPU (Ryzen 7 9800X3D)
+  - Device: GPU (RTX 5070 / CUDA 12.8)
   - Cache: Enabled
   - LR: cosine annealing
 ```
 
-**Progreso:**
-```
-Fase 1: Dataset Scanning (~1 hora)
-  - Status: EN PROGRESO (~55% completo)
-  - Tiempo restante: 20-30 minutos
-
-Fase 2-7: Entrenamiento (6 épocas, ~3 horas)
-  - Época 1-6: ~30 min/época
-```
-
-**Tiempo Total Estimado:** 4-5 horas desde inicio  
-**ETA de Finalización:** [ACTUALIZAR CUANDO COMPLETE]
-
 **Modelos Generados:**
-- ✅ `runs/detect/train-quick-6epochs/weights/best.pt` (por generar)
-- ✅ `runs/detect/train-quick-6epochs/weights/last.pt` (por generar)
+- ✅ `backend/runs/detect/runs/detect/train-gpu-rtx5070/weights/best.pt`
+- ✅ `backend/runs/detect/runs/detect/train-gpu-rtx5070/weights/last.pt`
 
-**Métricas Esperadas (por registrar):**
-- Precisión (P): [pendiente]
-- Recall (R): [pendiente]
-- mAP@0.5: [pendiente]
-- mAP@0.5-95: [pendiente]
-- Training loss: [pendiente]
-- Validation loss: [pendiente]
+**Métricas Finales (Validación Época 50):**
+- **Precisión (P):** `0.999`
+- **Recall (R):** `0.999`
+- **mAP@0.5:** `0.994`
+- **mAP@0.5-95:** `0.762`
+- **Box Loss (Val):** `0.912`
+- **Cls Loss (Val):** `0.279`
 
 ---
 
 ## Resumen Ejecutivo
 
-Este proyecto implementa un **pipeline de detección y OCR de placas vehiculares** completamente modular, acelerado por GPU y compatible con Python 3.12. Las 9 fases de desarrollo:
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 11 fases de desarrollo completadas son:
 
-1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML
-2. ✅ 1,000 imágenes sintéticas generadas
-3. ✅ Dataset público CCPD (310k imágenes) descargado y procesado
-4. ✅ Conversión a formato YOLO completada (310k labels)
-5. ✅ Splits train/val/test generados (217k/47k/47k)
-6. ✅ Smoke test de entrenamiento validado (2 épocas)
-7. ✅ CLI unificado implementado (generate/train/run/verify)
-8. ✅ **Migración GPU completa** — PyTorch 2.11+cu128 · Paddle-GPU 3.0 · PaddleOCR 3.5
-9. ⏳ Entrenamiento completo en GPU pendiente (50+ épocas estimadas, ~3-5 horas)
+1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
+2. ✅ 1,000 imágenes sintéticas generadas.
+3. ✅ Dataset público CCPD (310k imágenes) descargado y procesado.
+4. ✅ Conversión a formato YOLO completada (310k labels).
+5. ✅ Splits train/val/test generados (217k/47k/47k).
+6. ✅ Smoke test de entrenamiento validado (2 épocas).
+7. ✅ CLI unificado en Python (generate/train/run/verify).
+8. ✅ **Migración GPU completa** — PyTorch 2.11+cu128 · Paddle-GPU 3.0 · PaddleOCR 3.5.
+9. ✅ **Entrenamiento GPU final completado** — 50 épocas en GPU (RTX 5070) con métricas superiores.
+10. ✅ **Frontend corporativo UBB integrado con Supabase** — Dashboards dinámicos en tiempo real y flujo de incidencias.
+11. ✅ **Reorganización física del proyecto** — Separación en carpetas independientes `/backend` y `/frontend`.
 
 ### Stack Tecnológico Final
 
-| Componente | Versión | Aceleración |
+| Componente | Versión | Aceleración / Rol |
 |---|---|---|
-| Python | 3.12.10 | — |
-| YOLOv8 (ultralytics) | 8.4.46 | GPU ✅ |
-| PyTorch | 2.11.0+cu128 | RTX 5070 ✅ |
-| PaddlePaddle | 3.0.0 GPU | RTX 5070 ✅ |
-| PaddleOCR | 3.5.0 | GPU vía Paddle ✅ |
+| Python | 3.12.10 | Backend Core |
+| YOLOv8 (ultralytics) | 8.4.46 | GPU (RTX 5070) ✅ |
+| PyTorch | 2.11.0+cu128 | GPU (RTX 5070) ✅ |
+| PaddlePaddle | 3.0.0 GPU | GPU (RTX 5070) ✅ |
+| PaddleOCR | 3.5.0 | GPU (RTX 5070) ✅ |
+| React + Vite | 8.0 / 18.x | Frontend Web |
+| Supabase | Client JS | Real-Time DB (PostgreSQL) |
 
-**Fecha de Documentación:** 3 de mayo de 2026 · Actualizada: 17 de mayo de 2026  
-**Versión del Proyecto:** 0.9 (GPU-ready)  
-**Estado de Producción:** GPU habilitada — listo para entrenamiento de producción
+**Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 24 de mayo de 2026  
+**Versión del Proyecto:** 1.0 (Producción-ready)  
+**Estado de Producción:** ✅ Totalmente operativo  
 
 ---
 
-*Próximo paso recomendado: `python -m vision_ocr_pipeline train full-gpu` para entrenamiento de 50+ épocas en RTX 5070.*
+*Para ejecutar el pipeline en GPU:*
+`cd backend && .\.venv\Scripts\activate && python -m vision_ocr_pipeline run infer --source inputs/raw --debug`

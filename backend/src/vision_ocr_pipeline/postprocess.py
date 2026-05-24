@@ -10,9 +10,9 @@ from .config import DEFAULT_CONFIG
 
 
 PLATE_PATTERNS = [
-    re.compile(r"^[A-Z]{4}[0-9]{2}$"),
-    re.compile(r"^[A-Z]{2}[0-9]{4}$"),
-    re.compile(r"^[A-Z]{2}[A-Z]{2}[0-9]{2}$"),
+    re.compile(r"^[B-DF-HJ-NP-TV-Z]{4}[0-9]{2}$"),  # Patente nueva chilena (consonantes)
+    re.compile(r"^[A-Z]{4}[0-9]{2}$"),              # Patente nueva general (tolerancia OCR)
+    re.compile(r"^[A-Z]{2}[0-9]{4}$"),              # Patente vieja chilena
 ]
 
 
@@ -117,44 +117,64 @@ def _try_fix_confusions(candidate: str) -> str | None:
 
 
 def _force_plate_format(candidate: str) -> str | None:
-    """Intento dirigido: para cadenas de longitud 6, forzar formato `LLLLDD` (4 letras + 2 dígitos)
-    aplicando sustituciones posicionadas usando el mapa de confusiones. Esto ayuda cuando
-    el OCR mezcla la parte letra/dígito en posiciones predecibles.
+    """Intento dirigido: para cadenas de longitud 6, evaluar si se asemeja más a una patente nueva
+    (LLLLDD) o a una patente antigua (LLDDDD) y aplicar el mapa de sustituciones correspondientemente.
     """
     if not candidate or len(candidate) != 6:
         return None
 
     cfg_map = getattr(DEFAULT_CONFIG.ocr, "confusion_map", {})
-    aggressive = getattr(DEFAULT_CONFIG.ocr, "aggressive_confusion", False)
-    # construir reverse map (letter->digit) para intentar convertir últimas posiciones a dígitos
     reverse_map = {v: k for k, v in cfg_map.items()}
+
+    # Evaluar afinidad con LLLLDD (Nueva)
+    # Posiciones 0, 1, 2, 3: letras (o dígitos mapeables a letras)
+    # Posiciones 4, 5: dígitos (o letras mapeables a dígitos)
+    score_new = 0
+    for i in range(4):
+        if candidate[i].isalpha() or candidate[i] in cfg_map:
+            score_new += 1
+    for i in range(4, 6):
+        if candidate[i].isdigit() or candidate[i] in reverse_map:
+            score_new += 1
+
+    # Evaluar afinidad con LLDDDD (Antigua)
+    # Posiciones 0, 1: letras (o dígitos mapeables a letras)
+    # Posiciones 2, 3, 4, 5: dígitos (o letras mapeables a dígitos)
+    score_old = 0
+    for i in range(2):
+        if candidate[i].isalpha() or candidate[i] in cfg_map:
+            score_old += 1
+    for i in range(2, 6):
+        if candidate[i].isdigit() or candidate[i] in reverse_map:
+            score_old += 1
 
     s = list(candidate)
     changed = False
 
-    # Primeras 4 posiciones: asegurar letras (si son dígitos, convertir usando cfg_map)
-    for i in range(4):
-        ch = s[i]
-        if ch.isdigit() and ch in cfg_map:
-            s[i] = cfg_map[ch]
-            changed = True
-        elif ch.isalpha():
-            continue
-        elif aggressive and ch in reverse_map:
-            # si modo agresivo y el char es una letra que tiene reverse->digit, prefer letra so skip
-            continue
-
-    # Últimas 2 posiciones: asegurar dígitos (si son letras, convertir con reverse_map)
-    for i in range(4, 6):
-        ch = s[i]
-        if ch.isalpha() and ch in reverse_map:
-            s[i] = reverse_map[ch]
-            changed = True
-        elif ch.isdigit():
-            continue
-        elif aggressive and ch in cfg_map:
-            # si modo agresivo y es dígito que tiene map->letter, skip
-            continue
+    if score_new >= score_old:
+        # Forzar formato LLLLDD (Nuevo)
+        for i in range(4):
+            ch = s[i]
+            if ch.isdigit() and ch in cfg_map:
+                s[i] = cfg_map[ch]
+                changed = True
+        for i in range(4, 6):
+            ch = s[i]
+            if ch.isalpha() and ch in reverse_map:
+                s[i] = reverse_map[ch]
+                changed = True
+    else:
+        # Forzar formato LLDDDD (Antiguo)
+        for i in range(2):
+            ch = s[i]
+            if ch.isdigit() and ch in cfg_map:
+                s[i] = cfg_map[ch]
+                changed = True
+        for i in range(2, 6):
+            ch = s[i]
+            if ch.isalpha() and ch in reverse_map:
+                s[i] = reverse_map[ch]
+                changed = True
 
     candidate_forced = "".join(s)
     if changed and any(p.match(candidate_forced) for p in PLATE_PATTERNS):
