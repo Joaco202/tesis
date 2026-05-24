@@ -37,13 +37,17 @@ export const AuthProvider = ({ children }) => {
   const fetchUserRole = async (userId) => {
     try {
       const { data, error } = await supabase
-        .from('users') // Asumiendo tabla users para roles
-        .select('role')
+        .from('usuarios')
+        .select('rol_id, roles ( nombre )')
         .eq('id', userId)
         .single();
       
-      if (data) setRole(data.role);
-      else setRole('guardia'); // Fallback default
+      if (data && data.roles && data.roles.nombre) {
+        setRole(data.roles.nombre);
+      } else {
+        if (error) console.warn('Error fetching user role:', error);
+        setRole('guardia'); // Fallback default
+      }
     } catch (error) {
       console.warn('Error fetching role, defaulting to guardia:', error);
       setRole('guardia'); // Fallback if table doesn't exist yet

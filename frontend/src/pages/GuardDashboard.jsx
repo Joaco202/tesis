@@ -4,7 +4,8 @@ import { format } from 'date-fns';
 import { supabase } from '../lib/supabase';
 
 export const GuardDashboard = () => {
-  const [occupancy, setOccupancy] = useState({ current: 44, max: 130 });
+  const [occupancy, setOccupancy] = useState({ current: 0, max: 50 });
+  const [dailyTotals, setDailyTotals] = useState({ entries: 0, exits: 0 });
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState('');
 
@@ -12,7 +13,11 @@ export const GuardDashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // 1. Fetch Occupancy Count
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const todayIso = startOfToday.toISOString();
+
+        // 1. Fetch Occupancy Count (vehículos actualmente dentro en Aula Magna)
         const { count, error: countError } = await supabase
           .from('accesos')
           .select('*', { count: 'exact', head: true })
@@ -22,7 +27,38 @@ export const GuardDashboard = () => {
           setOccupancy(prev => ({ ...prev, current: count }));
         }
 
-        // 2. Fetch Latest Accesses for Timeline
+        // 2. Fetch Aula Magna Capacity
+        const { data: zoneData, error: zoneError } = await supabase
+          .from('zonas')
+          .select('capacidad')
+          .eq('nombre', 'Aula Magna')
+          .single();
+          
+        if (!zoneError && zoneData) {
+          setOccupancy(prev => ({ ...prev, max: zoneData.capacidad }));
+        }
+
+        // 3. Fetch Entries Today
+        const { count: entriesCount, error: entriesError } = await supabase
+          .from('accesos')
+          .select('*', { count: 'exact', head: true })
+          .gte('fecha_entrada', todayIso);
+
+        if (!entriesError && entriesCount !== null) {
+          setDailyTotals(prev => ({ ...prev, entries: entriesCount }));
+        }
+
+        // 4. Fetch Exits Today
+        const { count: exitsCount, error: exitsError } = await supabase
+          .from('accesos')
+          .select('*', { count: 'exact', head: true })
+          .gte('fecha_salida', todayIso);
+
+        if (!exitsError && exitsCount !== null) {
+          setDailyTotals(prev => ({ ...prev, exits: exitsCount }));
+        }
+
+        // 5. Fetch Latest Accesses for Timeline
         const { data, error: dataError } = await supabase
           .from('accesos')
           .select('id, vehiculo_patente, fecha_entrada, fecha_salida, confianza_ocr')
@@ -33,13 +69,15 @@ export const GuardDashboard = () => {
           let timeline = [];
           data.forEach(row => {
             // Entry event
-            timeline.push({
-              id: row.id + '-in',
-              plate: row.vehiculo_patente,
-              type: 'in',
-              timestamp: new Date(row.fecha_entrada),
-              confidence: row.confianza_ocr || 0.95
-            });
+            if (row.fecha_entrada) {
+              timeline.push({
+                id: row.id + '-in',
+                plate: row.vehiculo_patente,
+                type: 'in',
+                timestamp: new Date(row.fecha_entrada),
+                confidence: row.confianza_ocr || 0.95
+              });
+            }
             
             // Exit event
             if (row.fecha_salida) {
@@ -154,13 +192,13 @@ export const GuardDashboard = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#065f46', marginBottom: '0.5rem' }}>
                 <ArrowRight size={18} /> Entradas
               </div>
-              <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>142</p>
+              <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>{dailyTotals.entries}</p>
             </div>
             <div style={{ padding: '1rem', backgroundColor: 'var(--status-warning-bg)', borderRadius: 'var(--radius-md)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#92400e', marginBottom: '0.5rem' }}>
                 <ArrowLeft size={18} /> Salidas
               </div>
-              <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>89</p>
+              <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>{dailyTotals.exits}</p>
             </div>
           </div>
         </div>

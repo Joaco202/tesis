@@ -47,7 +47,7 @@ def generate_synthetic(
 ) -> None:
     """Generate synthetic license plate images for training."""
     try:
-        from scripts.generate_synthetic_plates import main as gen_main
+        from scripts.archived.generate_synthetic_plates import main as gen_main
         sys.argv = ["generate_synthetic", str(count), str(output)]
         gen_main()
         console.print(f"[green]✓ Generated {count} synthetic plates → {output}[/green]")
@@ -60,7 +60,7 @@ def generate_synthetic(
 def generate_download() -> None:
     """Download CCPD2019 dataset."""
     try:
-        from scripts.download_ccpd import main as dl_main
+        from scripts.archived.download_ccpd import main as dl_main
         dl_main()
         console.print("[green]✓ CCPD2019 downloaded[/green]")
     except Exception as e:
@@ -74,7 +74,7 @@ def generate_process(
 ) -> None:
     """Convert CCPD2019 annotations to standard format."""
     try:
-        from scripts.process_ccpd import main as proc_main
+        from scripts.archived.process_ccpd import main as proc_main
         sys.argv = ["process_ccpd", str(input_dir)]
         proc_main()
         console.print(f"[green]✓ Processed CCPD2019 from {input_dir}[/green]")
@@ -89,7 +89,7 @@ def generate_convert(
 ) -> None:
     """Convert COCO annotations to YOLO format."""
     try:
-        from scripts.batch_convert_coco import main as conv_main
+        from scripts.archived.batch_convert_coco import main as conv_main
         sys.argv = ["batch_convert_coco", str(input_dir)]
         conv_main()
         console.print(f"[green]✓ Converted COCO → YOLO format[/green]")
@@ -102,7 +102,7 @@ def generate_convert(
 def generate_split() -> None:
     """Create train/val/test splits and data.yaml for YOLO."""
     try:
-        from scripts.create_dataset_yaml_and_splits import main as split_main
+        from scripts.archived.create_dataset_yaml_and_splits import main as split_main
         split_main()
         console.print("[green]✓ Dataset splits and data.yaml created[/green]")
     except Exception as e:
@@ -118,7 +118,7 @@ def generate_split() -> None:
 def train_short() -> None:
     """Quick smoke test (2 epochs) to validate pipeline."""
     try:
-        from scripts.train_yolo_short import main as train_main
+        from scripts.archived.train_yolo_short import main as train_main
         console.print("[cyan]Starting 2-epoch smoke test...[/cyan]")
         train_main()
         console.print("[green]✓ Short training completed[/green]")
@@ -131,7 +131,7 @@ def train_short() -> None:
 def train_quick() -> None:
     """Quick training (6 epochs) for baseline improvement."""
     try:
-        from scripts.train_yolo_quick_6epochs import main as train_main
+        from scripts.archived.train_yolo_quick_6epochs import main as train_main
         console.print("[cyan]Starting 6-epoch quick training...[/cyan]")
         train_main()
         console.print("[green]✓ Quick training completed[/green]")
@@ -144,7 +144,7 @@ def train_quick() -> None:
 def train_full_cpu() -> None:
     """Full training on CPU (slow but portable)."""
     try:
-        from scripts.train_yolo_full_cpu_optimized import main as train_main
+        from scripts.archived.train_yolo_full_cpu_optimized import main as train_main
         console.print("[cyan]Starting full CPU training (this will take a while)...[/cyan]")
         train_main()
         console.print("[green]✓ Full CPU training completed[/green]")
@@ -157,7 +157,7 @@ def train_full_cpu() -> None:
 def train_full_gpu() -> None:
     """Full training on GPU (if available)."""
     try:
-        from scripts.train_yolo_full_gpu import main as train_main
+        from scripts.archived.train_yolo_full_gpu import main as train_main
         console.print("[cyan]Starting full GPU training...[/cyan]")
         train_main()
         console.print("[green]✓ Full GPU training completed[/green]")
@@ -312,7 +312,7 @@ def run_compare(
 ) -> None:
     """Compare base yolov8n.pt vs. best trained model on same images."""
     try:
-        from scripts.compare_models import main as cmp_main
+        from scripts.archived.compare_models import main as cmp_main
         sys.argv = ["compare_models", str(source)]
         cmp_main()
         console.print("[green]✓ Model comparison completed[/green]")
@@ -329,7 +329,7 @@ def run_compare(
 def verify_cuda() -> None:
     """Check CUDA and GPU availability."""
     try:
-        from scripts.verify_cuda import main as verify_main
+        from scripts.archived.verify_cuda import main as verify_main
         verify_main()
     except Exception as e:
         console.print(f"[red]✗ CUDA check failed: {e}[/red]")
