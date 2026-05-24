@@ -103,7 +103,11 @@ class VisionOCRPipeline:
 
         h, w = image.shape[:2]
         use_gpu = self.cfg.runtime.device.startswith("cuda") or self.cfg.runtime.device == "gpu"
-        ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, use_gpu=use_gpu)
+        device_str = "gpu" if use_gpu else "cpu"
+        try:
+            ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, device=device_str)
+        except TypeError:
+            ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, use_gpu=use_gpu)
 
         # Detectar cajas de texto con OCR
         try:
