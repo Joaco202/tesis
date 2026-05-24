@@ -68,10 +68,16 @@ def main() -> None:
         print(f"Error: El directorio {source_dir} no existe.")
         return
 
-    # Buscar imágenes de forma case-insensitive
+    # Buscar imágenes de forma case-insensitive, priorizando WhatsApp
     valid_exts = {".jpg", ".jpeg", ".png"}
-    images = [p for p in source_dir.iterdir() if p.suffix.lower() in valid_exts]
-    images = sorted(images, key=lambda x: x.name)
+    all_images = [p for p in source_dir.iterdir() if p.suffix.lower() in valid_exts]
+    whatsapp_images = [p for p in all_images if "whatsapp" in p.name.lower()]
+    
+    if whatsapp_images:
+        images = sorted(whatsapp_images, key=lambda x: x.name)
+        print(f"Se detectaron imágenes reales de WhatsApp. Priorizando su procesamiento...")
+    else:
+        images = sorted(all_images, key=lambda x: x.name)
 
     if not images:
         print(f"No se encontraron imágenes válidas en {source_dir}.")
@@ -124,6 +130,11 @@ def main() -> None:
                             print(f"    ❌ Error al guardar: {err}")
             else:
                 print(f"  ✗ No se detectó patente válida.")
+                if results:
+                    print("    Detecciones y OCR internos:")
+                    for r_idx, r in enumerate(results, 1):
+                        ocr_txts = ", ".join(f"'{x.text}' ({x.confidence:.2%})" for x in r.ocr)
+                        print(f"      [{r_idx}] Localización: {r.detection.cls_name} ({r.detection.confidence:.2%}) | OCR: {ocr_txts}")
                 print(f"    Tiempo de inferencia: {elapsed:.3f} s")
                 
         except Exception as e:
