@@ -111,7 +111,7 @@ class VisionOCRPipeline:
 
         # Detectar cajas de texto con OCR
         try:
-            raw = ocr.ocr(image, cls=True)
+            raw = ocr.ocr(image)
         except Exception:
             return None
 
@@ -124,14 +124,20 @@ class VisionOCRPipeline:
                 for item in line:
                     if len(item) < 2:
                         continue
-                    poly = item[0]
-                    txt, conf = item[1]
-                    xs = [int(p[0]) for p in poly]
-                    ys = [int(p[1]) for p in poly]
-                    x1, y1, x2, y2 = min(xs), min(ys), max(xs), max(ys)
-                    full_items_with_boxes.append(
-                        (OCRText(text=str(txt), confidence=float(conf)), (x1, y1, x2, y2))
-                    )
+                    try:
+                        poly = item[0]
+                        if isinstance(item[1], (list, tuple)) and len(item[1]) >= 2:
+                            txt, conf = item[1][0], item[1][1]
+                        else:
+                            txt, conf = item[1], 1.0
+                        xs = [int(p[0]) for p in poly]
+                        ys = [int(p[1]) for p in poly]
+                        x1, y1, x2, y2 = min(xs), min(ys), max(xs), max(ys)
+                        full_items_with_boxes.append(
+                            (OCRText(text=str(txt), confidence=float(conf)), (x1, y1, x2, y2))
+                        )
+                    except Exception:
+                        continue
                     bw = max(1, x2 - x1)
                     bh = max(1, y2 - y1)
                     ar = bw / bh
@@ -207,7 +213,7 @@ class VisionOCRPipeline:
                 continue
 
             try:
-                crop_raw = ocr.ocr(crop, cls=True)
+                crop_raw = ocr.ocr(crop)
             except Exception:
                 continue
 
@@ -220,14 +226,20 @@ class VisionOCRPipeline:
                     for item in line:
                         if len(item) < 2:
                             continue
-                        poly = item[0]
-                        text, conf = item[1]
-                        xs = [int(p[0]) for p in poly]
-                        ys = [int(p[1]) for p in poly]
-                        x1b, y1b, x2b, y2b = min(xs), min(ys), max(xs), max(ys)
-                        ocr_text = OCRText(text=str(text), confidence=float(conf))
-                        ocr_items.append(ocr_text)
-                        ocr_items_with_boxes.append((ocr_text, (ex1 + x1b, ey1 + y1b, ex1 + x2b, ey1 + y2b)))
+                        try:
+                            poly = item[0]
+                            if isinstance(item[1], (list, tuple)) and len(item[1]) >= 2:
+                                text, conf = item[1][0], item[1][1]
+                            else:
+                                text, conf = item[1], 1.0
+                            xs = [int(p[0]) for p in poly]
+                            ys = [int(p[1]) for p in poly]
+                            x1b, y1b, x2b, y2b = min(xs), min(ys), max(xs), max(ys)
+                            ocr_text = OCRText(text=str(text), confidence=float(conf))
+                            ocr_items.append(ocr_text)
+                            ocr_items_with_boxes.append((ocr_text, (ex1 + x1b, ey1 + y1b, ex1 + x2b, ey1 + y2b)))
+                        except Exception:
+                            continue
 
             plate_text, plate_conf = best_plate_from_ocr(ocr_items)
             region_score = score_candidate(plate_text, plate_conf)
@@ -250,7 +262,7 @@ class VisionOCRPipeline:
 
         # También evaluar OCR en toda la imagen y comparar contra las regiones.
         try:
-            full_raw = ocr.ocr(image, cls=True)
+            full_raw = ocr.ocr(image)
         except Exception:
             full_raw = None
 
@@ -263,13 +275,19 @@ class VisionOCRPipeline:
                 for item in line:
                     if len(item) < 2:
                         continue
-                    poly = item[0]
-                    text, conf = item[1]
-                    xs = [int(p[0]) for p in poly]
-                    ys = [int(p[1]) for p in poly]
-                    x1, y1, x2, y2 = min(xs), min(ys), max(xs), max(ys)
-                    full_items.append(OCRText(text=str(text), confidence=float(conf)))
-                    full_items_with_boxes.append((OCRText(text=str(text), confidence=float(conf)), (x1, y1, x2, y2)))
+                    try:
+                        poly = item[0]
+                        if isinstance(item[1], (list, tuple)) and len(item[1]) >= 2:
+                            text, conf = item[1][0], item[1][1]
+                        else:
+                            text, conf = item[1], 1.0
+                        xs = [int(p[0]) for p in poly]
+                        ys = [int(p[1]) for p in poly]
+                        x1, y1, x2, y2 = min(xs), min(ys), max(xs), max(ys)
+                        full_items.append(OCRText(text=str(text), confidence=float(conf)))
+                        full_items_with_boxes.append((OCRText(text=str(text), confidence=float(conf)), (x1, y1, x2, y2)))
+                    except Exception:
+                        continue
 
             plate_text, plate_conf = best_plate_from_ocr(full_items)
             full_score = score_candidate(plate_text, plate_conf)

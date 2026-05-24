@@ -108,7 +108,13 @@ class PaddleOCREngine:
             for item in line:
                 if len(item) < 2:
                     continue
-                text, conf = item[1]
-                texts.append(OCRText(text=str(text), confidence=float(conf)))
+                try:
+                    if isinstance(item[1], (list, tuple)) and len(item[1]) >= 2:
+                        text, conf = item[1][0], item[1][1]
+                    else:
+                        text, conf = item[1], 1.0
+                    texts.append(OCRText(text=str(text), confidence=float(conf)))
+                except Exception:
+                    continue
 
         return texts
