@@ -1,0 +1,41 @@
+{
+  "camera_id": "cam-acceso-1",
+  "event_type": "entrada",
+  "timestamp_utc": "2026-05-25T01:28:55.535616+00:00",
+  "total_detections": 1,
+  "events": [
+    {
+      "detection": {
+        "cls_id": -1,
+        "cls_name": "ocr_region_fallback_full",
+        "confidence": 0.8388227224349976,
+        "x1": 673,
+        "y1": 704,
+        "x2": 803,
+        "y2": 758
+      },
+      "ocr": [
+        {
+          "text": "VWSL42",
+          "confidence": 0.8388227224349976
+        }
+      ],
+      "ocr_best_raw_text": "VWSL42",
+      "ocr_best_raw_confidence": 0.8388227224349976,
+      "plate_text": "VWSL42",
+      "plate_confidence": 0.8388227224349976
+    }
+  ],
+  "database": {
+    "enabled": true,
+    "saved_events": [
+      {
+        "plate_text": "VWSL42",
+        "event_type": "entrada",
+        "access_id": 61,
+        "status": "created"
+      }
+    ],
+    "errors": []
+  }
+}

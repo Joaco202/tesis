@@ -39,6 +39,7 @@ class VisionOCRPipeline:
         use_gpu = cfg.runtime.device.startswith("cuda") or cfg.runtime.device == "gpu"
         self.ocr = PaddleOCREngine(cfg.ocr, use_gpu=use_gpu)
         self.repository: SupabaseRepository | None = None
+        self._fallback_ocr = None
 
         if cfg.supabase.enabled:
             client = SupabaseClient(
@@ -102,12 +103,14 @@ class VisionOCRPipeline:
             return None
 
         h, w = image.shape[:2]
-        use_gpu = self.cfg.runtime.device.startswith("cuda") or self.cfg.runtime.device == "gpu"
-        device_str = "gpu" if use_gpu else "cpu"
-        try:
-            ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, device=device_str)
-        except TypeError:
-            ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, use_gpu=use_gpu)
+        use_gpu = False
+        device_str = "cpu"
+        if self._fallback_ocr is None:
+            try:
+                self._fallback_ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, device=device_str)
+            except TypeError:
+                self._fallback_ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, use_gpu=use_gpu)
+        ocr = self._fallback_ocr
 
         # Detectar cajas de texto con OCR
         try:
@@ -261,10 +264,7 @@ class VisionOCRPipeline:
                 )
 
         # También evaluar OCR en toda la imagen y comparar contra las regiones.
-        try:
-            full_raw = normalize_ocr_output(ocr.ocr(image))
-        except Exception:
-            full_raw = None
+        full_raw = raw
 
         if full_raw:
             full_items: list[OCRText] = []

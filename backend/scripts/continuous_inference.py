@@ -168,7 +168,7 @@ def main() -> None:
                                 image_origin=f"video_{source_path.name}_frame_{frame_count}",
                             )
                             if persist_summary.saved_events:
-                                print(f"  ✅ Guardado exitoso. Acceso ID: {persist_summary.saved_events[0].acceso_id}")
+                                print(f"  ✅ Guardado exitoso. Acceso ID: {persist_summary.saved_events[0].access_id}")
                             if persist_summary.errors:
                                 print(f"  ❌ Error: {persist_summary.errors[0]}")
                     else:
@@ -245,7 +245,7 @@ def main() -> None:
                                 image_origin=img_path.name,
                             )
                             if persist_summary.saved_events:
-                                print(f"  ✅ Guardado exitoso. Acceso ID: {persist_summary.saved_events[0].acceso_id}")
+                                print(f"  ✅ Guardado exitoso. Acceso ID: {persist_summary.saved_events[0].access_id}")
                             if persist_summary.errors:
                                 print(f"  ❌ Error: {persist_summary.errors[0]}")
                     else:

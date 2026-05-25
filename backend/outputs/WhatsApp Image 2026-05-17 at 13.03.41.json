@@ -1,0 +1,41 @@
+{
+  "camera_id": "cam-acceso-1",
+  "event_type": "entrada",
+  "timestamp_utc": "2026-05-25T01:41:13.968357+00:00",
+  "total_detections": 1,
+  "events": [
+    {
+      "detection": {
+        "cls_id": -1,
+        "cls_name": "ocr_region_fallback_full",
+        "confidence": 0.8996477723121643,
+        "x1": 393,
+        "y1": 741,
+        "x2": 493,
+        "y2": 783
+      },
+      "ocr": [
+        {
+          "text": "JRFW72",
+          "confidence": 0.8996477723121643
+        }
+      ],
+      "ocr_best_raw_text": "JRFW72",
+      "ocr_best_raw_confidence": 0.8996477723121643,
+      "plate_text": "JRFW72",
+      "plate_confidence": 0.8996477723121643
+    }
+  ],
+  "database": {
+    "enabled": true,
+    "saved_events": [
+      {
+        "plate_text": "JRFW72",
+        "event_type": "entrada",
+        "access_id": 131,
+        "status": "created"
+      }
+    ],
+    "errors": []
+  }
+}

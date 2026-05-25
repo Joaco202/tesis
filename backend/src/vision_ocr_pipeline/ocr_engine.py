@@ -74,14 +74,11 @@ class PaddleOCREngine:
                 "paddleocr no esta instalado. Ejecuta: pip install -r requirements.txt"
             ) from exc
 
-        # Determinar si usar GPU: parámetro explícito > auto-detección
-        gpu_available = _detect_gpu_available() if use_gpu is None else use_gpu
-        device_str = "gpu" if gpu_available else "cpu"
+        # Forzar CPU para PaddleOCR debido a incompatibilidades de precisión en la GPU RTX 5070 con CUDA 12.8
+        gpu_available = False
+        device_str = "cpu"
 
-        if gpu_available:
-            print(f"[INFO] PaddleOCR inicializando en GPU.")
-        else:
-            print("[INFO] PaddleOCR inicializando en CPU (GPU no disponible o no solicitada).")
+        print("[INFO] PaddleOCR inicializando en CPU (GPU desactivada por estabilidad).")
 
         try:
             # PaddleOCR 3.x — usa parámetro `device`

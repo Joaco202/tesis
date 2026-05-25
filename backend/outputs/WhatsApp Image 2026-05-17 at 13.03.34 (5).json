@@ -1,0 +1,41 @@
+{
+  "camera_id": "cam-acceso-1",
+  "event_type": "entrada",
+  "timestamp_utc": "2026-05-25T01:36:43.003861+00:00",
+  "total_detections": 1,
+  "events": [
+    {
+      "detection": {
+        "cls_id": -1,
+        "cls_name": "ocr_region_fallback_full",
+        "confidence": 0.5882686674594879,
+        "x1": 403,
+        "y1": 1042,
+        "x2": 694,
+        "y2": 1075
+      },
+      "ocr": [
+        {
+          "text": "952SONA",
+          "confidence": 0.5882686674594879
+        }
+      ],
+      "ocr_best_raw_text": "952SONA",
+      "ocr_best_raw_confidence": 0.5882686674594879,
+      "plate_text": "952SONA",
+      "plate_confidence": 0.5882686674594879
+    }
+  ],
+  "database": {
+    "enabled": true,
+    "saved_events": [
+      {
+        "plate_text": "952SONA",
+        "event_type": "entrada",
+        "access_id": 103,
+        "status": "created"
+      }
+    ],
+    "errors": []
+  }
+}

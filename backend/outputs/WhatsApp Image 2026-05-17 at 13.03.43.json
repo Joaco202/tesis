@@ -1,0 +1,41 @@
+{
+  "camera_id": "cam-acceso-1",
+  "event_type": "entrada",
+  "timestamp_utc": "2026-05-25T01:42:09.718444+00:00",
+  "total_detections": 1,
+  "events": [
+    {
+      "detection": {
+        "cls_id": -1,
+        "cls_name": "ocr_region_fallback_full",
+        "confidence": 0.989467203617096,
+        "x1": 83,
+        "y1": 582,
+        "x2": 134,
+        "y2": 603
+      },
+      "ocr": [
+        {
+          "text": "KGYR24",
+          "confidence": 0.989467203617096
+        }
+      ],
+      "ocr_best_raw_text": "KGYR24",
+      "ocr_best_raw_confidence": 0.989467203617096,
+      "plate_text": "KGYR24",
+      "plate_confidence": 0.989467203617096
+    }
+  ],
+  "database": {
+    "enabled": true,
+    "saved_events": [
+      {
+        "plate_text": "KGYR24",
+        "event_type": "entrada",
+        "access_id": 135,
+        "status": "created"
+      }
+    ],
+    "errors": []
+  }
+}

@@ -41,6 +41,12 @@ def main() -> None:
         choices=["entrada", "salida"],
         help="Tipo de evento de acceso.",
     )
+    parser.add_argument(
+        "--output",
+        type=str,
+        default="outputs",
+        help="Directorio donde guardar los resultados anotados y JSON.",
+    )
     args = parser.parse_args()
 
     # Cargar configuración y forzar desactivación si se pasa --no-persist
@@ -96,6 +102,7 @@ def main() -> None:
         print(f"[{idx}/{len(images)}] Procesando: {img_path.name}")
         
         start_time = time.perf_counter()
+        persist_summary = None
         try:
             image, results = pipeline.process_image(img_path)
             elapsed = time.perf_counter() - start_time
@@ -124,7 +131,7 @@ def main() -> None:
                     
                     if persist_summary.saved_events:
                         evt = persist_summary.saved_events[0]
-                        print(f"    ✅ Guardado con éxito. ID Acceso: {evt.acceso_id}")
+                        print(f"    ✅ Guardado con éxito. ID Acceso: {evt.access_id}")
                     if persist_summary.errors:
                         for err in persist_summary.errors:
                             print(f"    ❌ Error al guardar: {err}")
@@ -136,6 +143,20 @@ def main() -> None:
                         ocr_txts = ", ".join(f"'{x.text}' ({x.confidence:.2%})" for x in r.ocr)
                         print(f"      [{r_idx}] Localización: {r.detection.cls_name} ({r.detection.confidence:.2%}) | OCR: {ocr_txts}")
                 print(f"    Tiempo de inferencia: {elapsed:.3f} s")
+                
+            # Guardar archivos JSON e imágenes anotadas
+            json_path, annot_path = pipeline.save_outputs(
+                image=image,
+                results=results,
+                output_dir=args.output,
+                stem=img_path.stem,
+                camera_id=args.camera_id,
+                event_type=args.event_type,
+                persistence=persist_summary,
+                save_annotated=True,
+            )
+            if annot_path:
+                print(f"    📂 Guardado resultado anotado en: {annot_path.name}")
                 
         except Exception as e:
             print(f"  ❌ Error inesperado al procesar {img_path.name}: {e}")

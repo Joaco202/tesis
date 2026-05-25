@@ -35,7 +35,7 @@ else:
     # Probar también con el PaddleOCR en toda la imagen para ver qué lee
     from paddleocr import PaddleOCR
     print("Inicializando PaddleOCR...")
-    ocr = PaddleOCR(use_angle_cls=True, lang="es", device="gpu")
+    ocr = PaddleOCR(use_angle_cls=True, lang="es", device="cpu")
     raw_ocr = ocr.ocr(img)
     print("OCR en imagen completa:")
     print(raw_ocr)
