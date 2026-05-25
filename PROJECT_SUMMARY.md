@@ -671,7 +671,7 @@ print(f"Confianza: {result.confidence:.2%}")
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                    ENTRADA: Imagen                           │
-│                    (CV2 np.ndarray)                           │
+│                    (CV2 np.ndarray)                          │
 └──────────────────────────────────────────────────────────────┘
                             │
                             ▼
@@ -718,9 +718,9 @@ print(f"Confianza: {result.confidence:.2%}")
 ┌──────────────────────────────────────────────┐
 │           SALIDA: DetectionResult            │
 │   {                                          │
-│     "plate_text": "PATENTE12345",           │
+│     "plate_text": "PATENTE12345",            │
 │     "confidence": 0.89,                      │
-│     "bounding_box": [x, y, x2, y2],         │
+│     "bounding_box": [x, y, x2, y2],          │
 │     "ocr_confidence": 0.95                   │
 │   }                                          │
 └──────────────────────────────────────────────┘
@@ -728,7 +728,7 @@ print(f"Confianza: {result.confidence:.2%}")
         ▼
   ┌─────────────────────────────────────┐
   │   PERSISTENCIA OPCIONAL             │
-  │   (Supabase, si > 0 detecciones)   │
+  │   (Supabase, si > 0 detecciones)    │
   └─────────────────────────────────────┘
 ```
 
@@ -826,12 +826,12 @@ python -m vision_ocr_pipeline train full-cpu
 python -m vision_ocr_pipeline train full-gpu
 ```
 
-| Perfil | Épocas | Tiempo Est. | Uso |
-|--------|--------|-----------|-----|
-| short | 2 | ~30 min | Validación pipeline |
-| quick | 6 | ~4 horas | Mejora rápida |
-| full-cpu | 50+ | ~30+ horas | Producción (portabilidad) |
-| full-gpu | 50+ | ~3-5 horas | Producción (futuro) |
+| Perfil     | Épocas | Tiempo Est. | Uso                       |
+|------------|--------|-------------|---------------------------|
+| short      | 2      | ~30 min     | Validación pipeline       |
+| quick      | 6      | ~4 horas    | Mejora rápida             |
+| full-cpu   | 50+    | ~30+ horas  | Producción (portabilidad) |
+| full-gpu   | 50+    | ~3-5 horas  | Producción (futuro)       |
 
 **Scripts equivalentes archivados:**
 - `train_yolo_short.py` → `train short`
@@ -1020,6 +1020,7 @@ Solución: Reutilizar la inferencia regional de la imagen completa en `full_raw 
 8. ✅ Reorganización física del proyecto en carpetas independientes `/backend` y `/frontend`
 9. ✅ Optimización del postprocesamiento OCR y resolución del cuello de botella por doble inferencia en fallback
 10. ✅ Procesamiento masivo del dataset de imágenes reales de WhatsApp con persistencia real en Supabase
+11. ✅ Simulación de Inferencia Continua Asíncrona (Multihilo) con descarte de frames (frame-dropping) en `scripts/continuous_inference.py` para evitar congelamiento de la GUI/cámara
 
 ### Corto Plazo (1-2 semanas)
 - [ ] Ajustar umbrales mínimos de confianza de OCR según tipo de iluminación del acceso.
@@ -1094,12 +1095,12 @@ Configuración:
 ## 15. Procesamiento de Dataset Real (WhatsApp)
 
 **Objetivo:** Validar el sistema procesando las imágenes reales de WhatsApp provistas en `backend/inputs/raw`.
-**Fecha de Ejecución:** 24 de mayo de 2026
+**Fecha de Ejecución:** 24 de mayo de 2026 (Refinado el 25 de mayo de 2026)
 
 ### Resultados Obtenidos
 - **Total de Imágenes de WhatsApp:** 114
-- **Patentes Detectadas y Registradas:** 86 (Tasa de Éxito: **75.44%**)
-- **Tiempo de Inferencia Promedio:** **7.916 s** por imagen (incluyendo inferencia YOLOv8 en GPU, OCR regional fallback en CPU, anotación de imagen y persistencia en base de datos).
+- **Patentes Detectadas y Registradas:** 83 (Tasa de Éxito: **72.81%** tras la optimización fina para eliminar falsos positivos de textos basuras).
+- **Tiempo de Inferencia Promedio:** **7.129 s** por imagen (reducción de la latencia a la mitad tras resolver el cuello de botella por doble inferencia en CPU durante el fallback regional).
 - **Persistencia en Supabase:** 100% automatizada. Cada patente detectada se auto-registró en la tabla `vehiculos` (si no existía) e inyectó un evento de acceso de entrada en la tabla `accesos`, obteniendo IDs secuenciales reales visibles al instante en el frontend mediante WebSockets.
 
 ### Ejemplo de Log de Inferencia
@@ -1116,9 +1117,29 @@ Configuración:
 
 ---
 
+## 16. Inferencia Continua Asíncrona (Multihilo)
+
+**Objetivo:** Implementar un simulador de visualización y captura en tiempo real que prevenga congelamientos de la GUI/cámara al procesar OCR pesado en CPU.
+**Fecha de Ejecución:** 25 de mayo de 2026
+
+### Diseño de la Arquitectura
+Para evitar congelar el hilo principal con inferencias que demoran entre 6 y 9 segundos por frame, se estructuró una solución multihilo desacoplada:
+1. **SharedState (Thread-Safe):** Clase central que utiliza `threading.Lock` para sincronizar los frames crudos entrantes, frames anotados para visualización, y metadatos de patente detectada.
+2. **Grabber Thread (Producer):** Lee flujos de video o carpetas de imágenes de forma continua a velocidad constante (ej. 30 FPS o simulación con `delay`) y deposita el frame en el búfer de `SharedState`.
+3. **Worker Thread (Consumer):** Consume el frame del búfer tan rápido como puede, realiza la detección de YOLO y PaddleOCR, y persiste los resultados asíncronamente en Supabase.
+4. **Main Thread (GUI Loop):** Corre en el hilo principal del sistema operativo encargándose exclusivamente de renderizar en pantalla mediante OpenCV (`cv2.imshow` y `cv2.waitKey`), respondiendo instantáneamente al teclado sin retrasos ni lags gráficos.
+
+### Política de Descarte de Frames (Frame-Dropping)
+El búfer de `SharedState` retiene únicamente un único slot del frame más reciente. Si el hilo productor genera un nuevo frame mientras el trabajador está ocupado procesando el anterior, el frame intermedio se sobrescribe automáticamente. Esto asegura que el sistema siempre procese la captura más actualizada y previene retrasos acumulativos de procesamiento (lag).
+
+### Sincronización de Cierre (producer_done)
+Para secuencias finitas de imágenes o videos con término, se implementó el flag `state.producer_done = True`. Al completarse la entrada de imágenes, el hilo trabajador termina de procesar el último frame en cola y el programa finaliza ordenadamente sin fugas de memoria o terminación abrupta.
+
+---
+
 ## Resumen Ejecutivo
 
-Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 12 fases de desarrollo completadas son:
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 13 fases de desarrollo completadas son:
 
 1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
 2. ✅ 1,000 imágenes sintéticas generadas.
@@ -1131,7 +1152,8 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 9. ✅ **Entrenamiento GPU final completado** — 50 épocas en GPU (RTX 5070) con métricas superiores.
 10. ✅ **Frontend corporativo UBB integrado con Supabase** — Dashboards dinámicos en tiempo real y flujo de incidencias.
 11. ✅ **Reorganización física del proyecto** — Separación en carpetas independientes `/backend` y `/frontend`.
-12. ✅ **Procesamiento de Imágenes Reales** — Inferencia en lote optimizada de 114 fotos de WhatsApp con 75.44% de éxito e inserción real en Supabase.
+12. ✅ **Procesamiento de Imágenes Reales** — Inferencia en lote optimizada de 114 fotos de WhatsApp con 72.81% de éxito e inserción real en Supabase.
+13. ✅ **Inferencia Continua Asíncrona (Multihilo)** — Simulación desacoplada productor/consumidor con descarte de frames y visualización en tiempo real fluida sin congelamientos.
 
 ### Stack Tecnológico Final
 
@@ -1145,7 +1167,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 | React + Vite | 8.0 / 18.x | Frontend Web |
 | Supabase | Client JS | Real-Time DB (PostgreSQL) |
 
-**Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 24 de mayo de 2026  
+**Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 25 de mayo de 2026  
 **Versión del Proyecto:** 1.0 (Producción-ready)  
 **Estado de Producción:** ✅ Totalmente operativo  
 
@@ -1153,3 +1175,6 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 
 *Para ejecutar el pipeline en GPU:*
 `cd backend && .\.venv\Scripts\activate && python -m vision_ocr_pipeline run infer --source inputs/raw --debug`
+
+*Para ejecutar la simulación de inferencia continua:*
+`cd backend && .\.venv\Scripts\activate && python scripts/continuous_inference.py --source inputs/raw --delay 0.5 --no-persist`

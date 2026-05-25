@@ -7,16 +7,19 @@ export const PublicStatus = () => {
   const [occupancy, setOccupancy] = useState({ current: 0, max: 130 }); // Mock default max 130
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const { count, error } = await supabase
-          .from('accesos')
-          .select('*', { count: 'exact', head: true })
-          .is('fecha_salida', null);
+        // Llamar a la función segura RPC
+        const { data, error } = await supabase
+          .rpc('obtener_ocupacion_publica');
           
-        if (!error && count !== null) {
-          setOccupancy(prev => ({ ...prev, current: count }));
+        if (!error && data && data.length > 0) {
+          const stats = data[0];
+          setOccupancy({
+            current: stats.ocupados_totales,
+            max: stats.capacidad_total
+          });
         }
       } catch (err) {
         console.error('Error fetching occupancy:', err);
