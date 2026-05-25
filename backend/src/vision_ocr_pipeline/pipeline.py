@@ -12,7 +12,7 @@ import numpy as np
 from .config import AppConfig
 from .db import SupabaseClient
 from .detector import Detection, YoloDetector
-from .ocr_engine import OCRText, PaddleOCREngine
+from .ocr_engine import OCRText, PaddleOCREngine, normalize_ocr_output
 from .postprocess import PLATE_PATTERNS, best_plate_from_ocr, is_likely_plate, normalize_plate_text, preprocess_plate_crop
 from .repository import AccessEventResult, SupabaseRepository
 
@@ -111,7 +111,7 @@ class VisionOCRPipeline:
 
         # Detectar cajas de texto con OCR
         try:
-            raw = ocr.ocr(image)
+            raw = normalize_ocr_output(ocr.ocr(image))
         except Exception:
             return None
 
@@ -213,7 +213,7 @@ class VisionOCRPipeline:
                 continue
 
             try:
-                crop_raw = ocr.ocr(crop)
+                crop_raw = normalize_ocr_output(ocr.ocr(crop))
             except Exception:
                 continue
 
@@ -262,7 +262,7 @@ class VisionOCRPipeline:
 
         # También evaluar OCR en toda la imagen y comparar contra las regiones.
         try:
-            full_raw = ocr.ocr(image)
+            full_raw = normalize_ocr_output(ocr.ocr(image))
         except Exception:
             full_raw = None
 

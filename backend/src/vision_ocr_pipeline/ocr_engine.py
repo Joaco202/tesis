@@ -28,6 +28,40 @@ def _detect_gpu_available() -> bool:
     return False
 
 
+def normalize_ocr_output(raw_result) -> list[list[tuple[list[list[float]], tuple[str, float]]]]:
+    """Convierte la salida de PaddleOCR (tanto formato 2.x de listas como 3.x de diccionarios)
+    a una estructura uniforme de tipo 2.x:
+    [
+        [
+            [poly, (text, confidence)], ...
+        ]
+    ]
+    """
+    if not raw_result:
+        return []
+        
+    # Si es formato 3.x (lista que contiene un diccionario de PaddleX)
+    if isinstance(raw_result, list) and len(raw_result) > 0 and isinstance(raw_result[0], dict):
+        res_dict = raw_result[0]
+        rec_texts = res_dict.get("rec_texts", [])
+        rec_scores = res_dict.get("rec_scores", [])
+        rec_polys = res_dict.get("rec_polys", [])
+        if not rec_polys:
+            rec_polys = res_dict.get("dt_polys", [])
+            
+        line_items = []
+        for i in range(len(rec_texts)):
+            text = rec_texts[i]
+            conf = rec_scores[i] if i < len(rec_scores) else 1.0
+            poly = rec_polys[i] if i < len(rec_polys) else [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
+            line_items.append([poly, (text, conf)])
+            
+        return [line_items] if line_items else []
+        
+    # Si ya es formato 2.x (listas anidadas)
+    return raw_result
+
+
 class PaddleOCREngine:
     def __init__(self, cfg: OCRConfig, use_gpu: bool | None = None) -> None:
         self.cfg = cfg
@@ -98,6 +132,7 @@ class PaddleOCREngine:
             print(f"[WARN] OCR fallo en inferencia y se omite este recorte. Detalle: {exc}")
             return []
 
+        result = normalize_ocr_output(result)
         texts: list[OCRText] = []
         if not result:
             return texts

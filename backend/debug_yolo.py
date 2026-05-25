@@ -36,10 +36,6 @@ else:
     from paddleocr import PaddleOCR
     print("Inicializando PaddleOCR...")
     ocr = PaddleOCR(use_angle_cls=True, lang="es", device="gpu")
-    raw_ocr = ocr.ocr(img, cls=True)
+    raw_ocr = ocr.ocr(img)
     print("OCR en imagen completa:")
-    if raw_ocr:
-        for line in raw_ocr:
-            if line:
-                for item in line:
-                    print(f"  OCR: '{item[1][0]}' ({item[1][1]:.4f}) | BBox: {item[0]}")
+    print(raw_ocr)
