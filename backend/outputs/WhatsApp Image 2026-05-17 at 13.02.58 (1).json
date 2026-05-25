@@ -1,7 +1,7 @@
 {
   "camera_id": "camara-1",
   "event_type": "entrada",
-  "timestamp_utc": "2026-05-25T05:52:44.138034+00:00",
+  "timestamp_utc": "2026-05-25T06:13:01.523665+00:00",
   "total_detections": 1,
   "events": [
     {
@@ -9,33 +9,26 @@
         "cls_id": -1,
         "cls_name": "ocr_region_fallback_full",
         "confidence": 0.6041451990604401,
-        "x1": 73,
-        "y1": 274,
-        "x2": 483,
-        "y2": 802
+        "x1": 0,
+        "y1": 0,
+        "x2": 1199,
+        "y2": 1599
       },
       "ocr": [
         {
-          "text": "8111SE",
+          "text": "ES1118",
           "confidence": 0.6041451990604401
         }
       ],
-      "ocr_best_raw_text": "8111SE",
+      "ocr_best_raw_text": "ES1118",
       "ocr_best_raw_confidence": 0.6041451990604401,
-      "plate_text": "8111SE",
+      "plate_text": "ES1118",
       "plate_confidence": 0.6041451990604401
     }
   ],
   "database": {
-    "enabled": true,
-    "saved_events": [
-      {
-        "plate_text": "8111SE",
-        "event_type": "entrada",
-        "access_id": 147,
-        "status": "created"
-      }
-    ],
+    "enabled": false,
+    "saved_events": [],
     "errors": []
   }
 }

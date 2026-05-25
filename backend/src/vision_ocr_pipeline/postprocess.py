@@ -176,6 +176,26 @@ def generate_corrected_variants(candidate: str, cfg: OCRConfig | None = None) ->
     return list(variants)
 
 
+def _reversed_strict_variant(candidate: str) -> str | None:
+    """
+    Si el candidato de 6 caracteres NO coincide con ningún patrón estricto pero su
+    versión invertida SÍ coincide (exactamente, sin correcciones adicionales), devuelve
+    la versión invertida.  Esto cubre el caso donde el OCR lee el texto de derecha a
+    izquierda (p.ej. confunde el número de una casa con dígitos de la patente).
+    Solo se activa cuando el candidato original no encaja en ningún patrón para evitar
+    reemplazos indeseados en lecturas correctas.
+    """
+    if not candidate or len(candidate) != 6:
+        return None
+    # Solo actuar si el original NO es ya una patente estricta
+    if any(p.match(candidate) for p in PLATE_PATTERNS):
+        return None
+    rev = candidate[::-1]
+    if any(p.match(rev) for p in PLATE_PATTERNS):
+        return rev
+    return None
+
+
 def score_variant(original: str, variant: str, confidence: float) -> float:
     """
     Calcula una puntuación de aptitud para un candidato a patente.
@@ -197,10 +217,16 @@ def score_variant(original: str, variant: str, confidence: float) -> float:
     return confidence - penalty
 
 
+# Penalización extra para lecturas donde se detectó inversión de caracteres
+_REVERSAL_PENALTY = 0.4
+
+
 def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> tuple[str | None, float | None]:
     """
     Analiza todos los textos detectados por el OCR y selecciona la patente más apta.
     Aplica heurísticas de corrección de caracteres y prioriza coincidencias estrictas de formato.
+    Incluye detección de lecturas invertidas (de derecha a izquierda) que ocurren cuando el OCR
+    confunde texto del entorno con la matrícula.
     """
     best_text: str | None = None
     best_score: float = -999.0
@@ -212,17 +238,31 @@ def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> t
         if cand:
             normalized_items.append((cand, item.confidence))
 
-    # 1. Evaluar tokens individuales y sus correcciones
-    for cand, conf in normalized_items:
+    def _evaluate(cand: str, conf: float, extra_penalty: float = 0.0) -> None:
+        """Evalúa un candidato (y sus variantes corregidas) actualizando el mejor resultado."""
+        nonlocal best_score, best_text, best_conf
         variants = generate_corrected_variants(cand, cfg)
         for var in variants:
             if not is_likely_plate(var):
                 continue
-            score = score_variant(cand, var, conf)
+            score = score_variant(cand, var, conf) - extra_penalty
             if score > best_score:
                 best_score = score
                 best_text = var
                 best_conf = conf
+
+    # 1. Evaluar tokens individuales, sus correcciones y sus posibles lecturas invertidas
+    for cand, conf in normalized_items:
+        _evaluate(cand, conf)
+        # Intentar lectura invertida solo si el candidato tiene 6 caracteres y no es ya válido
+        if len(cand) == 6:
+            rev = _reversed_strict_variant(cand)
+            if rev:
+                score = score_variant(rev, rev, conf) - _REVERSAL_PENALTY
+                if score > best_score:
+                    best_score = score
+                    best_text = rev
+                    best_conf = conf
 
     # 2. Evaluar composición de tokens contiguos (para patentes divididas)
     for i in range(len(normalized_items)):
@@ -234,15 +274,16 @@ def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> t
             token_conf_sum += piece_conf
             avg_conf = token_conf_sum / (j - i + 1)
 
-            variants = generate_corrected_variants(token_text, cfg)
-            for var in variants:
-                if not is_likely_plate(var):
-                    continue
-                score = score_variant(token_text, var, avg_conf)
-                if score > best_score:
-                    best_score = score
-                    best_text = var
-                    best_conf = avg_conf
+            _evaluate(token_text, avg_conf)
+            # Intentar lectura invertida para tokens concatenados de longitud 6
+            if len(token_text) == 6:
+                rev = _reversed_strict_variant(token_text)
+                if rev:
+                    score = score_variant(rev, rev, avg_conf) - _REVERSAL_PENALTY
+                    if score > best_score:
+                        best_score = score
+                        best_text = rev
+                        best_conf = avg_conf
 
     # Umbral mínimo de validación para retornar un resultado
     if best_text and best_score >= 0.0:
