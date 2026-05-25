@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 import time
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
 import cv2
-import numpy as np
 
 # Agregar carpeta base al PATH
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -223,8 +221,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Cargar configuración
-    cfg = load_config("config.yaml")
+    # Cargar configuración (ruta absoluta relativa al script para soportar cualquier cwd)
+    _cfg_path = Path(__file__).resolve().parents[1] / "config.yaml"
+    cfg = load_config(str(_cfg_path))
     if args.no_persist:
         cfg.supabase.enabled = False
 
@@ -267,10 +266,15 @@ def main() -> None:
     # Hilo Principal: GUI Event Loop (OpenCV imshow)
     try:
         while state.running:
+            # Verificar condición de salida: productor terminado, sin frames pendientes
+            # y worker ya inactivo. Se chequea is_alive() fuera del lock para no retenerlo.
+            _producer_done_and_empty = False
             with state.lock:
-                if state.producer_done and state.latest_frame is None and not worker_thread.is_alive():
-                    state.running = False
-                    break
+                if state.producer_done and state.latest_frame is None:
+                    _producer_done_and_empty = True
+            if _producer_done_and_empty and not worker_thread.is_alive():
+                state.running = False
+                break
             frame_to_show = None
             overlay_info = None
             

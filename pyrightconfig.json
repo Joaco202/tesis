@@ -1,0 +1,9 @@
+﻿{
+  "venvPath": "backend",
+  "venv": ".venv",
+  "pythonVersion": "3.11",
+  "pythonPlatform": "Windows",
+  "extraPaths": ["backend"],
+  "include": ["backend"],
+  "exclude": ["backend/outputs", "backend/inputs", "backend/runs", "backend/data"]
+}

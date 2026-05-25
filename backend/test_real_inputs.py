@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import os
 import time
 from pathlib import Path
 
@@ -81,7 +80,7 @@ def main() -> None:
     
     if whatsapp_images:
         images = sorted(whatsapp_images, key=lambda x: x.name)
-        print(f"Se detectaron imágenes reales de WhatsApp. Priorizando su procesamiento...")
+        print("Se detectaron imágenes reales de WhatsApp. Priorizando su procesamiento...")
     else:
         images = sorted(all_images, key=lambda x: x.name)
 
