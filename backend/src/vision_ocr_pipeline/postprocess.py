@@ -216,6 +216,8 @@ def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> t
     for cand, conf in normalized_items:
         variants = generate_corrected_variants(cand, cfg)
         for var in variants:
+            if not is_likely_plate(var):
+                continue
             score = score_variant(cand, var, conf)
             if score > best_score:
                 best_score = score
@@ -234,6 +236,8 @@ def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> t
 
             variants = generate_corrected_variants(token_text, cfg)
             for var in variants:
+                if not is_likely_plate(var):
+                    continue
                 score = score_variant(token_text, var, avg_conf)
                 if score > best_score:
                     best_score = score
