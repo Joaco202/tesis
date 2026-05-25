@@ -116,7 +116,7 @@ export const GuardDashboard = () => {
 
   const filteredEvents = events.filter(e => e.plate.toLowerCase().includes(search.toLowerCase()));
 
-  const availableSpots = occupancy.max - occupancy.current;
+  const availableSpots = Math.max(0, occupancy.max - occupancy.current);
   const occupancyPercentage = (occupancy.current / occupancy.max) * 100;
   
   let statusColor = 'var(--status-success)';
