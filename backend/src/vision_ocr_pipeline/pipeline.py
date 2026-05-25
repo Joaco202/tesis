@@ -68,7 +68,7 @@ class VisionOCRPipeline:
                 crop = image[max(det.y1, 0) : max(det.y2, 0), max(det.x1, 0) : max(det.x2, 0)]
                 ocr_input = preprocess_plate_crop(crop) if crop.size else crop
                 ocr_text = self.ocr.read_text(ocr_input) if crop.size else []
-                plate_text, plate_conf = best_plate_from_ocr(ocr_text)
+                plate_text, plate_conf = best_plate_from_ocr(ocr_text, self.cfg.ocr)
                 output.append(
                     DetectionResult(
                         detection=det,
@@ -244,7 +244,7 @@ class VisionOCRPipeline:
                         except Exception:
                             continue
 
-            plate_text, plate_conf = best_plate_from_ocr(ocr_items)
+            plate_text, plate_conf = best_plate_from_ocr(ocr_items, self.cfg.ocr)
             region_score = score_candidate(plate_text, plate_conf)
             if region_score > best_score:
                 best_plate_text = plate_text
@@ -289,7 +289,7 @@ class VisionOCRPipeline:
                     except Exception:
                         continue
 
-            plate_text, plate_conf = best_plate_from_ocr(full_items)
+            plate_text, plate_conf = best_plate_from_ocr(full_items, self.cfg.ocr)
             full_score = score_candidate(plate_text, plate_conf)
             if full_score > best_score:
                 best_plate_text = plate_text

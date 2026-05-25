@@ -125,7 +125,7 @@ def main() -> None:
                     from src.vision_ocr_pipeline.postprocess import preprocess_plate_crop, best_plate_from_ocr
                     ocr_input = preprocess_plate_crop(crop) if crop.size else crop
                     ocr_text = pipeline.ocr.read_text(ocr_input) if crop.size else []
-                    plate_text, plate_conf = best_plate_from_ocr(ocr_text)
+                    plate_text, plate_conf = best_plate_from_ocr(ocr_text, pipeline.cfg.ocr)
                     
                     from src.vision_ocr_pipeline.pipeline import DetectionResult
                     if plate_text:

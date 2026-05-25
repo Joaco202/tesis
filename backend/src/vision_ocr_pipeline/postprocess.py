@@ -1,22 +1,73 @@
 from __future__ import annotations
 
+import itertools
 import re
-
 import cv2
 import numpy as np
 
 from .ocr_engine import OCRText
-from .config import DEFAULT_CONFIG
+from .config import DEFAULT_CONFIG, OCRConfig
 
+# Patrones de patentes chilenas estrictas
+STRICT_NEW_PLATE = re.compile(r"^[BCDFGHJKLPRSTVWXYZ]{4}[0-9]{2}$")  # 18 consonantes autorizadas
+OLD_PLATE = re.compile(r"^[A-Z]{2}[0-9]{4}$")                        # Formato antiguo (permite vocales)
 
 PLATE_PATTERNS = [
-    re.compile(r"^[B-DF-HJ-NP-TV-Z]{4}[0-9]{2}$"),  # Patente nueva chilena (consonantes)
-    re.compile(r"^[A-Z]{4}[0-9]{2}$"),              # Patente nueva general (tolerancia OCR)
-    re.compile(r"^[A-Z]{2}[0-9]{4}$"),              # Patente vieja chilena
+    STRICT_NEW_PLATE,
+    OLD_PLATE,
 ]
+
+# Mapas de sustitución geométrica para corrección de caracteres confusos en OCR
+CONSONANT_CORRECTION_MAP: dict[str, list[str]] = {
+    "O": ["D", "G", "C"],
+    "I": ["L", "T", "J"],
+    "A": ["R", "K", "H"],
+    "E": ["G", "F", "K"],
+    "U": ["V", "Y"],
+    "M": ["W", "H"],
+    "N": ["H", "R"],
+    "Q": ["G", "D"],
+    "0": ["D", "G", "C"],
+    "1": ["L", "T", "J"],
+    "2": ["Z"],
+    "3": ["B"],
+    "4": ["R", "K", "H"],
+    "5": ["S"],
+    "6": ["G"],
+    "7": ["T"],
+    "8": ["B"],
+    "9": ["G"],
+}
+
+DIGIT_CORRECTION_MAP: dict[str, list[str]] = {
+    "O": ["0"], "D": ["0"], "Q": ["0"], "C": ["0"], "G": ["0"],
+    "I": ["1"], "L": ["1"], "T": ["1"],
+    "Z": ["2"],
+    "B": ["8", "3"], "E": ["3"],
+    "A": ["4"],
+    "S": ["5"],
+    "G": ["6"],
+    "T": ["7"],
+    "B": ["8"],
+    "G": ["9"],
+}
+
+LETTER_CORRECTION_MAP: dict[str, list[str]] = {
+    "0": ["O", "D"],
+    "1": ["I", "L"],
+    "2": ["Z"],
+    "3": ["B"],
+    "4": ["A", "H"],
+    "5": ["S"],
+    "6": ["G"],
+    "7": ["T"],
+    "8": ["B"],
+    "9": ["G"],
+}
 
 
 def preprocess_plate_crop(crop: np.ndarray) -> np.ndarray:
+    """Preprocesamiento de la porción de imagen que contiene la patente."""
     gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
     denoised = cv2.bilateralFilter(gray, d=7, sigmaColor=60, sigmaSpace=60)
     boosted = cv2.convertScaleAbs(denoised, alpha=1.2, beta=8)
@@ -25,10 +76,12 @@ def preprocess_plate_crop(crop: np.ndarray) -> np.ndarray:
 
 
 def normalize_plate_text(text: str) -> str:
+    """Elimina caracteres no alfanuméricos y convierte a mayúsculas."""
     return re.sub(r"[^A-Z0-9]", "", text.upper())
 
 
 def is_likely_plate(text: str) -> bool:
+    """Evalúa de forma general si una cadena tiene estructura de patente."""
     if len(text) < 5 or len(text) > 8:
         return False
 
@@ -40,175 +93,136 @@ def is_likely_plate(text: str) -> bool:
     return letters >= 2 and digits >= 2
 
 
-def _generate_confusion_variants(text: str, max_subs: int = 2) -> list[str]:
-    """Genera variantes del texto aplicando sustituciones típicas OCR.
-    Usa el mapa definido en la configuración y, si `aggressive_confusion` está activado,
-    prueba sustituciones en ambas direcciones (digit<->letter).
+def generate_corrected_variants(candidate: str, cfg: OCRConfig | None = None) -> list[str]:
     """
-    # Preferir mapa desde la configuración global
-    cfg_map = getattr(DEFAULT_CONFIG.ocr, "confusion_map", None) or {}
-    max_subs = max_subs or getattr(DEFAULT_CONFIG.ocr, "max_confusion_subs", 2)
-    aggressive = getattr(DEFAULT_CONFIG.ocr, "aggressive_confusion", False)
+    Genera combinaciones de variantes de corrección basadas en la afinidad del formato.
+    Aplica sustituciones para llevar el texto de entrada al formato de patente oficial chilena.
+    """
+    if not candidate or len(candidate) != 6:
+        return [candidate]
 
-    # Construir mapa inverso si estamos en modo agresivo
-    reverse_map: dict[str, str] = {}
-    if aggressive:
-        for k, v in cfg_map.items():
-            # sólo añadir si no sobreescribe
-            if v not in reverse_map:
-                reverse_map[v] = k
+    # Calcular afinidades del formato
+    # Nuevo: LLLLDD
+    score_new = 0
+    for i in range(4):
+        ch = candidate[i]
+        if ch.isalpha() or ch.isdigit():
+            score_new += 1
+    for i in range(4, 6):
+        ch = candidate[i]
+        if ch.isdigit() or ch in {"O", "D", "Q", "C", "G", "I", "L", "T", "Z", "B", "E", "A", "S"}:
+            score_new += 1
 
-    # índices candidatas para sustitución (letras o dígitos según mapa)
-    indices = [i for i, ch in enumerate(text) if ch in cfg_map or (aggressive and ch in reverse_map)]
-    variants = set()
+    # Antiguo: LLDDDD
+    score_old = 0
+    for i in range(2):
+        ch = candidate[i]
+        if ch.isalpha() or ch.isdigit():
+            score_old += 1
+    for i in range(2, 6):
+        ch = candidate[i]
+        if ch.isdigit() or ch in {"O", "D", "Q", "C", "G", "I", "L", "T", "Z", "B", "E", "A", "S"}:
+            score_old += 1
 
-    # función ayuda para aplicar sustitución en posición i con dirección adecuada
-    def substitute_at(s: str, pos: int, to_char: str) -> str:
-        lst = list(s)
-        lst[pos] = to_char
-        return "".join(lst)
+    target_new = score_new >= score_old
 
-    # Single substitutions
-    for i in indices:
-        ch = text[i]
-        if ch in cfg_map:
-            variants.add(substitute_at(text, i, cfg_map[ch]))
-        if aggressive and ch in reverse_map:
-            variants.add(substitute_at(text, i, reverse_map[ch]))
+    # Generar opciones por cada una de las 6 posiciones
+    pos_options: list[list[str]] = []
+    for i in range(6):
+        ch = candidate[i]
+        opts = [ch]
 
-    # Double substitutions (combinatorial limitado)
-    if max_subs >= 2:
-        for a in range(len(indices)):
-            for b in range(a + 1, len(indices)):
-                s = text
-                ia = indices[a]
-                ib = indices[b]
-                ca = s[ia]
-                cb = s[ib]
-                # aplicar combinación de direcciones posibles
-                opts_a = [cfg_map[ca]] if ca in cfg_map else ([] if not aggressive else ([reverse_map[ca]] if ca in reverse_map else []))
-                opts_b = [cfg_map[cb]] if cb in cfg_map else ([] if not aggressive else ([reverse_map[cb]] if cb in reverse_map else []))
-                for oa in opts_a:
-                    for ob in opts_b:
-                        lst = list(s)
-                        lst[ia] = oa
-                        lst[ib] = ob
-                        variants.add("".join(lst))
+        if target_new:
+            # Nuevo Formato (LLLLDD)
+            if i < 4:
+                # Se esperan consonantes válidas chilenas
+                if ch not in "BCDFGHJKLPRSTVWXYZ":
+                    if ch in CONSONANT_CORRECTION_MAP:
+                        opts.extend(CONSONANT_CORRECTION_MAP[ch])
+            else:
+                # Se esperan dígitos
+                if not ch.isdigit():
+                    if ch in DIGIT_CORRECTION_MAP:
+                        opts.extend(DIGIT_CORRECTION_MAP[ch])
+        else:
+            # Antiguo Formato (LLDDDD)
+            if i < 2:
+                # Se esperan letras (se permite A-Z)
+                if not ch.isalpha():
+                    if ch in LETTER_CORRECTION_MAP:
+                        opts.extend(LETTER_CORRECTION_MAP[ch])
+            else:
+                # Se esperan dígitos
+                if not ch.isdigit():
+                    if ch in DIGIT_CORRECTION_MAP:
+                        opts.extend(DIGIT_CORRECTION_MAP[ch])
+
+        pos_options.append(opts)
+
+    # Generar todas las combinaciones posibles limitando combinatoria masiva
+    variants: set[str] = set()
+    # Limitar para evitar explosión de variantes si hay muchos caracteres a corregir
+    perm_count = 1
+    for opts in pos_options:
+        perm_count *= len(opts)
+
+    if perm_count > 64:
+        # Si es demasiado ambiguo, retornar solo el candidato original
+        return [candidate]
+
+    for combo in itertools.product(*pos_options):
+        variants.add("".join(combo))
 
     return list(variants)
 
 
-def _try_fix_confusions(candidate: str) -> str | None:
-    """Intenta corregir confusiones OCR en `candidate`. Devuelve la primera variante que
-    matchee alguno de los `PLATE_PATTERNS` o que pase `is_likely_plate`.
+def score_variant(original: str, variant: str, confidence: float) -> float:
     """
-    if not candidate:
-        return None
-
-    # Primero comprobar si ya es válida
-    if any(p.match(candidate) for p in PLATE_PATTERNS) or is_likely_plate(candidate):
-        return candidate
-
-    for var in _generate_confusion_variants(candidate):
-        if any(p.match(var) for p in PLATE_PATTERNS) or is_likely_plate(var):
-            return var
-
-    return None
-
-
-def _force_plate_format(candidate: str) -> str | None:
-    """Intento dirigido: para cadenas de longitud 6, evaluar si se asemeja más a una patente nueva
-    (LLLLDD) o a una patente antigua (LLDDDD) y aplicar el mapa de sustituciones correspondientemente.
+    Calcula una puntuación de aptitud para un candidato a patente.
+    Aplica una penalización por cada sustitución de caracteres realizada.
     """
-    if not candidate or len(candidate) != 6:
-        return None
+    subs = sum(1 for a, b in zip(original, variant) if a != b)
+    penalty = 0.3 * subs
 
-    cfg_map = getattr(DEFAULT_CONFIG.ocr, "confusion_map", {})
-    reverse_map = {v: k for k, v in cfg_map.items()}
+    # Comprobar si la variante coincide exactamente con un patrón estricto
+    is_strict = any(pattern.match(variant) for pattern in PLATE_PATTERNS)
 
-    # Evaluar afinidad con LLLLDD (Nueva)
-    # Posiciones 0, 1, 2, 3: letras (o dígitos mapeables a letras)
-    # Posiciones 4, 5: dígitos (o letras mapeables a dígitos)
-    score_new = 0
-    for i in range(4):
-        if candidate[i].isalpha() or candidate[i] in cfg_map:
-            score_new += 1
-    for i in range(4, 6):
-        if candidate[i].isdigit() or candidate[i] in reverse_map:
-            score_new += 1
+    if is_strict:
+        # Gran bonus de prioridad para patentes en formato oficial chileno
+        return confidence + 2.0 - penalty
+    elif is_likely_plate(variant):
+        # Prioridad media para formatos plausibles
+        return confidence + 0.5 - penalty
 
-    # Evaluar afinidad con LLDDDD (Antigua)
-    # Posiciones 0, 1: letras (o dígitos mapeables a letras)
-    # Posiciones 2, 3, 4, 5: dígitos (o letras mapeables a dígitos)
-    score_old = 0
-    for i in range(2):
-        if candidate[i].isalpha() or candidate[i] in cfg_map:
-            score_old += 1
-    for i in range(2, 6):
-        if candidate[i].isdigit() or candidate[i] in reverse_map:
-            score_old += 1
-
-    s = list(candidate)
-    changed = False
-
-    if score_new >= score_old:
-        # Forzar formato LLLLDD (Nuevo)
-        for i in range(4):
-            ch = s[i]
-            if ch.isdigit() and ch in cfg_map:
-                s[i] = cfg_map[ch]
-                changed = True
-        for i in range(4, 6):
-            ch = s[i]
-            if ch.isalpha() and ch in reverse_map:
-                s[i] = reverse_map[ch]
-                changed = True
-    else:
-        # Forzar formato LLDDDD (Antiguo)
-        for i in range(2):
-            ch = s[i]
-            if ch.isdigit() and ch in cfg_map:
-                s[i] = cfg_map[ch]
-                changed = True
-        for i in range(2, 6):
-            ch = s[i]
-            if ch.isalpha() and ch in reverse_map:
-                s[i] = reverse_map[ch]
-                changed = True
-
-    candidate_forced = "".join(s)
-    if changed and any(p.match(candidate_forced) for p in PLATE_PATTERNS):
-        return candidate_forced
-    return None
+    return confidence - penalty
 
 
-def best_plate_from_ocr(items: list[OCRText]) -> tuple[str | None, float | None]:
+def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> tuple[str | None, float | None]:
+    """
+    Analiza todos los textos detectados por el OCR y selecciona la patente más apta.
+    Aplica heurísticas de corrección de caracteres y prioriza coincidencias estrictas de formato.
+    """
     best_text: str | None = None
+    best_score: float = -999.0
     best_conf: float | None = None
-
-    def is_exact_plate(candidate: str) -> bool:
-        return any(pattern.match(candidate) for pattern in PLATE_PATTERNS)
 
     normalized_items: list[tuple[str, float]] = []
     for item in items:
-        candidate = normalize_plate_text(item.text)
-        if candidate:
-            normalized_items.append((candidate, item.confidence))
+        cand = normalize_plate_text(item.text)
+        if cand:
+            normalized_items.append((cand, item.confidence))
 
-        if is_exact_plate(candidate):
-            candidate_fixed = candidate
-        else:
-            candidate_fixed = _force_plate_format(candidate) or _try_fix_confusions(candidate)
-        if candidate_fixed:
-            candidate = candidate_fixed
+    # 1. Evaluar tokens individuales y sus correcciones
+    for cand, conf in normalized_items:
+        variants = generate_corrected_variants(cand, cfg)
+        for var in variants:
+            score = score_variant(cand, var, conf)
+            if score > best_score:
+                best_score = score
+                best_text = var
+                best_conf = conf
 
-        if not is_likely_plate(candidate):
-            continue
-        if best_conf is None or item.confidence > best_conf:
-            best_text = candidate
-            best_conf = item.confidence
-
-    # Si OCR separa la patente en varios trozos, intentar recomponer tokens contiguos.
+    # 2. Evaluar composición de tokens contiguos (para patentes divididas)
     for i in range(len(normalized_items)):
         token_text = ""
         token_conf_sum = 0.0
@@ -217,26 +231,17 @@ def best_plate_from_ocr(items: list[OCRText]) -> tuple[str | None, float | None]
             token_text += piece_text
             token_conf_sum += piece_conf
             avg_conf = token_conf_sum / (j - i + 1)
-            if is_exact_plate(token_text):
-                fixed = token_text
-            else:
-                fixed = _force_plate_format(token_text) or _try_fix_confusions(token_text)
-            if fixed is not None:
-                token_text = fixed
-            elif not is_likely_plate(token_text):
-                continue
-            if best_conf is None or avg_conf > best_conf:
-                best_text = token_text
-                best_conf = avg_conf
 
-    # Si no encontramos nada directo, intentar corregir tokens individuales
-    if best_text is None:
-        for cand, conf in normalized_items:
-            if is_exact_plate(cand):
-                fixed = cand
-            else:
-                fixed = _force_plate_format(cand) or _try_fix_confusions(cand)
-            if fixed:
-                return fixed, conf
+            variants = generate_corrected_variants(token_text, cfg)
+            for var in variants:
+                score = score_variant(token_text, var, avg_conf)
+                if score > best_score:
+                    best_score = score
+                    best_text = var
+                    best_conf = avg_conf
 
-    return best_text, best_conf
+    # Umbral mínimo de validación para retornar un resultado
+    if best_text and best_score >= 0.0:
+        return best_text, best_conf
+
+    return None, None
