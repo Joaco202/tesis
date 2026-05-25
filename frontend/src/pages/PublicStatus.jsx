@@ -7,7 +7,7 @@ export const PublicStatus = () => {
   const [occupancy, setOccupancy] = useState({ current: 0, max: 130 }); // Mock default max 130
   const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchStatus = async () => {
       try {
         // Llamar a la función segura RPC
@@ -41,7 +41,7 @@ export const PublicStatus = () => {
     };
   }, []);
 
-  const availableSpots = occupancy.max - occupancy.current;
+  const availableSpots = Math.max(0, occupancy.max - occupancy.current);
   const occupancyPercentage = (occupancy.current / occupancy.max) * 100;
   
   let statusColor = 'var(--status-success)';
