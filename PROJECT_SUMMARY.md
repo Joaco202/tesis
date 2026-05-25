@@ -911,7 +911,7 @@ Para procesamiento avanzado de imagen única (configuración granular):
 python -m vision_ocr_pipeline run imagen.jpg --config config.example.yaml --output outputs
 
 # Con event-type y camera-id (para persistencia)
-python -m vision_ocr_pipeline run imagen.jpg --event-type entrada --camera-id cam-acceso-1 --output outputs
+python -m vision_ocr_pipeline run imagen.jpg --event-type entrada --camera-id camara-1 --output outputs
 
 # O instalado como comando
 vision-ocr run --source imagen.jpg --config config.example.yaml --output outputs
@@ -1196,6 +1196,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 14. ✅ **Aislamiento de Privacidad (Vista Pública Segura)** — Implementación de la función segura RPC `obtener_ocupacion_publica()` con `SECURITY DEFINER` para ocultar patentes a usuarios no registrados.
 15. ✅ **Triggers de Integridad en Zonas** — Automatización de asignación de `zona_id` mediante trigger SQL antes de insertar accesos.
 16. ✅ **Saneamiento de Fuga de Credenciales** — Rotación exitosa de claves expuestas en el historial a claves `sb_...` e inhabilitación total del endpoint legacy comprometido.
+17. ✅ **Consolidación de Zona y Cámaras** — Remoción completa del Sector Norte en código y base de datos, dejando la zona 'Aula Magna' como principal. Reconfiguración a 'Cámara 1' (`camara-1`) y estructuración de la arquitectura para soportar incrementalmente más cámaras o zonas de forma 100% dinámica mediante el trigger de asignación.
 
 ### Stack Tecnológico Final
 

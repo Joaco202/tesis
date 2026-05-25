@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 export const GuardDashboard = () => {
   const [occupancy, setOccupancy] = useState({ current: 0, max: 50 });
   const [dailyTotals, setDailyTotals] = useState({ entries: 0, exits: 0 });
+  const [currentTime, setCurrentTime] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState('');
 
@@ -114,6 +115,13 @@ export const GuardDashboard = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const filteredEvents = events.filter(e => e.plate.toLowerCase().includes(search.toLowerCase()));
 
   const availableSpots = Math.max(0, occupancy.max - occupancy.current);
@@ -135,7 +143,8 @@ export const GuardDashboard = () => {
 
   const radius = 52; // 120/2 - 8
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (occupancyPercentage / 100) * circumference;
+  const clampedPercentage = Math.min(100, Math.max(0, occupancyPercentage));
+  const strokeDashoffset = circumference - (clampedPercentage / 100) * circumference;
 
   return (
     <div className="animate-fade-in">
@@ -145,8 +154,8 @@ export const GuardDashboard = () => {
           <p style={{ color: 'var(--text-secondary)' }}>Monitoreo en tiempo real del Aula Magna</p>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{format(new Date(), "dd 'de' MMMM, yyyy")}</p>
-          <p style={{ fontSize: '1.25rem', fontWeight: 600 }}>{format(new Date(), "HH:mm")}</p>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{format(currentTime, "dd 'de' MMMM, yyyy")}</p>
+          <p style={{ fontSize: '1.25rem', fontWeight: 600 }}>{format(currentTime, "HH:mm:ss")}</p>
         </div>
       </div>
 

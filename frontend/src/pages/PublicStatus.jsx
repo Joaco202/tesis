@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 export const PublicStatus = () => {
   const [occupancy, setOccupancy] = useState({ current: 0, max: 130 }); // Mock default max 130
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [updatedText, setUpdatedText] = useState('Hace instantes');
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -20,6 +22,7 @@ export const PublicStatus = () => {
             current: stats.ocupados_totales,
             max: stats.capacidad_total
           });
+          setLastUpdated(new Date());
         }
       } catch (err) {
         console.error('Error fetching occupancy:', err);
@@ -41,6 +44,31 @@ export const PublicStatus = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const updateRelativeTime = () => {
+      const diffMs = new Date() - lastUpdated;
+      const diffSecs = Math.floor(diffMs / 1000);
+      if (diffSecs < 10) {
+        setUpdatedText('Hace instantes');
+      } else if (diffSecs < 60) {
+        setUpdatedText(`Hace ${diffSecs}s`);
+      } else {
+        const diffMins = Math.floor(diffSecs / 60);
+        if (diffMins < 60) {
+          setUpdatedText(`Hace ${diffMins} min${diffMins > 1 ? 's' : ''}`);
+        } else {
+          const diffHours = Math.floor(diffMins / 60);
+          setUpdatedText(`Hace ${diffHours} hr${diffHours > 1 ? 's' : ''}`);
+        }
+      }
+    };
+
+    updateRelativeTime();
+    const interval = setInterval(updateRelativeTime, 5000);
+
+    return () => clearInterval(interval);
+  }, [lastUpdated]);
+
   const availableSpots = Math.max(0, occupancy.max - occupancy.current);
   const occupancyPercentage = (occupancy.current / occupancy.max) * 100;
   
@@ -60,7 +88,8 @@ export const PublicStatus = () => {
   // Circular progress calculations
   const radius = 108;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (occupancyPercentage / 100) * circumference;
+  const clampedPercentage = Math.min(100, Math.max(0, occupancyPercentage));
+  const strokeDashoffset = circumference - (clampedPercentage / 100) * circumference;
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
@@ -138,7 +167,7 @@ export const PublicStatus = () => {
                   <Clock size={24} color="var(--text-primary)" />
                   <div>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: 0 }}>Actualizado</p>
-                    <p style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Hace instantes</p>
+                    <p style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{updatedText}</p>
                   </div>
                 </div>
               </div>

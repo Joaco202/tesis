@@ -1,7 +1,7 @@
 {
   "camera_id": "camara-1",
   "event_type": "entrada",
-  "timestamp_utc": "2026-05-25T04:54:33.985092+00:00",
+  "timestamp_utc": "2026-05-25T05:52:36.819613+00:00",
   "total_detections": 1,
   "events": [
     {
@@ -32,7 +32,7 @@
       {
         "plate_text": "RZPB64",
         "event_type": "entrada",
-        "access_id": 143,
+        "access_id": 146,
         "status": "created"
       }
     ],
