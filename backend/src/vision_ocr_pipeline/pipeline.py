@@ -59,6 +59,10 @@ class VisionOCRPipeline:
         if image is None:
             raise ValueError(f"No se pudo leer la imagen: {image_path}")
 
+        results = self.process_frame(image)
+        return image, results
+
+    def process_frame(self, image: np.ndarray) -> list[DetectionResult]:
         detections = sorted(self.detector.detect(image), key=lambda det: det.confidence, reverse=True)
         output: list[DetectionResult] = []
 
@@ -88,7 +92,7 @@ class VisionOCRPipeline:
                 # Priorizar el resultado del fallback insertándolo al frente.
                 output.insert(0, fallback_result)
 
-        return image, output
+        return output
 
     def _detect_plate_via_ocr_regions(self, image: np.ndarray) -> DetectionResult | None:
         """
