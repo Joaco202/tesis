@@ -40,7 +40,7 @@ class DetectionConfig(BaseModel):
 class RuntimeConfig(BaseModel):
     device: str = "cuda"
     save_annotated: bool = True
-    default_camera_id: str = "cam-acceso-1"
+    default_camera_id: str = "camara-1"
     default_event_type: str = "entrada"
 
 
@@ -71,7 +71,28 @@ class AppConfig(BaseModel):
 DEFAULT_CONFIG = AppConfig()
 
 
+def _load_env_file() -> None:
+    possible_paths = [
+        Path(".env"),
+        Path(__file__).resolve().parents[2] / ".env",
+    ]
+    for dotenv_path in possible_paths:
+        if dotenv_path.exists():
+            with dotenv_path.open("r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    if "=" in line:
+                        key, val = line.split("=", 1)
+                        key = key.strip()
+                        val = val.strip().strip('"').strip("'")
+                        if key not in os.environ:
+                            os.environ[key] = val
+
+
 def load_config(path: str | Path | None) -> AppConfig:
+    _load_env_file()
     env_supabase = {
         "enabled": os.getenv("SUPABASE_ENABLED", "false").strip().lower() in {"1", "true", "yes"},
         "url": os.getenv("SUPABASE_URL", ""),

@@ -98,7 +98,7 @@ Para procesamiento de una imagen con configuracion avanzada:
 
 ```bash
 python -m vision_ocr_pipeline run --source ruta/a/imagen.jpg --config config.example.yaml --output outputs
-python -m vision_ocr_pipeline run --source ruta/a/imagen.jpg --event-type entrada --camera-id cam-acceso-1 --output outputs
+python -m vision_ocr_pipeline run --source ruta/a/imagen.jpg --event-type entrada --camera-id camara-1 --output outputs
 ```
 
 O instalado como comando:

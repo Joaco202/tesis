@@ -31,7 +31,7 @@ def main() -> None:
     parser.add_argument(
         "--camera-id",
         type=str,
-        default="cam-acceso-1",
+        default="camara-1",
         help="ID de la cámara para registrar el acceso.",
     )
     parser.add_argument(

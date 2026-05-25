@@ -261,19 +261,12 @@ on conflict (nombre) do nothing;
 -- Ejemplo de zonas
 insert into public.zonas (nombre, descripcion, capacidad)
 values
-    ('Aula Magna', 'Zona principal de estacionamiento del Aula Magna', 50),
-    ('Sector Norte', 'Zona norte del campus', 30)
+    ('Aula Magna', 'Zona principal de estacionamiento del Aula Magna', 130)
 on conflict (nombre) do nothing;
 
 -- Ejemplo de cámaras
 insert into public.camaras (camera_id, nombre, zona_id, tipo_evento_default)
-select 'cam-acceso-1', 'Cámara Acceso Principal', z.id, 'entrada'
-from public.zonas z
-where z.nombre = 'Aula Magna'
-on conflict (camera_id) do nothing;
-
-insert into public.camaras (camera_id, nombre, zona_id, tipo_evento_default)
-select 'cam-salida-1', 'Cámara Salida Principal', z.id, 'salida'
+select 'camara-1', 'Cámara 1 - Acceso Aula Magna', z.id, 'entrada'
 from public.zonas z
 where z.nombre = 'Aula Magna'
 on conflict (camera_id) do nothing;

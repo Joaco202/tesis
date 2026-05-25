@@ -85,3 +85,22 @@ class SupabaseClient:
             if not raw:
                 return []
             return json.loads(raw)
+
+    def delete(
+        self,
+        table: str,
+        *,
+        query_params: dict[str, str],
+    ) -> list[dict[str, Any]]:
+        url = self._build_url(table, query_params)
+        req = request.Request(
+            url,
+            headers=self._headers(prefer="return=representation"),
+            method="DELETE",
+        )
+
+        with request.urlopen(req, timeout=self.timeout_seconds) as resp:
+            raw = resp.read().decode("utf-8")
+            if not raw:
+                return []
+            return json.loads(raw)

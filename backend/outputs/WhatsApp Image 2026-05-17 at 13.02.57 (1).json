@@ -1,7 +1,7 @@
 {
-  "camera_id": "cam-acceso-1",
+  "camera_id": "camara-1",
   "event_type": "entrada",
-  "timestamp_utc": "2026-05-25T03:15:37.818179+00:00",
+  "timestamp_utc": "2026-05-25T04:54:23.946290+00:00",
   "total_detections": 0,
   "events": [],
   "database": {

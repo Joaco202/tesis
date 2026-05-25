@@ -1005,6 +1005,42 @@ Causa: El fallback realizaba inferencia sobre la imagen completa dos veces por f
 Solución: Reutilizar la inferencia regional de la imagen completa en `full_raw = raw`, reduciendo a la mitad el tiempo de inferencia (promedio ~7.9s por imagen).
 ```
 
+### Problema 13: Bloqueo RLS en el Frontend con Mock Login / Usuarios Anónimos ✅ Resuelto
+```
+Error: Los paneles de control en React mostraban 0 registros y 0 vehículos a pesar de tener datos reales guardados en Supabase.
+Causa: Para desarrollo se usa "Mock Login", por lo que el cliente Supabase del frontend envía la clave anónima pública (`anon`). Como RLS (Row Level Security) viene habilitado por defecto, Supabase bloqueaba la lectura de las tablas detalladas a usuarios sin autenticar.
+Solución: Crear políticas de lectura SELECT en Supabase para el rol público `anon` durante el desarrollo local, asegurando que los dashboards puedan renderizar las listas de patentes de prueba.
+```
+
+### Problema 14: Fuga de Privacidad de Patentes en Vista Pública (RLS Bypass Seguro) ✅ Resuelto
+```
+Error: La vista pública requiere mostrar la ocupación actual del estacionamiento de forma abierta (sin iniciar sesión), pero dar permisos de lectura SELECT a la tabla `accesos` expondría datos sensibles (patentes, fotos e historial) a atacantes externos.
+Solución: Mantener RLS estricto sobre las tablas crudas y crear una función segura en PostgreSQL (RPC) `obtener_ocupacion_publica()` configurada con `SECURITY DEFINER`. Esta función se ejecuta con privilegios elevados en el servidor y devuelve únicamente conteos abstractos agregados (cupos libres, ocupados y totales) sin revelar ninguna patente.
+```
+
+### Problema 15: Error de Join en el Conteo de Ocupación por Zonas (zona_id NULL) ✅ Resuelto
+```
+Error: Las consultas SQL de conteo y joins devolvían ocupación 0 y calculaban mal el límite total del estacionamiento (duplicándolo o mostrándolo vacío).
+Causa: El backend registra los accesos utilizando la cámara (`camera_id`), dejando el campo `zona_id` de la tabla `accesos` como NULL por defecto. Esto rompía los joins por zona e impedía sumar las capacidades adecuadamente.
+Solución (2 pasos):
+  1. Correr una consulta SQL retroactiva para poblar `zona_id` en accesos históricos basándose en la configuración de la tabla `camaras`.
+  2. Implementar un trigger SQL `trg_auto_asignar_zona_acceso` en la base de datos para rellenar de forma automatizada y transparente la `zona_id` en cada nuevo acceso.
+```
+
+### Problema 16: Cupos Disponibles Negativos en Visualizaciones ✅ Resuelto
+```
+Error: En periodos de pruebas masivas (142 ingresos registrados sin su salida correspondiente), la interfaz mostraba valores de cupos disponibles en negativo (ej. "-12" libres en Aula Magna).
+Solución: Envolver la resta de capacidad y ocupación actual con `Math.max(0, ...)` en los componentes `PublicStatus.jsx` y `GuardDashboard.jsx` para asegurar una visualización coherente y limpia.
+```
+
+### Problema 17: Filtración de Credenciales de Supabase en el Historial de Git ✅ Resuelto
+```
+Error: El archivo `.env` local con la clave secreta `SUPABASE_SERVICE_KEY` original (JWT antigua `eyJ...`) fue accidentalmente subido a GitHub en commits iniciales y luego borrado, quedando expuesto en el historial de commits.
+Solución (2 pasos):
+  1. Invalidar la filtración rotando la seguridad en el panel de Supabase: se crearon nuevas claves de última generación (Publishable y Secret `sb_...`) y se inhabilitaron por completo las claves legadas presionando "Disable JWT-based API keys".
+  2. Actualizar `.gitignore` y verificar que los archivos `.env` estén des-registrados del repositorio en línea.
+```
+
 ---
 
 ## 12. Próximos Pasos
@@ -1021,6 +1057,9 @@ Solución: Reutilizar la inferencia regional de la imagen completa en `full_raw 
 9. ✅ Optimización del postprocesamiento OCR y resolución del cuello de botella por doble inferencia en fallback
 10. ✅ Procesamiento masivo del dataset de imágenes reales de WhatsApp con persistencia real en Supabase
 11. ✅ Simulación de Inferencia Continua Asíncrona (Multihilo) con descarte de frames (frame-dropping) en `scripts/continuous_inference.py` para evitar congelamiento de la GUI/cámara
+12. ✅ Re-diseño de Seguridad de Supabase (RLS): Implementación de políticas de lectura SELECT para desarrollo y creación de función RPC segura (`obtener_ocupacion_publica`) con `SECURITY DEFINER`.
+13. ✅ Trigger de Base de Datos para Zonas: Configuración de `auto_asignar_zona_acceso` para asociar accesos a zonas mediante triggers SQL.
+14. ✅ Cierre de Fuga de Credenciales: Migración a claves API de Supabase de nueva generación y desactivación definitiva del endpoint JWT legacy.
 
 ### Corto Plazo (1-2 semanas)
 - [ ] Ajustar umbrales mínimos de confianza de OCR según tipo de iluminación del acceso.
@@ -1139,7 +1178,7 @@ Para secuencias finitas de imágenes o videos con término, se implementó el fl
 
 ## Resumen Ejecutivo
 
-Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 13 fases de desarrollo completadas son:
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 16 fases de desarrollo completadas son:
 
 1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
 2. ✅ 1,000 imágenes sintéticas generadas.
@@ -1154,6 +1193,9 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 11. ✅ **Reorganización física del proyecto** — Separación en carpetas independientes `/backend` y `/frontend`.
 12. ✅ **Procesamiento de Imágenes Reales** — Inferencia en lote optimizada de 114 fotos de WhatsApp con 72.81% de éxito e inserción real en Supabase.
 13. ✅ **Inferencia Continua Asíncrona (Multihilo)** — Simulación desacoplada productor/consumidor con descarte de frames y visualización en tiempo real fluida sin congelamientos.
+14. ✅ **Aislamiento de Privacidad (Vista Pública Segura)** — Implementación de la función segura RPC `obtener_ocupacion_publica()` con `SECURITY DEFINER` para ocultar patentes a usuarios no registrados.
+15. ✅ **Triggers de Integridad en Zonas** — Automatización de asignación de `zona_id` mediante trigger SQL antes de insertar accesos.
+16. ✅ **Saneamiento de Fuga de Credenciales** — Rotación exitosa de claves expuestas en el historial a claves `sb_...` e inhabilitación total del endpoint legacy comprometido.
 
 ### Stack Tecnológico Final
 

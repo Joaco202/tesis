@@ -55,7 +55,7 @@ if (-not $SkipSmokeTest) {
     }
 
     $env:PYTHONPATH = 'src'
-    & $venvPython -m vision_ocr_pipeline run --source sample.jpg --config config.example.yaml --event-type entrada --camera-id cam-acceso-1 --output outputs
+    & $venvPython -m vision_ocr_pipeline run --source sample.jpg --config config.example.yaml --event-type entrada --camera-id camara-1 --output outputs
 }
 
 Write-Host 'Listo. Activa el entorno con:'
