@@ -11,7 +11,7 @@ import cv2
 import numpy as np
 
 # Agregar carpeta base al PATH
-sys.path.append(str(Path(__file__).resolve().parents[2]))
+sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from src.vision_ocr_pipeline.config import load_config
 from src.vision_ocr_pipeline.pipeline import VisionOCRPipeline, DetectionResult
@@ -20,67 +20,77 @@ from src.vision_ocr_pipeline.pipeline import VisionOCRPipeline, DetectionResult
 class SharedState:
     def __init__(self):
         self.running = True
+        self.producer_done = False
         self.latest_frame = None         # Frame crudo para inferencia
         self.display_frame = None        # Frame anotado para mostrar en GUI
         self.plate_overlay = None        # Info de patente detectada para overlay en pantalla: (texto, conf, timestamp)
         self.lock = threading.Lock()
 
 
-def grabber_thread_func(state: SharedState, is_video: bool, source_path: Path, delay: float):
+def grabber_thread_func(state: SharedState, is_video: bool, source_path: Path, delay: float, limit: int | None = None):
     """Hilo Productor: Captura imágenes desde video o directorio de forma continua."""
-    if is_video:
-        cap = cv2.VideoCapture(str(source_path))
-        if not cap.isOpened():
-            print("Error: No se pudo abrir el archivo de video.")
-            state.running = False
-            return
+    try:
+        if is_video:
+            cap = cv2.VideoCapture(str(source_path))
+            if not cap.isOpened():
+                print("Error: No se pudo abrir el archivo de video.")
+                return
+                
+            frame_interval = 10  # Procesar 1 de cada 10 frames de video para mantener fluidez
+            frame_count = 0
             
-        frame_interval = 10  # Procesar 1 de cada 10 frames de video para mantener fluidez
-        frame_count = 0
-        
-        try:
-            while state.running:
-                ret, frame = cap.read()
-                if not ret:
-                    state.running = False
-                    break
-                frame_count += 1
-                if frame_count % frame_interval != 0:
-                    continue
-                    
-                with state.lock:
-                    state.latest_frame = frame.copy()
-                # Pequeño sleep para no saturar I/O
-                time.sleep(0.01)
-        finally:
-            cap.release()
-    else:
-        # Directorio de imágenes
-        valid_exts = {".jpg", ".jpeg", ".png"}
-        images = [p for p in source_path.iterdir() if p.suffix.lower() in valid_exts]
-        images = sorted(images, key=lambda x: x.name)
-        
-        if not images:
-            print("No se encontraron imágenes válidas en el directorio.")
-            state.running = False
-            return
+            try:
+                while state.running:
+                    ret, frame = cap.read()
+                    if not ret:
+                        break
+                    frame_count += 1
+                    if frame_count % frame_interval != 0:
+                        continue
+                        
+                    with state.lock:
+                        state.latest_frame = frame.copy()
+                    # Pequeño sleep para no saturar I/O
+                    time.sleep(0.01)
+            finally:
+                cap.release()
+        else:
+            # Directorio de imágenes
+            valid_exts = {".jpg", ".jpeg", ".png"}
+            all_images = [p for p in source_path.iterdir() if p.suffix.lower() in valid_exts]
             
-        img_idx = 0
-        while state.running and img_idx < len(images):
-            img_path = images[img_idx]
-            frame = cv2.imread(str(img_path))
-            if frame is not None:
-                with state.lock:
-                    state.latest_frame = (frame.copy(), img_path.name)
-            img_idx += 1
-            # Esperar el delay especificado para simular el paso continuo de vehículos
-            time.sleep(delay)
-        state.running = False
+            # Priorizar imágenes de WhatsApp si existen (como en test_real_inputs.py)
+            whatsapp_images = [p for p in all_images if "whatsapp" in p.name.lower()]
+            if whatsapp_images:
+                images = sorted(whatsapp_images, key=lambda x: x.name)
+            else:
+                images = sorted(all_images, key=lambda x: x.name)
+            
+            if not images:
+                print("No se encontraron imágenes válidas en el directorio.")
+                return
+                
+            if limit is not None:
+                images = images[:limit]
+                
+            img_idx = 0
+            while state.running and img_idx < len(images):
+                img_path = images[img_idx]
+                frame = cv2.imread(str(img_path))
+                if frame is not None:
+                    with state.lock:
+                        state.latest_frame = (frame.copy(), img_path.name)
+                img_idx += 1
+                # Esperar el delay especificado para simular el paso continuo de vehículos
+                time.sleep(delay)
+    finally:
+        with state.lock:
+            state.producer_done = True
 
 
 def worker_thread_func(pipeline: VisionOCRPipeline, state: SharedState, args, last_detections: dict[str, float]):
     """Hilo Consumidor: Procesa frames usando el pipeline y escribe a Supabase."""
-    while state.running:
+    while True:
         frame = None
         img_origin = "continuous_inference"
         
@@ -91,6 +101,8 @@ def worker_thread_func(pipeline: VisionOCRPipeline, state: SharedState, args, la
                 else:
                     frame = state.latest_frame
                 state.latest_frame = None  # Consumir el frame
+            elif state.producer_done or not state.running:
+                break
                 
         if frame is None:
             time.sleep(0.05)
@@ -149,6 +161,8 @@ def worker_thread_func(pipeline: VisionOCRPipeline, state: SharedState, args, la
             else:
                 # Ignorada por cooldown activo
                 pass
+        else:
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] ✗ Sin patente detectada (Inferencia: {elapsed:.3f}s) - {img_origin}")
                 
         with state.lock:
             state.display_frame = annotated
@@ -201,6 +215,12 @@ def main() -> None:
         action="store_true",
         help="Desactivar el guardado real de datos en Supabase.",
     )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Límite de imágenes a procesar.",
+    )
     args = parser.parse_args()
 
     # Cargar configuración
@@ -225,7 +245,7 @@ def main() -> None:
     # Crear e iniciar hilos
     grabber_thread = threading.Thread(
         target=grabber_thread_func,
-        args=(state, is_video, source_path, args.delay),
+        args=(state, is_video, source_path, args.delay, args.limit),
         daemon=True
     )
     worker_thread = threading.Thread(
@@ -247,6 +267,10 @@ def main() -> None:
     # Hilo Principal: GUI Event Loop (OpenCV imshow)
     try:
         while state.running:
+            with state.lock:
+                if state.producer_done and state.latest_frame is None and not worker_thread.is_alive():
+                    state.running = False
+                    break
             frame_to_show = None
             overlay_info = None
             
