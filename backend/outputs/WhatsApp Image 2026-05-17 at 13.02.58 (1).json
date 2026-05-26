@@ -1,8 +1,8 @@
 {
   "camera_id": "camara-1",
   "event_type": "entrada",
-  "timestamp_utc": "2026-05-25T06:13:01.523665+00:00",
-  "total_detections": 1,
+  "timestamp_utc": "2026-05-26T04:28:50.985946+00:00",
+  "total_detections": 2,
   "events": [
     {
       "detection": {
@@ -24,6 +24,22 @@
       "ocr_best_raw_confidence": 0.6041451990604401,
       "plate_text": "ES1118",
       "plate_confidence": 0.6041451990604401
+    },
+    {
+      "detection": {
+        "cls_id": 0,
+        "cls_name": "Patente",
+        "confidence": 0.6264256834983826,
+        "x1": 473,
+        "y1": 755,
+        "x2": 517,
+        "y2": 787
+      },
+      "ocr": [],
+      "ocr_best_raw_text": null,
+      "ocr_best_raw_confidence": null,
+      "plate_text": null,
+      "plate_confidence": null
     }
   ],
   "database": {

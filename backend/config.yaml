@@ -1,5 +1,5 @@
 detection:
-  model: yolov8n.pt
+  model: runs/detect/finetune-chilean/weights/best.pt
   confidence: 0.25
   iou: 0.45
   classes: null

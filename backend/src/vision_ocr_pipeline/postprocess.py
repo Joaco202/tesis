@@ -66,13 +66,57 @@ LETTER_CORRECTION_MAP: dict[str, list[str]] = {
 }
 
 
-def preprocess_plate_crop(crop: np.ndarray) -> np.ndarray:
-    """Preprocesamiento de la porción de imagen que contiene la patente."""
+def check_and_invert_contrast(crop: np.ndarray) -> np.ndarray:
+    """
+    Detecta si el recorte de la patente tiene fondo oscuro y texto claro
+    (típico de patentes diplomáticas o de zona franca) e invierte los colores
+    para que quede texto oscuro sobre fondo claro, mejorando el reconocimiento del OCR.
+    """
+    if crop is None or crop.size == 0:
+        return crop
+
+    # Convertir a escala de grises para analizar brillo
     gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
-    denoised = cv2.bilateralFilter(gray, d=7, sigmaColor=60, sigmaSpace=60)
-    boosted = cv2.convertScaleAbs(denoised, alpha=1.2, beta=8)
-    _, binary = cv2.threshold(boosted, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    return binary
+    h, w = gray.shape
+
+    # Calcular promedio de intensidad de los bordes (representa el fondo)
+    # Tomamos un borde delgado de 2 píxeles
+    border_pixels = []
+    border_pixels.extend(gray[0:2, :].flatten())
+    border_pixels.extend(gray[h-2:h, :].flatten())
+    border_pixels.extend(gray[:, 0:2].flatten())
+    border_pixels.extend(gray[:, w-2:w].flatten())
+
+    avg_border = np.mean(border_pixels) if border_pixels else 128
+
+    # Si el fondo (bordes) es predominantemente oscuro (menor a 100),
+    # es muy probable que sea texto claro sobre fondo oscuro (diplomática, Zofri, etc.)
+    if avg_border < 100:
+        crop = cv2.bitwise_not(crop)
+
+    return crop
+
+
+def preprocess_plate_crop(crop: np.ndarray) -> np.ndarray:
+    """
+    Preprocesamiento de la porción de imagen que contiene la patente.
+    Redimensiona la imagen si es muy pequeña para mejorar la precisión del OCR,
+    manteniendo el formato de 3 canales BGR requerido por PaddleOCR.
+    """
+    if crop is None or crop.size == 0:
+        return crop
+
+    # 1. Invertir contraste si es fondo oscuro (diplomáticas, Zofri, etc.)
+    crop = check_and_invert_contrast(crop)
+
+    # 2. Redimensionar si es muy pequeña
+    h, w = crop.shape[:2]
+    # Si la altura es menor a 80 o el ancho menor a 200, reescalamos con interpolación cúbica
+    if h < 80 or w < 200:
+        scale = max(2.0, 80.0 / h)
+        crop = cv2.resize(crop, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+
+    return crop
 
 
 def normalize_plate_text(text: str) -> str:
@@ -173,7 +217,7 @@ def generate_corrected_variants(candidate: str, cfg: OCRConfig | None = None) ->
     for combo in itertools.product(*pos_options):
         variants.add("".join(combo))
 
-    return list(variants)
+    return sorted(list(variants))
 
 
 def _reversed_strict_variant(candidate: str) -> str | None:

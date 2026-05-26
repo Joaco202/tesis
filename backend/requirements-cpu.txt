@@ -1,0 +1,24 @@
+# requirements-cpu.txt
+# Dependencias optimizadas para servidores sin GPU (CPU-only)
+
+# PyTorch (Exclusivo CPU)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.7.0
+torchvision
+
+# PaddlePaddle (Exclusivo CPU - descarga estándar de PyPI)
+paddlepaddle>=3.0.0b1
+
+# Procesamiento e IA
+ultralytics>=8.3.0
+opencv-python-headless==4.10.0.84
+paddleocr>=3.0.0
+
+# Utilidades y Base de Datos
+pydantic>=2.9.0
+pyyaml>=6.0.2
+numpy>=1.26.0,<2.0
+typer>=0.12.5
+rich>=13.9.2
+supabase>=2.6.0
+postgrest>=0.10.0

@@ -67,11 +67,32 @@ class VisionOCRPipeline:
         output: list[DetectionResult] = []
 
         if detections:
-            # Procesar todas las detecciones (ordenadas por confianza), exponer OCR por cada una.
             for det in detections:
                 crop = image[max(det.y1, 0) : max(det.y2, 0), max(det.x1, 0) : max(det.x2, 0)]
-                ocr_input = preprocess_plate_crop(crop) if crop.size else crop
-                ocr_text = self.ocr.read_text(ocr_input) if crop.size else []
+                if not crop.size:
+                    ocr_text = []
+                else:
+                    h, w = crop.shape[:2]
+                    aspect_ratio = w / h if h > 0 else 0
+                    
+                    # Si es una patente tipo moto/arrastre (cercana a cuadrada, relación de aspecto < 2.0)
+                    if 0 < aspect_ratio < 2.0:
+                        mid_y = h // 2
+                        top_half = crop[0:mid_y, :]
+                        bottom_half = crop[mid_y:h, :]
+                        
+                        top_prep = preprocess_plate_crop(top_half)
+                        bottom_prep = preprocess_plate_crop(bottom_half)
+                        
+                        ocr_top = self.ocr.read_text(top_prep)
+                        ocr_bottom = self.ocr.read_text(bottom_prep)
+                        
+                        ocr_text = ocr_top + ocr_bottom
+                    else:
+                        # Formato estándar de una sola línea
+                        ocr_input = preprocess_plate_crop(crop)
+                        ocr_text = self.ocr.read_text(ocr_input)
+                        
                 plate_text, plate_conf = best_plate_from_ocr(ocr_text, self.cfg.ocr)
                 output.append(
                     DetectionResult(

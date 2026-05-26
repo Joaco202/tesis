@@ -1,0 +1,66 @@
+{
+  "camera_id": "camara-1",
+  "event_type": "entrada",
+  "timestamp_utc": "2026-05-26T04:29:00.732026+00:00",
+  "total_detections": 3,
+  "events": [
+    {
+      "detection": {
+        "cls_id": -1,
+        "cls_name": "ocr_region_fallback_full",
+        "confidence": 0.7873008847236633,
+        "x1": 0,
+        "y1": 0,
+        "x2": 1199,
+        "y2": 1599
+      },
+      "ocr": [
+        {
+          "text": "PCTW27",
+          "confidence": 0.7873008847236633
+        }
+      ],
+      "ocr_best_raw_text": "PCTW27",
+      "ocr_best_raw_confidence": 0.7873008847236633,
+      "plate_text": "PCTW27",
+      "plate_confidence": 0.7873008847236633
+    },
+    {
+      "detection": {
+        "cls_id": 0,
+        "cls_name": "Patente",
+        "confidence": 0.8193708062171936,
+        "x1": 683,
+        "y1": 831,
+        "x2": 734,
+        "y2": 859
+      },
+      "ocr": [],
+      "ocr_best_raw_text": null,
+      "ocr_best_raw_confidence": null,
+      "plate_text": null,
+      "plate_confidence": null
+    },
+    {
+      "detection": {
+        "cls_id": 0,
+        "cls_name": "Patente",
+        "confidence": 0.7258480787277222,
+        "x1": 73,
+        "y1": 761,
+        "x2": 124,
+        "y2": 782
+      },
+      "ocr": [],
+      "ocr_best_raw_text": null,
+      "ocr_best_raw_confidence": null,
+      "plate_text": null,
+      "plate_confidence": null
+    }
+  ],
+  "database": {
+    "enabled": false,
+    "saved_events": [],
+    "errors": []
+  }
+}
