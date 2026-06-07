@@ -38,9 +38,13 @@ const CustomDatePicker = ({ label, value, onChange }) => {
   const initialDate = value ? new Date(value + 'T00:00:00') : today;
   const [viewYear, setViewYear] = useState(initialDate.getFullYear());
   const [viewMonth, setViewMonth] = useState(initialDate.getMonth()); // 0-indexed
+  const [slideDirection, setSlideDirection] = useState('next');
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Format value to display (e.g. dd-MM-yyyy)
-  const displayValue = value ? format(new Date(value + 'T00:00:00'), 'dd-MM-yyyy') : '';
+  // Format value to display (dd/MM/yyyy)
+  const displayValue = value 
+    ? format(new Date(value + 'T00:00:00'), 'dd/MM/yyyy') 
+    : format(new Date(), 'dd/MM/yyyy');
 
   // Get number of days in the month
   const getDaysInMonth = (year, month) => {
@@ -61,6 +65,7 @@ const CustomDatePicker = ({ label, value, onChange }) => {
   ];
 
   const handlePrevMonth = () => {
+    setSlideDirection('prev');
     if (viewMonth === 0) {
       setViewMonth(11);
       setViewYear(prev => prev - 1);
@@ -70,6 +75,7 @@ const CustomDatePicker = ({ label, value, onChange }) => {
   };
 
   const handleNextMonth = () => {
+    setSlideDirection('next');
     if (viewMonth === 11) {
       setViewMonth(0);
       setViewYear(prev => prev + 1);
@@ -127,8 +133,8 @@ const CustomDatePicker = ({ label, value, onChange }) => {
           height: '32px',
           borderRadius: '50%',
           border: 'none',
-          background: selected ? 'var(--ubb-blue)' : 'none',
-          color: selected ? '#ffffff' : todayCell ? 'var(--ubb-blue)' : 'var(--text-primary)',
+          background: selected ? 'var(--ubb-blue)' : todayCell ? 'var(--ubb-blue)' : 'none',
+          color: selected ? '#ffffff' : todayCell ? '#ffffff' : 'var(--text-primary)',
           fontWeight: selected || todayCell ? '600' : 'normal',
           cursor: 'pointer',
           display: 'flex',
@@ -138,10 +144,10 @@ const CustomDatePicker = ({ label, value, onChange }) => {
           transition: 'all 0.2s ease',
         }}
         onMouseEnter={(e) => {
-          if (!selected) e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+          if (!selected && !todayCell) e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
         }}
         onMouseLeave={(e) => {
-          if (!selected) e.currentTarget.style.backgroundColor = 'transparent';
+          if (!selected && !todayCell) e.currentTarget.style.backgroundColor = 'transparent';
         }}
       >
         {d}
@@ -165,13 +171,11 @@ const CustomDatePicker = ({ label, value, onChange }) => {
   }, [isOpen]);
 
   return (
-    <div ref={containerRef} className="custom-datepicker-container" style={{ position: 'relative', flex: '0 0 220px' }}>
-      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-        {label}
-      </label>
+    <div ref={containerRef} className="custom-datepicker-container" style={{ position: 'relative', flex: '0 0 220px', marginTop: '6px' }}>
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className="input-field" 
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         style={{ 
           height: '42px', 
           display: 'flex', 
@@ -180,13 +184,32 @@ const CustomDatePicker = ({ label, value, onChange }) => {
           padding: '0 1rem', 
           cursor: 'pointer',
           userSelect: 'none',
-          border: '1px solid var(--border-color)',
+          border: (isOpen || isHovered) ? '1px solid #ffffff' : '1px solid var(--border-color)',
           borderRadius: 'var(--radius-md)',
           backgroundColor: 'var(--bg-secondary)',
+          position: 'relative',
+          transition: 'all 0.2s ease',
         }}
       >
-        <span style={{ color: displayValue ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '0.875rem' }}>
-          {displayValue || 'Seleccionar fecha...'}
+        {/* Floating Label */}
+        <span 
+          style={{ 
+            position: 'absolute', 
+            top: '-9px', 
+            left: '12px', 
+            backgroundColor: 'var(--bg-secondary)', 
+            padding: '0 6px', 
+            fontSize: '0.75rem', 
+            fontWeight: 500,
+            color: (isOpen || isHovered) ? 'var(--text-primary)' : 'var(--text-secondary)',
+            pointerEvents: 'none',
+            transition: 'color 0.2s ease',
+          }}
+        >
+          {label}
+        </span>
+        <span style={{ color: 'var(--text-primary)', fontSize: '0.875rem' }}>
+          {displayValue}
         </span>
         <CalendarIcon size={16} style={{ color: 'var(--text-secondary)' }} />
       </div>
@@ -223,10 +246,19 @@ const CustomDatePicker = ({ label, value, onChange }) => {
                   border: 'none',
                   color: 'var(--text-secondary)',
                   cursor: 'pointer',
-                  padding: '4px',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  transition: 'background-color 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
                 }}
               >
                 <ChevronLeft size={16} />
@@ -239,10 +271,19 @@ const CustomDatePicker = ({ label, value, onChange }) => {
                   border: 'none',
                   color: 'var(--text-secondary)',
                   cursor: 'pointer',
-                  padding: '4px',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  transition: 'background-color 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
                 }}
               >
                 <ChevronRight size={16} />
@@ -272,8 +313,14 @@ const CustomDatePicker = ({ label, value, onChange }) => {
           </div>
 
           {/* Days grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 32px)', gap: '4px', justifyContent: 'center' }}>
-            {cells}
+          <div style={{ overflow: 'hidden', width: '100%' }}>
+            <div 
+              key={`${viewYear}-${viewMonth}`}
+              className={slideDirection === 'next' ? 'slide-in-right' : 'slide-in-left'}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 32px)', gap: '4px', justifyContent: 'center' }}
+            >
+              {cells}
+            </div>
           </div>
         </div>
       )}
@@ -318,8 +365,9 @@ export const ManagerDashboard = () => {
   });
 
   // Access report date filters
-  const [accessStartDate, setAccessStartDate] = useState('');
-  const [accessEndDate, setAccessEndDate] = useState('');
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const [accessStartDate, setAccessStartDate] = useState(todayStr);
+  const [accessEndDate, setAccessEndDate] = useState(todayStr);
   const [exportingAccess, setExportingAccess] = useState(false);
 
   const fetchData = async () => {
@@ -740,12 +788,12 @@ export const ManagerDashboard = () => {
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-end' }}>
           <CustomDatePicker 
-            label="Fecha de Inicio" 
+            label="Desde" 
             value={accessStartDate} 
             onChange={setAccessStartDate} 
           />
           <CustomDatePicker 
-            label="Fecha de Fin" 
+            label="Hasta" 
             value={accessEndDate} 
             onChange={setAccessEndDate} 
           />

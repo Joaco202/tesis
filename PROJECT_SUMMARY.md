@@ -1265,22 +1265,26 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 
 ---
 
-## 24. Calendario de Fecha Personalizado (Estilo Dark y Alineación Centrada)
+## 24. Calendario de Fecha Personalizado (Estilo Dark, Animación y Borde Flotante Iluminado)
 
-**Objetivo:** Reemplazar los controles de fecha nativos del navegador por un selector de calendario personalizado con estilo oscuro uniforme y alineación centrada perfecta.
+**Objetivo:** Reemplazar los controles de fecha nativos por un selector de calendario personalizado con estilo oscuro, alineación centrada, transiciones animadas y un diseño de input flotante iluminado.
 **Fecha de Ejecución:** 7 de junio de 2026
 
-### 1. Componente CustomDatePicker
-- Se desarrolló e integró el componente `CustomDatePicker` en [ManagerDashboard.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/ManagerDashboard.jsx) para los controles de fecha de inicio y fin.
-- Cuenta con un menú desplegable (popover) con un diseño estilo dark mode, indicadores de meses en español con controles de navegación bidireccionales (`ChevronLeft` / `ChevronRight`).
+### 1. Componente CustomDatePicker e Inputs Flotantes
+- Se desarrolló el componente `CustomDatePicker` en [ManagerDashboard.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/ManagerDashboard.jsx) para los controles de fecha "Desde" y "Hasta".
+- Se rediseñó el input de fecha como una caja con borde iluminado en blanco cuando el popover está activo o al pasar el cursor (hover), y una etiqueta flotante ("Desde" y "Hasta") que se superpone al borde superior, manteniendo el icono de calendario limpio y estático.
 
-### 2. Estilización del Día Seleccionado
-- Se reemplazó el color naranja por el azul institucional de la universidad (`var(--ubb-blue)`) para resaltar el día seleccionado mediante un círculo de fondo y texto blanco.
-- Cuenta con lógica de detección del día actual (`today`) y cierre automático al hacer clic fuera del componente utilizando una referencia de React (`useRef`).
+### 2. Estilización del Día Actual y Selección
+- Se configuró para que el círculo de fondo del día actual se destaque con el azul institucional de la universidad (`var(--ubb-blue)`) y el texto sea blanco (`#ffffff`).
+- El selector utiliza referencias de React (`useRef`) para el cierre automático al hacer clic fuera del componente.
 
-### 3. Alineación Centrada de los Días y Traducción
-- Se modificaron los encabezados semanales de `span` a `div` y se les aplicó un centrado con flexbox (`display: flex`, `alignItems: 'center'`, `justifyContent: 'center'`, `width: '32px'`, `height: '32px'`) coincidiendo con el modelo de cajas de los días numéricos para evitar desfases visuales de alineación.
-- Se tradujeron las iniciales de los días de la semana a español (`D`, `L`, `M`, `M`, `J`, `V`, `S`) para integrarse consistentemente con el idioma del mes/año.
+### 3. Animaciones, Alineación Centrada y Traducción
+- **Transición de Deslizamiento:** Se incorporó una animación de deslizamiento lateral mediante keyframes de CSS (`slide-in-left` y `slide-in-right`) al cambiar de mes.
+- **Efectos Hover:** Se añadieron efectos de círculos translúcidos al hacer hover tanto sobre las celdas de los días como sobre las flechas de navegación del mes.
+- **Alineación y Traducción:** Los encabezados se centraron con flexbox y se tradujeron a iniciales en español (`D`, `L`, `M`, `M`, `J`, `V`, `S`).
+
+### 4. Formato de Fecha Chile/Español
+- Se cambió el formato de visualización a `dd/MM/yyyy` (Día/Mes/Año) en lugar de `MM/dd/yyyy` para concordar con los estándares del sistema y el idioma nacional.
 
 ---
 
