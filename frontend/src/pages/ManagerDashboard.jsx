@@ -359,10 +359,17 @@ export const ManagerDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newIncident, setNewIncident] = useState({
     plate: '',
-    type: 'Mala lectura OCR',
     description: '',
     zoneId: '',
   });
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingIncident, setEditingIncident] = useState(null);
+
+  // Pagination states
+  const [vehiclePageSize, setVehiclePageSize] = useState(20);
+  const [vehicleCurrentPage, setVehicleCurrentPage] = useState(1);
+  const [incidentPageSize, setIncidentPageSize] = useState(20);
+  const [incidentCurrentPage, setIncidentCurrentPage] = useState(1);
 
   // Access report date filters
   const todayStr = format(new Date(), 'yyyy-MM-dd');
@@ -509,33 +516,66 @@ export const ManagerDashboard = () => {
     };
   }, []);
 
-  const handleUpdateStatus = async (incidentId, newStatus) => {
+  const handleOpenEditModal = (inc) => {
+    setEditingIncident({
+      id: inc.id,
+      vehiculo_patente: inc.vehiculo_patente || '',
+      descripcion: inc.descripcion || '',
+      estado: inc.estado === 'cerrada' ? 'cerrada' : 'abierta',
+      zona_id: inc.zona_id || '',
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEditIncident = async (e) => {
+    e.preventDefault();
+    if (!editingIncident.descripcion.trim()) {
+      alert('Por favor, completa la descripción.');
+      return;
+    }
     try {
-      const updateData = { estado: newStatus };
-      if (newStatus === 'cerrada') {
-        updateData.fecha_cierre = new Date().toISOString();
-      } else {
-        updateData.fecha_cierre = null;
-      }
-      
       const { error } = await supabase
         .from('incidencias')
-        .update(updateData)
+        .update({
+          descripcion: editingIncident.descripcion.trim(),
+          estado: editingIncident.estado,
+          zona_id: editingIncident.zona_id ? parseInt(editingIncident.zona_id) : null,
+        })
+        .eq('id', editingIncident.id);
+
+      if (error) throw error;
+      setIsEditModalOpen(false);
+      setEditingIncident(null);
+      fetchData();
+    } catch (err) {
+      console.error('Error updating incident:', err);
+      alert('Error al guardar cambios de la incidencia: ' + err.message);
+    }
+  };
+
+  const handleDeleteIncident = async (incidentId) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar esta incidencia?')) {
+      return;
+    }
+    try {
+      const { error } = await supabase
+        .from('incidencias')
+        .delete()
         .eq('id', incidentId);
-        
+
       if (error) throw error;
       fetchData();
     } catch (err) {
-      console.error('Error updating incident status:', err);
-      alert('Error al actualizar el estado: ' + err.message);
+      console.error('Error deleting incident:', err);
+      alert('Error al eliminar la incidencia: ' + err.message);
     }
   };
 
   const handleCreateIncident = async (e) => {
     e.preventDefault();
     try {
-      if (!newIncident.type || !newIncident.description) {
-        alert('Por favor, completa los campos obligatorios.');
+      if (!newIncident.description) {
+        alert('Por favor, completa la descripción.');
         return;
       }
 
@@ -552,7 +592,7 @@ export const ManagerDashboard = () => {
 
       const newInc = {
         vehiculo_patente: plateUpper,
-        tipo: newIncident.type,
+        tipo: 'Incidencia',
         descripcion: newIncident.description,
         zona_id: newIncident.zoneId ? parseInt(newIncident.zoneId) : null,
         usuario_id: user ? user.id : null,
@@ -566,7 +606,7 @@ export const ManagerDashboard = () => {
       if (error) throw error;
       
       setIsModalOpen(false);
-      setNewIncident({ plate: '', type: 'Mala lectura OCR', description: '', zoneId: '' });
+      setNewIncident({ plate: '', description: '', zoneId: '' });
       fetchData();
     } catch (err) {
       console.error('Error creating incident:', err);
@@ -635,11 +675,11 @@ export const ManagerDashboard = () => {
   };
 
   const exportReport = () => {
-    let csvContent = 'data:text/csv;charset=utf-8,';
-    csvContent += 'ID,Patente,Tipo,Descripcion,Fecha,Estado\n';
+    let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
+    csvContent += 'ID,Patente,Descripcion,Fecha,Estado\n';
     
     incidents.forEach(inc => {
-      csvContent += `"${inc.id}","${inc.vehiculo_patente || 'N/A'}","${inc.tipo}","${inc.descripcion.replace(/"/g, '""')}","${inc.fecha_creacion}","${inc.estado}"\n`;
+      csvContent += `"${inc.id}","${inc.vehiculo_patente || 'N/A'}","${inc.descripcion.replace(/"/g, '""')}","${inc.fecha_creacion}","${inc.estado}"\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -708,6 +748,26 @@ export const ManagerDashboard = () => {
       setExportingAccess(false);
     }
   };
+
+  // Pagination computations for Vehicles
+  const filteredVehicles = vehicles.filter(veh => 
+    veh.patente.toLowerCase().includes(searchVehicle.toLowerCase()) ||
+    (veh.propietario_nombre && veh.propietario_nombre.toLowerCase().includes(searchVehicle.toLowerCase()))
+  );
+  const totalVehiclesCount = filteredVehicles.length;
+  const totalVehiclePages = Math.ceil(totalVehiclesCount / vehiclePageSize) || 1;
+  const paginatedVehicles = filteredVehicles.slice(
+    (vehicleCurrentPage - 1) * vehiclePageSize,
+    vehicleCurrentPage * vehiclePageSize
+  );
+
+  // Pagination computations for Incidents
+  const totalIncidentsCount = incidents.length;
+  const totalIncidentPages = Math.ceil(totalIncidentsCount / incidentPageSize) || 1;
+  const paginatedIncidents = incidents.slice(
+    (incidentCurrentPage - 1) * incidentPageSize,
+    incidentCurrentPage * incidentPageSize
+  );
 
   if (loading) {
     return (
@@ -814,22 +874,41 @@ export const ManagerDashboard = () => {
       <div className="card" style={{ marginBottom: '2rem' }}>
         <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Car size={20} color="var(--ubb-blue)" /> Gestión de Funcionarios y Patentes
+            <Car size={20} color="var(--ubb-blue)" /> Gestión de Vehículos y Patentes
           </h2>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
+              <select
+                className="input-field"
+                style={{ width: '75px', height: '38px', padding: '0 0.5rem' }}
+                value={vehiclePageSize}
+                onChange={(e) => {
+                  setVehiclePageSize(Number(e.target.value));
+                  setVehicleCurrentPage(1);
+                }}
+              >
+                <option value={20}>20</option>
+                <option value={30}>30</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
             <div style={{ position: 'relative' }}>
               <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
               <input 
                 type="text" 
-                placeholder="Buscar funcionario o patente..." 
+                placeholder="Buscar propietario o patente..." 
                 className="input-field" 
                 style={{ paddingLeft: '2.5rem', width: '250px', height: '38px' }}
                 value={searchVehicle}
-                onChange={(e) => setSearchVehicle(e.target.value)}
+                onChange={(e) => {
+                  setSearchVehicle(e.target.value);
+                  setVehicleCurrentPage(1);
+                }}
               />
             </div>
             <button className="btn btn-primary" onClick={() => handleOpenVehicleModal(null)}>
-              <Plus size={18} /> Vincular Funcionario
+              <Plus size={18} /> Vincular Vehículo
             </button>
           </div>
         </div>
@@ -839,51 +918,35 @@ export const ManagerDashboard = () => {
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                 <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Patente</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Propietario / Funcionario</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Tipo</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>¿Es Funcionario?</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Propietario</th>
                 <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Observaciones</th>
                 <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Fecha Registro</th>
                 <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {vehicles
-                .filter(veh => 
-                  veh.patente.toLowerCase().includes(searchVehicle.toLowerCase()) ||
-                  (veh.propietario_nombre && veh.propietario_nombre.toLowerCase().includes(searchVehicle.toLowerCase()))
-                )
-                .map((veh) => (
-                  <tr key={veh.patente} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '1.125rem', letterSpacing: '1px', textAlign: 'center' }}>{veh.patente}</td>
-                    <td style={{ padding: '1rem 0.5rem', fontWeight: 500, textAlign: 'center' }}>{veh.propietario_nombre || 'No asignado'}</td>
-                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>{veh.tipo || 'N/A'}</td>
-                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
-                      <span className={`badge ${veh.funcionario ? 'badge-primary' : 'badge-secondary'}`}>
-                        {veh.funcionario ? 'Sí' : 'No'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>{veh.observaciones || '-'}</td>
-                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
-                      {format(new Date(veh.created_at), 'dd-MM-yyyy HH:mm')}
-                    </td>
-                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
-                      <button 
-                        className="btn btn-secondary" 
-                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
-                        onClick={() => handleOpenVehicleModal(veh)}
-                      >
-                        Editar/Vincular
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              {vehicles.filter(veh => 
-                veh.patente.toLowerCase().includes(searchVehicle.toLowerCase()) ||
-                (veh.propietario_nombre && veh.propietario_nombre.toLowerCase().includes(searchVehicle.toLowerCase()))
-              ).length === 0 && (
+              {paginatedVehicles.map((veh) => (
+                <tr key={veh.patente} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '1.125rem', letterSpacing: '1px', textAlign: 'center' }}>{veh.patente}</td>
+                  <td style={{ padding: '1rem 0.5rem', fontWeight: 500, textAlign: 'center' }}>{veh.propietario_nombre || 'No asignado'}</td>
+                  <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>{veh.observaciones || '-'}</td>
+                  <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                    {format(new Date(veh.created_at), 'dd-MM-yyyy HH:mm')}
+                  </td>
+                  <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
+                    <button 
+                      className="btn btn-secondary" 
+                      style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                      onClick={() => handleOpenVehicleModal(veh)}
+                    >
+                      Editar/Vincular
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {filteredVehicles.length === 0 && (
                 <tr>
-                  <td colSpan="7" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     No se encontraron vehículos registrados.
                   </td>
                 </tr>
@@ -891,17 +954,65 @@ export const ManagerDashboard = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Controles de paginación de vehículos */}
+        {filteredVehicles.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', justifyContent: 'space-between', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+              Mostrando {Math.min(totalVehiclesCount, (vehicleCurrentPage - 1) * vehiclePageSize + 1)} - {Math.min(totalVehiclesCount, vehicleCurrentPage * vehiclePageSize)} de {totalVehiclesCount} vehículos
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => setVehicleCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={vehicleCurrentPage === 1}
+                style={{ padding: '0.5rem 1rem' }}
+              >
+                Anterior
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '0 0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
+                Página {vehicleCurrentPage} de {totalVehiclePages}
+              </div>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => setVehicleCurrentPage(prev => Math.min(totalVehiclePages, prev + 1))}
+                disabled={vehicleCurrentPage === totalVehiclePages}
+                style={{ padding: '0.5rem 1rem' }}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Incidents Table */}
       <div className="card">
-        <div className="flex-between" style={{ marginBottom: '1.5rem' }}>
+        <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <AlertTriangle size={20} color="var(--status-warning)" /> Gestión de Incidencias
           </h2>
-          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
-            <Plus size={18} /> Registrar Incidencia
-          </button>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
+              <select
+                className="input-field"
+                style={{ width: '75px', height: '38px', padding: '0 0.5rem' }}
+                value={incidentPageSize}
+                onChange={(e) => {
+                  setIncidentPageSize(Number(e.target.value));
+                  setIncidentCurrentPage(1);
+                }}
+              >
+                <option value={20}>20</option>
+                <option value={30}>30</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+            <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+              <Plus size={18} /> Registrar Incidencia
+            </button>
+          </div>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -910,73 +1021,49 @@ export const ManagerDashboard = () => {
               <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
                 <th style={{ padding: '1rem 0.5rem' }}>ID</th>
                 <th style={{ padding: '1rem 0.5rem' }}>Patente</th>
-                <th style={{ padding: '1rem 0.5rem' }}>Tipo</th>
                 <th style={{ padding: '1rem 0.5rem' }}>Descripción</th>
                 <th style={{ padding: '1rem 0.5rem' }}>Fecha Registro</th>
                 <th style={{ padding: '1rem 0.5rem' }}>Estado</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>Acciones Rápidas</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {incidents.map((inc) => (
+              {paginatedIncidents.map((inc) => (
                 <tr key={inc.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)' }}>#{inc.id}</td>
                   <td style={{ padding: '1rem 0.5rem', fontWeight: 600 }}>{inc.vehiculo_patente || 'N/A'}</td>
-                  <td style={{ padding: '1rem 0.5rem' }}>{inc.tipo}</td>
                   <td style={{ padding: '1rem 0.5rem' }}>{inc.descripcion}</td>
                   <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)' }}>
                     {format(new Date(inc.fecha_creacion), 'dd-MM-yyyy HH:mm')}
                   </td>
                   <td style={{ padding: '1rem 0.5rem' }}>
-                    <span className={`badge ${inc.estado === 'cerrada' ? 'badge-success' : inc.estado === 'en_revision' ? 'badge-warning' : 'badge-danger'}`}>
-                      {inc.estado === 'cerrada' ? 'Resuelto' : inc.estado === 'en_revision' ? 'En Revisión' : 'Abierto'}
+                    <span className={`badge ${inc.estado === 'cerrada' ? 'badge-success' : 'badge-danger'}`}>
+                      {inc.estado === 'cerrada' ? 'Resuelto' : 'Pendiente'}
                     </span>
                   </td>
                   <td style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                      {inc.estado === 'abierta' && (
-                        <>
-                          <button 
-                            className="btn btn-secondary" 
-                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '2px' }}
-                            onClick={() => handleUpdateStatus(inc.id, 'en_revision')}
-                          >
-                            <ClockIcon size={12} /> Revisar
-                          </button>
-                          <button 
-                            className="btn btn-secondary" 
-                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: 'var(--status-success)', display: 'flex', alignItems: 'center', gap: '2px' }}
-                            onClick={() => handleUpdateStatus(inc.id, 'cerrada')}
-                          >
-                            <Check size={12} /> Resolver
-                          </button>
-                        </>
-                      )}
-                      {inc.estado === 'en_revision' && (
-                        <button 
-                          className="btn btn-secondary" 
-                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: 'var(--status-success)', display: 'flex', alignItems: 'center', gap: '2px' }}
-                          onClick={() => handleUpdateStatus(inc.id, 'cerrada')}
-                        >
-                          <Check size={12} /> Resolver
-                        </button>
-                      )}
-                      {inc.estado === 'cerrada' && (
-                        <button 
-                          className="btn btn-secondary" 
-                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}
-                          onClick={() => handleUpdateStatus(inc.id, 'abierta')}
-                        >
-                          Reabrir
-                        </button>
-                      )}
+                      <button 
+                        className="btn btn-secondary" 
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                        onClick={() => handleOpenEditModal(inc)}
+                      >
+                        Editar
+                      </button>
+                      <button 
+                        className="btn btn-secondary" 
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: 'var(--status-danger)' }}
+                        onClick={() => handleDeleteIncident(inc.id)}
+                      >
+                        Borrar
+                      </button>
                     </div>
                   </td>
                 </tr>
               ))}
-              {incidents.length === 0 && (
+              {paginatedIncidents.length === 0 && (
                 <tr>
-                  <td colSpan="7" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     No hay incidencias registradas.
                   </td>
                 </tr>
@@ -984,6 +1071,36 @@ export const ManagerDashboard = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Controles de paginación de incidencias */}
+        {totalIncidentsCount > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', justifyContent: 'space-between', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
+            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+              Mostrando {Math.min(totalIncidentsCount, (incidentCurrentPage - 1) * incidentPageSize + 1)} - {Math.min(totalIncidentsCount, incidentCurrentPage * incidentPageSize)} de {totalIncidentsCount} incidencias
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => setIncidentCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={incidentCurrentPage === 1}
+                style={{ padding: '0.5rem 1rem' }}
+              >
+                Anterior
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '0 0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
+                Página {incidentCurrentPage} de {totalIncidentPages}
+              </div>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => setIncidentCurrentPage(prev => Math.min(totalIncidentPages, prev + 1))}
+                disabled={incidentCurrentPage === totalIncidentPages}
+                style={{ padding: '0.5rem 1rem' }}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal para Crear Incidencia */}
@@ -1009,22 +1126,6 @@ export const ManagerDashboard = () => {
                 />
               </div>
               
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Tipo de Incidencia *</label>
-                <select 
-                  className="input-field"
-                  value={newIncident.type}
-                  onChange={(e) => setNewIncident(prev => ({ ...prev, type: e.target.value }))}
-                  required
-                >
-                  <option value="Mala lectura OCR">Mala lectura OCR</option>
-                  <option value="Vehículo mal estacionado">Vehículo mal estacionado</option>
-                  <option value="Acceso no autorizado">Acceso no autorizado</option>
-                  <option value="Obstáculo en vía">Obstáculo en vía</option>
-                  <option value="Otro">Otro</option>
-                </select>
-              </div>
-
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Zona Asociada (Opcional)</label>
                 <select 
@@ -1066,7 +1167,7 @@ export const ManagerDashboard = () => {
           <div style={modalContentStyle} className="animate-fade-in">
             <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>
-                {selectedVehicle ? 'Editar Vínculo de Vehículo' : 'Vincular Vehículo a Funcionario'}
+                {selectedVehicle ? 'Editar Vehículo' : 'Vincular Vehículo'}
               </h3>
               <button onClick={() => setIsVehicleModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
                 <X size={20} />
@@ -1089,43 +1190,15 @@ export const ManagerDashboard = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Propietario / Funcionario *</label>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Propietario *</label>
                 <input 
                   type="text" 
                   className="input-field" 
-                  placeholder="Nombre del funcionario..."
+                  placeholder="Nombre del propietario..."
                   value={vehicleForm.propietario_nombre}
                   onChange={(e) => setVehicleForm(prev => ({ ...prev, propietario_nombre: e.target.value }))}
                   required
                 />
-              </div>
-              
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Tipo de Vehículo</label>
-                <select 
-                  className="input-field"
-                  value={vehicleForm.tipo}
-                  onChange={(e) => setVehicleForm(prev => ({ ...prev, tipo: e.target.value }))}
-                >
-                  <option value="Automóvil">Automóvil</option>
-                  <option value="Camioneta">Camioneta</option>
-                  <option value="SUV">SUV</option>
-                  <option value="Motocicleta">Motocicleta</option>
-                  <option value="Otro">Otro</option>
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.5rem 0' }}>
-                <input 
-                  type="checkbox" 
-                  id="chkFuncionario"
-                  checked={vehicleForm.funcionario}
-                  onChange={(e) => setVehicleForm(prev => ({ ...prev, funcionario: e.target.checked }))}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                />
-                <label htmlFor="chkFuncionario" style={{ fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', userSelect: 'none' }}>
-                  ¿Es Funcionario Activo?
-                </label>
               </div>
               
               <div>
@@ -1144,6 +1217,67 @@ export const ManagerDashboard = () => {
                 <button type="submit" className="btn btn-primary" disabled={submittingVehicle}>
                   {submittingVehicle ? 'Guardando...' : 'Guardar'}
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Editar Incidencia */}
+      {isEditModalOpen && editingIncident && (
+        <div style={modalOverlayStyle}>
+          <div style={modalContentStyle} className="animate-fade-in">
+            <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Editar Incidencia</h3>
+              <button onClick={() => { setIsEditModalOpen(false); setEditingIncident(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSaveEditIncident} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.75rem' }}>Estado de la Incidencia *</label>
+                <div style={{ display: 'flex', gap: '1.5rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text-primary)' }}>
+                    <input 
+                      type="radio" 
+                      name="editIncidentEstado" 
+                      value="abierta" 
+                      checked={editingIncident.estado === 'abierta'}
+                      onChange={(e) => setEditingIncident(prev => ({ ...prev, estado: e.target.value }))}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    Pendiente
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text-primary)' }}>
+                    <input 
+                      type="radio" 
+                      name="editIncidentEstado" 
+                      value="cerrada" 
+                      checked={editingIncident.estado === 'cerrada'}
+                      onChange={(e) => setEditingIncident(prev => ({ ...prev, estado: e.target.value }))}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    Resuelto
+                  </label>
+                </div>
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Descripción de la Incidencia *</label>
+                <textarea 
+                  className="input-field" 
+                  rows="4"
+                  placeholder="Detalles de la incidencia..."
+                  value={editingIncident.descripcion}
+                  onChange={(e) => setEditingIncident(prev => ({ ...prev, descripcion: e.target.value }))}
+                  required
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => { setIsEditModalOpen(false); setEditingIncident(null); }}>Cancelar</button>
+                <button type="submit" className="btn btn-primary">Guardar Cambios</button>
               </div>
             </form>
           </div>

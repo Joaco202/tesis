@@ -315,8 +315,8 @@ export const GuardDashboard = () => {
                 style={{ width: '80px', padding: '0.25rem 0.5rem', height: '38px' }}
               >
                 <option value={20}>20</option>
+                <option value={30}>30</option>
                 <option value={50}>50</option>
-                <option value={100}>100</option>
               </select>
             </div>
             <div style={{ position: 'relative' }}>

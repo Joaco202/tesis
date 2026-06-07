@@ -1288,9 +1288,25 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 
 ---
 
+## 25. Simplificación de Gestión y Flujo de Incidencias en el Panel Ejecutivo
+
+**Objetivo:** Simplificar el alcance del proyecto de tesis removiendo el tipo de vehículo, tipo de incidencia, y la columna de funcionario. Adicionalmente, rediseñar el flujo de incidencias para permitir editar descripción y estado (Pendiente y Resuelto) y agregar un botón de eliminación física de la fila.
+**Fecha de Ejecución:** 7 de junio de 2026
+
+### 1. Remoción de Tipo y Funcionario en la Interfaz
+- **Vehículos:** Se removieron las columnas de "Tipo de Vehículo" y "¿Es Funcionario?" de la tabla de vehículos. Se retiraron del formulario de vinculación/edición de vehículos. La persistencia pasa por defecto `tipo: 'Automóvil'` y `funcionario: true` de forma interna para compatibilidad de base de datos. Se renombró la columna a "Propietario".
+- **Incidencias:** Se removió la columna de "Tipo de Incidencia" de la tabla de incidencias y de su respectivo formulario de registro (persistiendo internamente `'Incidencia'`).
+
+### 2. Flujo de Incidencias con Edición y Eliminación Física
+- Se removieron los botones de estado rápido del listado (Revisar, Resolver, Reabrir).
+- Se agregaron las acciones de **"Editar"** (abre un modal interactivo para modificar descripción y cambiar estado) y **"Borrar"** (eliminación física en la base de datos de Supabase, situada a la derecha del estado).
+- El estado en el modal de edición se limitó a exactamente dos opciones: **"Pendiente"** (mapeado a `abierta` en BD) y **"Resuelto"** (mapeado a `cerrada` in BD).
+
+---
+
 ## Resumen Ejecutivo
 
-Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 22 fases de desarrollo completadas son:
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 25 fases de desarrollo completadas son:
 
 1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
 2. ✅ 1,000 imágenes sintéticas generadas.
@@ -1316,6 +1332,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 22. ✅ **Visualización de Fecha, Día, Limpieza de "(IA)" y Centrado en Registro en Vivo** — Incorporación del día y fecha junto a la hora (`dd-MM-yyyy HH:mm:ss`), actualización del encabezado a "Fecha/Hora", eliminación del texto "(IA)" y centrado de todas las columnas (cabeceras y celdas) de la tabla del timeline.
 23. ✅ **Vinculación de Patentes a Funcionarios** — Diseño y desarrollo de la sección "Gestión de Funcionarios y Patentes" en el Panel Ejecutivo para Encargados y Administradores, que permite buscar, listar, registrar y editar vehículos vinculados a nombres de funcionarios con persistencia directa en Supabase.
 24. ✅ **Calendario de Fecha Personalizado (Estilo Dark)** — Creación del componente `CustomDatePicker` para reemplazar los calendarios nativos del navegador, implementando navegación con flechas, visualización de días y un círculo en azul institucional (`var(--ubb-blue)`) sobre la fecha seleccionada.
+25. ✅ **Simplificación de Tablas, Remoción de Tipo y Funcionario, y Edición/Eliminación de Incidencias** — Remoción de la columna/campo de 'Tipo' (vehículos/incidencias) y '¿Es Funcionario?', con rediseño del flujo de incidencias en tabla agregando Editar y Borrar física al lado de Estado.
 
 ### Stack Tecnológico Final
 
