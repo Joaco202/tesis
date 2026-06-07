@@ -1227,9 +1227,9 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 
 ---
 
-## 22. Incorporación del Día en el Panel del Guardia y Limpieza de "(IA)"
+## 22. Incorporación del Día en el Panel del Guardia, Limpieza de "(IA)" y Alineación Centrada
 
-**Objetivo:** Agregar la visualización de la fecha/día junto con la hora y limpiar el texto "(IA)" del registro de la cámara en vivo del panel de guardia.
+**Objetivo:** Agregar la visualización de la fecha/día junto con la hora, limpiar el texto "(IA)" y alinear los encabezados y celdas al centro en el registro de la cámara en vivo del panel de guardia.
 **Fecha de Ejecución:** 6 de junio de 2026
 
 ### 1. Actualización de Visualización de Tiempos
@@ -1238,6 +1238,26 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 
 ### 2. Remoción del texto "(IA)"
 - Se eliminó el texto "(IA)" del título "Registro en Vivo (Cámara IA)" (ahora "Registro en Vivo (Cámara)") y de la columna "Confianza (IA)" (ahora "Confianza") en el panel del guardia para simplificar y limpiar visualmente la interfaz de cara a los operarios.
+
+### 3. Centrado y Alineación Estética de Columnas
+- Se modificaron las propiedades CSS `textAlign: 'center'` de todos los encabezados `<th>` y celdas de datos `<td>` en la tabla del timeline.
+- Se centraron dinámicamente los elementos internos de cada celda (las insignias de movimiento, el contenedor de fecha/hora con icono, la barra de progreso de confianza y los botones de acción) logrando un diseño visual simétrico y perfectamente alineado.
+
+---
+
+## 23. Vinculación de Patentes a Funcionarios
+
+**Objetivo:** Permitir a los encargados y administradores registrar, editar y vincular patentes vehiculares directamente con funcionarios de la institución.
+**Fecha de Ejecución:** 7 de junio de 2026
+
+### 1. Gestión de Funcionarios en el Dashboard
+- Se añadió la sección **"Gestión de Funcionarios y Patentes"** en el Panel Ejecutivo ([ManagerDashboard.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/ManagerDashboard.jsx)).
+- Implementa una tabla interactiva con buscador integrado (por patente o nombre) para visualizar de forma rápida todos los vehículos registrados en la base de datos, distinguiendo si pertenecen o no a funcionarios activos mediante insignias dinámicas y mostrando observaciones registradas.
+
+### 2. Modal de Vinculación y Sincronización
+- Se diseñó un modal reactivo que permite ingresar una nueva patente o modificar los datos de una patente existente para vincularla a un funcionario (nombre del propietario, tipo de vehículo y observaciones).
+- Se programó la lógica de persistencia interactiva usando la función `upsert` de Supabase para integrarse transparentemente con las patentes ingresadas automáticamente por las cámaras y evitar duplicidad de registros.
+- Se configuró la suscripción en tiempo real a la tabla `vehiculos` para que cualquier cambio realizado desde el modal actualice la vista al instante para todos los encargados conectados.
 
 ---
 
@@ -1266,7 +1286,8 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 19. ✅ **Benchmarking de Rendimiento en CPU** — Evaluación de latencia en modo CPU local, registrando tiempos optimizados de ~0.95s para inferencias sobre recortes y ~9.5s para la imagen completa.
 20. ✅ **Dockerización y Portabilidad CPU-only** — Diseño de `requirements-cpu.txt` y `Dockerfile` para habilitar el despliegue directo en servidores institucionales de la universidad sin soporte GPU.
 21. ✅ **Simulador Autónomo, Exportador, Paginación y Fix de Layout** — Habilitación del modo de inferencia `auto` en la cámara, descarga de logs de accesos CSV con filtros de fecha, paginación del registro en vivo (20/50/100 registros), y corrección del posicionamiento del sidebar (`position: sticky`) para cubrir toda la pantalla al desbordar el contenido derecho.
-22. ✅ **Visualización de Fecha y Día en Registro en Vivo y Remoción de "(IA)"** — Incorporación del día y fecha junto a la hora (`dd-MM-yyyy HH:mm:ss`), actualización del encabezado a "Fecha/Hora" y eliminación del texto "(IA)" de la tabla del timeline y títulos de la vista de guardia.
+22. ✅ **Visualización de Fecha, Día, Limpieza de "(IA)" y Centrado en Registro en Vivo** — Incorporación del día y fecha junto a la hora (`dd-MM-yyyy HH:mm:ss`), actualización del encabezado a "Fecha/Hora", eliminación del texto "(IA)" y centrado de todas las columnas (cabeceras y celdas) de la tabla del timeline.
+23. ✅ **Vinculación de Patentes a Funcionarios** — Diseño y desarrollo de la sección "Gestión de Funcionarios y Patentes" en el Panel Ejecutivo para Encargados y Administradores, que permite buscar, listar, registrar y editar vehículos vinculados a nombres de funcionarios con persistencia directa en Supabase.
 
 ### Stack Tecnológico Final
 
@@ -1280,9 +1301,10 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 | React + Vite | 8.0 / 18.x | Frontend Web |
 | Supabase | Client JS | Real-Time DB (PostgreSQL) |
 
-**Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 6 de junio de 2026  
+**Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 7 de junio de 2026  
 **Versión del Proyecto:** 1.0 (Producción-ready)  
 **Estado de Producción:** ✅ Totalmente operativo  
+**Fase de Desarrollo:** 23 fases de desarrollo completadas  
 
 ---
 

@@ -337,35 +337,35 @@ export const GuardDashboard = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                <th style={{ padding: '1rem 0.5rem' }}>Patente</th>
-                <th style={{ padding: '1rem 0.5rem' }}>Movimiento</th>
-                <th style={{ padding: '1rem 0.5rem' }}>Fecha/Hora</th>
-                <th style={{ padding: '1rem 0.5rem' }}>Confianza</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>Acción</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Patente</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Movimiento</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Fecha/Hora</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Confianza</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Acción</th>
               </tr>
             </thead>
             <tbody>
               {paginatedEvents.map((ev) => (
                 <tr key={ev.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '1.125rem', letterSpacing: '1px' }}>{ev.plate}</td>
-                  <td style={{ padding: '1rem 0.5rem' }}>
+                  <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '1.125rem', letterSpacing: '1px', textAlign: 'center' }}>{ev.plate}</td>
+                  <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
                     {ev.type === 'in' 
                       ? <span className="badge badge-success"><ArrowRight size={14} style={{ marginRight: '4px' }} /> Ingreso</span>
                       : <span className="badge badge-warning"><ArrowLeft size={14} style={{ marginRight: '4px' }} /> Salida</span>
                     }
                   </td>
                   <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
                       <Clock size={14} /> {format(ev.timestamp, 'dd-MM-yyyy HH:mm:ss')}
                     </div>
                   </td>
-                  <td style={{ padding: '1rem 0.5rem' }}>
-                    <div style={{ width: '100px', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
+                  <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
+                    <div style={{ width: '100px', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden', margin: '0 auto' }}>
                       <div style={{ height: '100%', width: `${ev.confidence * 100}%`, backgroundColor: ev.confidence > 0.9 ? 'var(--status-success)' : 'var(--status-warning)' }}></div>
                     </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>{(ev.confidence * 100).toFixed(1)}%</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block', textAlign: 'center' }}>{(ev.confidence * 100).toFixed(1)}%</span>
                   </td>
-                  <td style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>
+                  <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
                     <button 
                       className="btn btn-secondary" 
                       style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}

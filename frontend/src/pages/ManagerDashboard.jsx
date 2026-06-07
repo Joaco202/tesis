@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Download, AlertTriangle, Filter, Plus, X, Check, Clock as ClockIcon } from 'lucide-react';
+import { Download, AlertTriangle, Filter, Plus, X, Check, Clock as ClockIcon, Car, Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { format } from 'date-fns';
 
@@ -41,6 +41,20 @@ export const ManagerDashboard = () => {
   const [chartData, setChartData] = useState([]);
   const [incidents, setIncidents] = useState([]);
   const [zones, setZones] = useState([]);
+  
+  // Vehicle management states
+  const [vehicles, setVehicles] = useState([]);
+  const [searchVehicle, setSearchVehicle] = useState('');
+  const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [vehicleForm, setVehicleForm] = useState({
+    patente: '',
+    propietario_nombre: '',
+    tipo: 'Automóvil',
+    funcionario: true,
+    observaciones: '',
+  });
+  const [submittingVehicle, setSubmittingVehicle] = useState(false);
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -149,6 +163,16 @@ export const ManagerDashboard = () => {
 
       const activeIncidents = incidentsData ? incidentsData.filter(inc => inc.estado !== 'cerrada').length : 0;
 
+      // 4. Fetch Vehicles
+      const { data: vehiclesData, error: vehiclesError } = await supabase
+        .from('vehiculos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!vehiclesError && vehiclesData) {
+        setVehicles(vehiclesData);
+      }
+
       setKpis({
         peakOccupancy: peakOccupancyPercentage,
         peakTime: peakT,
@@ -167,18 +191,21 @@ export const ManagerDashboard = () => {
   useEffect(() => {
     fetchData();
 
-    // Suscribirse a cambios en accesos e incidencias
-    const accessesChannel = supabase.channel('manager:updates')
+    // Suscribirse a cambios en accesos, incidencias y vehículos
+    const updatesChannel = supabase.channel('manager:updates')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'accesos' }, () => {
         fetchData();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'incidencias' }, () => {
         fetchData();
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'vehiculos' }, () => {
+        fetchData();
+      })
       .subscribe();
 
     return () => {
-      supabase.removeChannel(accessesChannel);
+      supabase.removeChannel(updatesChannel);
     };
   }, []);
 
@@ -244,6 +271,66 @@ export const ManagerDashboard = () => {
     } catch (err) {
       console.error('Error creating incident:', err);
       alert('Error al registrar la incidencia: ' + err.message);
+    }
+  };
+
+  const handleOpenVehicleModal = (veh = null) => {
+    if (veh) {
+      setSelectedVehicle(veh);
+      setVehicleForm({
+        patente: veh.patente,
+        propietario_nombre: veh.propietario_nombre || '',
+        tipo: veh.tipo || 'Automóvil',
+        funcionario: veh.funcionario,
+        observaciones: veh.observaciones || '',
+      });
+    } else {
+      setSelectedVehicle(null);
+      setVehicleForm({
+        patente: '',
+        propietario_nombre: '',
+        tipo: 'Automóvil',
+        funcionario: true,
+        observaciones: '',
+      });
+    }
+    setIsVehicleModalOpen(true);
+  };
+
+  const handleSaveVehicle = async (e) => {
+    e.preventDefault();
+    if (!vehicleForm.patente.trim() || !vehicleForm.propietario_nombre.trim()) {
+      alert('Por favor, completa la patente y el nombre del funcionario.');
+      return;
+    }
+
+    setSubmittingVehicle(true);
+    try {
+      const normalizedPlate = vehicleForm.patente.trim().toUpperCase();
+      
+      const vehiclePayload = {
+        patente: normalizedPlate,
+        propietario_nombre: vehicleForm.propietario_nombre.trim(),
+        tipo: vehicleForm.tipo,
+        funcionario: vehicleForm.funcionario,
+        observaciones: vehicleForm.observaciones.trim() || null,
+      };
+
+      const { error } = await supabase
+        .from('vehiculos')
+        .upsert([vehiclePayload]);
+
+      if (error) throw error;
+
+      alert('Vehículo guardado y vinculado correctamente.');
+      setIsVehicleModalOpen(false);
+      setSelectedVehicle(null);
+      fetchData();
+    } catch (err) {
+      console.error('Error saving vehicle:', err);
+      alert('Error al vincular el vehículo: ' + err.message);
+    } finally {
+      setSubmittingVehicle(false);
     }
   };
 
@@ -437,6 +524,89 @@ export const ManagerDashboard = () => {
         </div>
       </div>
 
+      {/* Gestión de Vehículos y Funcionarios */}
+      <div className="card" style={{ marginBottom: '2rem' }}>
+        <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Car size={20} color="var(--ubb-blue)" /> Gestión de Funcionarios y Patentes
+          </h2>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+              <input 
+                type="text" 
+                placeholder="Buscar funcionario o patente..." 
+                className="input-field" 
+                style={{ paddingLeft: '2.5rem', width: '250px', height: '38px' }}
+                value={searchVehicle}
+                onChange={(e) => setSearchVehicle(e.target.value)}
+              />
+            </div>
+            <button className="btn btn-primary" onClick={() => handleOpenVehicleModal(null)}>
+              <Plus size={18} /> Vincular Funcionario
+            </button>
+          </div>
+        </div>
+
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Patente</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Propietario / Funcionario</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Tipo</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>¿Es Funcionario?</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Observaciones</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Fecha Registro</th>
+                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {vehicles
+                .filter(veh => 
+                  veh.patente.toLowerCase().includes(searchVehicle.toLowerCase()) ||
+                  (veh.propietario_nombre && veh.propietario_nombre.toLowerCase().includes(searchVehicle.toLowerCase()))
+                )
+                .map((veh) => (
+                  <tr key={veh.patente} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '1.125rem', letterSpacing: '1px', textAlign: 'center' }}>{veh.patente}</td>
+                    <td style={{ padding: '1rem 0.5rem', fontWeight: 500, textAlign: 'center' }}>{veh.propietario_nombre || 'No asignado'}</td>
+                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>{veh.tipo || 'N/A'}</td>
+                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
+                      <span className={`badge ${veh.funcionario ? 'badge-primary' : 'badge-secondary'}`}>
+                        {veh.funcionario ? 'Sí' : 'No'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>{veh.observaciones || '-'}</td>
+                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                      {format(new Date(veh.created_at), 'dd-MM-yyyy HH:mm')}
+                    </td>
+                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
+                      <button 
+                        className="btn btn-secondary" 
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                        onClick={() => handleOpenVehicleModal(veh)}
+                      >
+                        Editar/Vincular
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              {vehicles.filter(veh => 
+                veh.patente.toLowerCase().includes(searchVehicle.toLowerCase()) ||
+                (veh.propietario_nombre && veh.propietario_nombre.toLowerCase().includes(searchVehicle.toLowerCase()))
+              ).length === 0 && (
+                <tr>
+                  <td colSpan="7" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    No se encontraron vehículos registrados.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Incidents Table */}
       <div className="card">
         <div className="flex-between" style={{ marginBottom: '1.5rem' }}>
@@ -598,6 +768,96 @@ export const ManagerDashboard = () => {
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancelar</button>
                 <button type="submit" className="btn btn-primary">Registrar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Vincular/Editar Vehículo */}
+      {isVehicleModalOpen && (
+        <div style={modalOverlayStyle}>
+          <div style={modalContentStyle} className="animate-fade-in">
+            <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>
+                {selectedVehicle ? 'Editar Vínculo de Vehículo' : 'Vincular Vehículo a Funcionario'}
+              </h3>
+              <button onClick={() => setIsVehicleModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSaveVehicle} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Patente *</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="Ej. CRJC39"
+                  value={vehicleForm.patente}
+                  onChange={(e) => setVehicleForm(prev => ({ ...prev, patente: e.target.value }))}
+                  required
+                  disabled={selectedVehicle !== null}
+                  maxLength={10}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Propietario / Funcionario *</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  placeholder="Nombre del funcionario..."
+                  value={vehicleForm.propietario_nombre}
+                  onChange={(e) => setVehicleForm(prev => ({ ...prev, propietario_nombre: e.target.value }))}
+                  required
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Tipo de Vehículo</label>
+                <select 
+                  className="input-field"
+                  value={vehicleForm.tipo}
+                  onChange={(e) => setVehicleForm(prev => ({ ...prev, tipo: e.target.value }))}
+                >
+                  <option value="Automóvil">Automóvil</option>
+                  <option value="Camioneta">Camioneta</option>
+                  <option value="Furgón">Furgón</option>
+                  <option value="Motocicleta">Motocicleta</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.5rem 0' }}>
+                <input 
+                  type="checkbox" 
+                  id="chkFuncionario"
+                  checked={vehicleForm.funcionario}
+                  onChange={(e) => setVehicleForm(prev => ({ ...prev, funcionario: e.target.checked }))}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                />
+                <label htmlFor="chkFuncionario" style={{ fontSize: '0.875rem', fontWeight: 500, cursor: 'pointer', userSelect: 'none' }}>
+                  ¿Es Funcionario Activo?
+                </label>
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Observaciones</label>
+                <textarea 
+                  className="input-field" 
+                  rows="2"
+                  placeholder="Observaciones o notas adicionales..."
+                  value={vehicleForm.observaciones}
+                  onChange={(e) => setVehicleForm(prev => ({ ...prev, observaciones: e.target.value }))}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setIsVehicleModalOpen(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" disabled={submittingVehicle}>
+                  {submittingVehicle ? 'Guardando...' : 'Guardar'}
+                </button>
               </div>
             </form>
           </div>
