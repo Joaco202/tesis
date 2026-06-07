@@ -235,185 +235,187 @@ export const GuardDashboard = () => {
   const strokeDashoffset = circumference - (clampedPercentage / 100) * circumference;
 
   return (
-    <div className="animate-fade-in">
-      <div className="flex-between" style={{ marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>Panel de Control (Guardia)</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Monitoreo en tiempo real del Aula Magna</p>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{format(currentTime, "dd 'de' MMMM, yyyy")}</p>
-          <p style={{ fontSize: '1.25rem', fontWeight: 600 }}>{format(currentTime, "HH:mm:ss")}</p>
-        </div>
-      </div>
-
-      {/* Top Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-        {/* Occupancy Card */}
-        <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-          <div style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="120" height="120" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
-              <circle 
-                cx="60" cy="60" r={radius}
-                fill="transparent"
-                stroke="var(--border-color)"
-                strokeWidth="8"
-              />
-              <circle 
-                cx="60" cy="60" r={radius}
-                fill="transparent"
-                stroke={statusColor}
-                strokeWidth="8"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                style={{ transition: 'stroke-dashoffset 1s ease-in-out, stroke 0.5s ease' }}
-              />
-            </svg>
-            <span style={{ position: 'relative', zIndex: 10, fontSize: '2.5rem', fontWeight: 700, color: statusColor, filter: `drop-shadow(0 0 10px ${statusColor}40)` }}>{availableSpots}</span>
-          </div>
+    <>
+      <div className="animate-fade-in">
+        <div className="flex-between" style={{ marginBottom: '2rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.125rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Ocupación Actual</h3>
-            <p style={{ fontSize: '1rem', fontWeight: 500 }}>{occupancy.current} vehículos adentro</p>
-            <div style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '9999px', backgroundColor: `${statusColor}20`, color: statusColor, fontSize: '0.875rem', fontWeight: 600, marginTop: '0.5rem' }}>
-              {statusText}
-            </div>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>Panel de Control (Guardia)</h1>
+            <p style={{ color: 'var(--text-secondary)' }}>Monitoreo en tiempo real del Aula Magna</p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{format(currentTime, "dd 'de' MMMM, yyyy")}</p>
+            <p style={{ fontSize: '1.25rem', fontWeight: 600 }}>{format(currentTime, "HH:mm:ss")}</p>
           </div>
         </div>
 
-        {/* Quick Actions / Stats */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <h3 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Resumen del Día</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div style={{ padding: '1rem', backgroundColor: 'var(--status-success-bg)', borderRadius: 'var(--radius-md)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#065f46', marginBottom: '0.5rem' }}>
-                <ArrowRight size={18} /> Entradas
+        {/* Top Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+          {/* Occupancy Card */}
+          <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+            <div style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="120" height="120" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
+                <circle 
+                  cx="60" cy="60" r={radius}
+                  fill="transparent"
+                  stroke="var(--border-color)"
+                  strokeWidth="8"
+                />
+                <circle 
+                  cx="60" cy="60" r={radius}
+                  fill="transparent"
+                  stroke={statusColor}
+                  strokeWidth="8"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  strokeLinecap="round"
+                  style={{ transition: 'stroke-dashoffset 1s ease-in-out, stroke 0.5s ease' }}
+                />
+              </svg>
+              <span style={{ position: 'relative', zIndex: 10, fontSize: '2.5rem', fontWeight: 700, color: statusColor, filter: `drop-shadow(0 0 10px ${statusColor}40)` }}>{availableSpots}</span>
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.125rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Ocupación Actual</h3>
+              <p style={{ fontSize: '1rem', fontWeight: 500 }}>{occupancy.current} vehículos adentro</p>
+              <div style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: '9999px', backgroundColor: `${statusColor}20`, color: statusColor, fontSize: '0.875rem', fontWeight: 600, marginTop: '0.5rem' }}>
+                {statusText}
               </div>
-              <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>{dailyTotals.entries}</p>
             </div>
-            <div style={{ padding: '1rem', backgroundColor: 'var(--status-warning-bg)', borderRadius: 'var(--radius-md)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#92400e', marginBottom: '0.5rem' }}>
-                <ArrowLeft size={18} /> Salidas
+          </div>
+
+          {/* Quick Actions / Stats */}
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <h3 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Resumen del Día</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ padding: '1rem', backgroundColor: 'var(--status-success-bg)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#065f46', marginBottom: '0.5rem' }}>
+                  <ArrowRight size={18} /> Entradas
+                </div>
+                <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>{dailyTotals.entries}</p>
               </div>
-              <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>{dailyTotals.exits}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Live Feed Table */}
-      <div className="card">
-        <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Registro en Vivo (Cámara)</h2>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
-              <select 
-                value={pageSize} 
-                onChange={(e) => setPageSize(Number(e.target.value))}
-                className="input-field"
-                style={{ width: '80px', padding: '0.25rem 0.5rem', height: '38px' }}
-              >
-                <option value={20}>20</option>
-                <option value={30}>30</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
-            <div style={{ position: 'relative' }}>
-              <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-              <input 
-                type="text" 
-                placeholder="Buscar patente..." 
-                className="input-field" 
-                style={{ paddingLeft: '2.5rem', width: '220px', height: '38px' }}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+              <div style={{ padding: '1rem', backgroundColor: 'var(--status-warning-bg)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#92400e', marginBottom: '0.5rem' }}>
+                  <ArrowLeft size={18} /> Salidas
+                </div>
+                <p style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>{dailyTotals.exits}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Patente</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Movimiento</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Fecha/Hora</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Confianza</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedEvents.map((ev) => (
-                <tr key={ev.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '1.125rem', letterSpacing: '1px', textAlign: 'center' }}>{ev.plate}</td>
-                  <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
-                    {ev.type === 'in' 
-                      ? <span className="badge badge-success"><ArrowRight size={14} style={{ marginRight: '4px' }} /> Ingreso</span>
-                      : <span className="badge badge-warning"><ArrowLeft size={14} style={{ marginRight: '4px' }} /> Salida</span>
-                    }
-                  </td>
-                  <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
-                      <Clock size={14} /> {format(ev.timestamp, 'dd-MM-yyyy HH:mm:ss')}
-                    </div>
-                  </td>
-                  <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
-                    <div style={{ width: '100px', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden', margin: '0 auto' }}>
-                      <div style={{ height: '100%', width: `${ev.confidence * 100}%`, backgroundColor: ev.confidence > 0.9 ? 'var(--status-success)' : 'var(--status-warning)' }}></div>
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block', textAlign: 'center' }}>{(ev.confidence * 100).toFixed(1)}%</span>
-                  </td>
-                  <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
-                    <button 
-                      className="btn btn-secondary" 
-                      style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
-                      onClick={() => handleOpenModal(ev)}
-                    >
-                      Reportar Incidencia
-                    </button>
-                  </td>
+        {/* Live Feed Table */}
+        <div className="card">
+          <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Registro en Vivo (Cámara)</h2>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
+                <select 
+                  value={pageSize} 
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="input-field"
+                  style={{ width: '80px', padding: '0.25rem 0.5rem', height: '38px' }}
+                >
+                  <option value={20}>20</option>
+                  <option value={30}>30</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                <input 
+                  type="text" 
+                  placeholder="Buscar patente..." 
+                  className="input-field" 
+                  style={{ paddingLeft: '2.5rem', width: '220px', height: '38px' }}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                  <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Patente</th>
+                  <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Movimiento</th>
+                  <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Fecha/Hora</th>
+                  <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Confianza</th>
+                  <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Acción</th>
                 </tr>
-              ))}
-              {filteredEvents.length === 0 && (
-                <tr>
-                  <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No se encontraron registros.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination Controls */}
-        {filteredEvents.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', justifyContent: 'space-between', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
-            <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-              Mostrando {Math.min(totalItems, (currentPage - 1) * pageSize + 1)} - {Math.min(totalItems, currentPage * pageSize)} de {totalItems} registros
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button 
-                className="btn btn-secondary" 
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                style={{ padding: '0.5rem 1rem' }}
-              >
-                Anterior
-              </button>
-              <div style={{ display: 'flex', alignItems: 'center', padding: '0 0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
-                Página {currentPage} de {totalPages}
-              </div>
-              <button 
-                className="btn btn-secondary" 
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                style={{ padding: '0.5rem 1rem' }}
-              >
-                Siguiente
-              </button>
-            </div>
+              </thead>
+              <tbody>
+                {paginatedEvents.map((ev) => (
+                  <tr key={ev.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '1.125rem', letterSpacing: '1px', textAlign: 'center' }}>{ev.plate}</td>
+                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
+                      {ev.type === 'in' 
+                        ? <span className="badge badge-success"><ArrowRight size={14} style={{ marginRight: '4px' }} /> Ingreso</span>
+                        : <span className="badge badge-warning"><ArrowLeft size={14} style={{ marginRight: '4px' }} /> Salida</span>
+                      }
+                    </td>
+                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
+                        <Clock size={14} /> {format(ev.timestamp, 'dd-MM-yyyy HH:mm:ss')}
+                      </div>
+                    </td>
+                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
+                      <div style={{ width: '100px', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden', margin: '0 auto' }}>
+                        <div style={{ height: '100%', width: `${ev.confidence * 100}%`, backgroundColor: ev.confidence > 0.9 ? 'var(--status-success)' : 'var(--status-warning)' }}></div>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block', textAlign: 'center' }}>{(ev.confidence * 100).toFixed(1)}%</span>
+                    </td>
+                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
+                      <button 
+                        className="btn btn-secondary" 
+                        style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
+                        onClick={() => handleOpenModal(ev)}
+                      >
+                        Reportar Incidencia
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {filteredEvents.length === 0 && (
+                  <tr>
+                    <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No se encontraron registros.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
+
+          {/* Pagination Controls */}
+          {filteredEvents.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', justifyContent: 'space-between', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                Mostrando {Math.min(totalItems, (currentPage - 1) * pageSize + 1)} - {Math.min(totalItems, currentPage * pageSize)} de {totalItems} registros
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  style={{ padding: '0.5rem 1rem' }}
+                >
+                  Anterior
+                </button>
+                <div style={{ display: 'flex', alignItems: 'center', padding: '0 0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
+                  Página {currentPage} de {totalPages}
+                </div>
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  style={{ padding: '0.5rem 1rem' }}
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal para Reportar Incidencia */}
@@ -472,6 +474,6 @@ export const GuardDashboard = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };

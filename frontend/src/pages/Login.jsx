@@ -51,7 +51,7 @@ export const Login = () => {
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Correo Institucional</label>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Correo</label>
             <input 
               type="email" 
               className="input-field" 
@@ -84,8 +84,6 @@ export const Login = () => {
             Zona de Pruebas (Mock Login sin DB)
           </p>
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={() => handleMockLogin('guardia')} className="btn btn-secondary" style={{ fontSize: '0.75rem' }}>Rol Guardia</button>
-            <button onClick={() => handleMockLogin('encargado')} className="btn btn-secondary" style={{ fontSize: '0.75rem' }}>Rol Encargado</button>
             <button onClick={() => handleMockLogin('admin')} className="btn btn-secondary" style={{ fontSize: '0.75rem' }}>Rol Admin</button>
           </div>
         </div>

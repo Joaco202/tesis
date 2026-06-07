@@ -780,8 +780,9 @@ export const ManagerDashboard = () => {
   }
 
   return (
-    <div className="animate-fade-in">
-      <div className="flex-between" style={{ marginBottom: '2rem' }}>
+    <>
+      <div className="animate-fade-in">
+        <div className="flex-between" style={{ marginBottom: '2rem' }}>
         <div>
           <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>Panel Ejecutivo (Encargado)</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Estadísticas, KPIs y Gestión de Incidencias en tiempo real</p>
@@ -1102,6 +1103,7 @@ export const ManagerDashboard = () => {
           </div>
         )}
       </div>
+    </div>
 
       {/* Modal para Crear Incidencia */}
       {isModalOpen && (
@@ -1283,6 +1285,6 @@ export const ManagerDashboard = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };

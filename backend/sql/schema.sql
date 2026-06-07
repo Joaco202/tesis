@@ -254,8 +254,7 @@ insert into public.roles (nombre, descripcion)
 values
     ('administrador', 'Administra configuración, usuarios y parámetros del sistema'),
     ('guardia', 'Supervisa accesos y monitorea ocupación'),
-    ('encargado', 'Revisa reportes, estadísticas e incidencias'),
-    ('visitante', 'Consulta disponibilidad del estacionamiento')
+    ('encargado', 'Revisa reportes, estadísticas e incidencias')
 on conflict (nombre) do nothing;
 
 -- Ejemplo de zonas

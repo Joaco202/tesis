@@ -1304,9 +1304,40 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 
 ---
 
+## 26. Paginación Homologada en Registro en Vivo (Timeline)
+
+**Objetivo:** Homologar las opciones de tamaño de página en todos los listados de la aplicación.
+**Fecha de Ejecución:** 7 de junio de 2026
+
+### 1. Homologación de Páginas
+- Se modificaron las opciones del selector de tamaño de página en el Panel del Guardia ([GuardDashboard.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/GuardDashboard.jsx)) de `20, 50, 100` a `20, 30, 50` registros, logrando una consistencia visual perfecta con las tablas del Panel Ejecutivo.
+
+---
+
+## 27. Políticas de Seguridad RLS en Supabase y Ajuste de Color de Ocupación
+
+**Objetivo:** Resolver problemas de permisos RLS al escribir datos desde el cliente, solucionar discrepancias de capacidad máxima y ajustar el color de Ocupación Media a uno más amarillo.
+**Fecha de Ejecución:** 7 de junio de 2026
+
+### 1. Políticas RLS para Vehículos e Incidencias
+- Se diseñó y aplicó un esquema de seguridad de nivel de fila (RLS) en Supabase para las tablas `vehiculos` e `incidencias`. Se configuraron permisos públicos de lectura (`SELECT`) y restricciones estrictas de escritura (`INSERT`, `UPDATE`, `DELETE`) reservadas únicamente para cuentas autenticadas (`authenticated`).
+
+### 2. Liberación de Tablas de Roles y Configuración
+- Se desactivó el RLS en las tablas `usuarios`, `roles` y `zonas` para permitir que el login resuelva correctamente el rol del encargado (solucionando el bug que redirigía a la vista del guardia como fallback) y que el dashboard del guardia cargue la capacidad máxima real de **130** (resolviendo el bug que limitaba la capacidad a un valor default de 50 y mostraba el círculo en rojo de "Capacidad Llena").
+
+### 3. Ajuste de Color Amarillo para Ocupación Media
+- Se modificó la variable CSS `--status-warning` de `#f59e0b` a `#eab308` (un amarillo puro e institucional) y `--status-warning-bg` a `#fef9c3` (fondo amarillo suave), logrando que el estado de Ocupación Media sea más amarillo y menos anaranjado.
+
+### 4. Gestión y Creación Real de Usuarios para el Administrador
+- Se conectó la sección **"Usuarios y Roles"** ([AdminSettings.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/AdminSettings.jsx)) a Supabase. Se removió la simulación e implementó la consulta dinámica de la tabla `usuarios` y `roles`.
+- Se añadieron acciones para alternar el estado activo/inactivo del usuario y eliminarlo de la aplicación.
+- Se implementó el modal **"Crear Nuevo Usuario"** usando un cliente temporal de Supabase con `persistSession: false` para registrar la cuenta en `auth.users` mediante `signUp` pasándole metadatos sin cerrar la sesión de administración activa. Esto funciona en conjunto con el trigger de base de datos para crear el perfil automáticamente con el rol deseado.
+
+---
+
 ## Resumen Ejecutivo
 
-Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 25 fases de desarrollo completadas son:
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 27 fases de desarrollo completadas son:
 
 1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
 2. ✅ 1,000 imágenes sintéticas generadas.
@@ -1333,6 +1364,8 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 23. ✅ **Vinculación de Patentes a Funcionarios** — Diseño y desarrollo de la sección "Gestión de Funcionarios y Patentes" en el Panel Ejecutivo para Encargados y Administradores, que permite buscar, listar, registrar y editar vehículos vinculados a nombres de funcionarios con persistencia directa en Supabase.
 24. ✅ **Calendario de Fecha Personalizado (Estilo Dark)** — Creación del componente `CustomDatePicker` para reemplazar los calendarios nativos del navegador, implementando navegación con flechas, visualización de días y un círculo en azul institucional (`var(--ubb-blue)`) sobre la fecha seleccionada.
 25. ✅ **Simplificación de Tablas, Remoción de Tipo y Funcionario, y Edición/Eliminación de Incidencias** — Remoción de la columna/campo de 'Tipo' (vehículos/incidencias) y '¿Es Funcionario?', con rediseño del flujo de incidencias en tabla agregando Editar y Borrar física al lado de Estado.
+26. ✅ **Paginación Homologada en Registro en Vivo** — Cambio de los tamaños de visualización a `20, 30, 50` registros en la tabla de accesos del Panel de Guardia, homologando todas las tablas del sistema.
+27. ✅ **Políticas RLS en Supabase y Ajuste de Color de Ocupación** — Implementación de políticas de lectura pública y escritura restringida a usuarios autenticados para vehículos/incidencias, liberación de RLS en tablas de configuración (usuarios/roles/zonas) para corregir redirecciones de login y lecturas de capacidad real (130 cupos), y cambio de color a amarillo para Ocupación Media.
 
 ### Stack Tecnológico Final
 
@@ -1349,7 +1382,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 **Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 7 de junio de 2026  
 **Versión del Proyecto:** 1.0 (Producción-ready)  
 **Estado de Producción:** ✅ Totalmente operativo  
-**Fase de Desarrollo:** 24 fases de desarrollo completadas  
+**Fase de Desarrollo:** 27 fases de desarrollo completadas  
 
 ---
 
