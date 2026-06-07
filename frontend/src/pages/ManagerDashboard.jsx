@@ -51,6 +51,11 @@ export const ManagerDashboard = () => {
     zoneId: '',
   });
 
+  // Access report date filters
+  const [accessStartDate, setAccessStartDate] = useState('');
+  const [accessEndDate, setAccessEndDate] = useState('');
+  const [exportingAccess, setExportingAccess] = useState(false);
+
   const fetchData = async () => {
     try {
       const startOfToday = new Date();
@@ -259,6 +264,64 @@ export const ManagerDashboard = () => {
     document.body.removeChild(link);
   };
 
+  const exportAccessReport = async () => {
+    setExportingAccess(true);
+    try {
+      let query = supabase
+        .from('accesos')
+        .select('id, vehiculo_patente, camera_id, fecha_entrada, confianza_ocr, fecha_salida, camera_salida_id, confianza_ocr_salida')
+        .order('fecha_entrada', { ascending: false });
+
+      if (accessStartDate) {
+        const start = new Date(accessStartDate);
+        start.setHours(0, 0, 0, 0);
+        query = query.gte('fecha_entrada', start.toISOString());
+      }
+      if (accessEndDate) {
+        const end = new Date(accessEndDate);
+        end.setHours(23, 59, 59, 999);
+        query = query.lte('fecha_entrada', end.toISOString());
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        alert('No se encontraron registros de accesos en el rango seleccionado.');
+        return;
+      }
+
+      let csvContent = '\uFEFF'; // UTF-8 BOM
+      csvContent += 'ID,Patente,Camara Entrada,Fecha Entrada,Confianza Entrada,Fecha Salida,Camara Salida,Confianza Salida\n';
+      
+      data.forEach(acc => {
+        const fEntrada = acc.fecha_entrada ? format(new Date(acc.fecha_entrada), 'yyyy-MM-dd HH:mm:ss') : '';
+        const fSalida = acc.fecha_salida ? format(new Date(acc.fecha_salida), 'yyyy-MM-dd HH:mm:ss') : '';
+        const confEntrada = acc.confianza_ocr ? `${(acc.confianza_ocr * 100).toFixed(1)}%` : '';
+        const confSalida = acc.confianza_ocr_salida ? `${(acc.confianza_ocr_salida * 100).toFixed(1)}%` : '';
+        
+        csvContent += `"${acc.id}","${acc.vehiculo_patente}","${acc.camera_id || ''}","${fEntrada}","${confEntrada}","${fSalida}","${acc.camera_salida_id || ''}","${confSalida}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      
+      const startStr = accessStartDate || 'inicio';
+      const endStr = accessEndDate || 'fin';
+      link.setAttribute('download', `reporte_accesos_${startStr}_a_${endStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error exporting access logs:', err);
+      alert('Error al exportar registros: ' + err.message);
+    } finally {
+      setExportingAccess(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex-center animate-pulse" style={{ height: '70vh', flexDirection: 'column', gap: '1rem' }}>
@@ -325,6 +388,52 @@ export const ManagerDashboard = () => {
               <Line type="monotone" dataKey="ocupacion" name="Vehículos" stroke="var(--ubb-blue)" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 8 }} />
             </LineChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Exportador de Accesos Históricos */}
+      <div className="card" style={{ marginBottom: '2rem' }}>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Download size={20} color="var(--ubb-blue)" /> Exportador Histórico de Accesos
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+          Selecciona un rango de fechas para consultar y descargar el historial completo de ingresos y egresos de vehículos en formato CSV.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-end' }}>
+          <div style={{ flex: '1 1 200px' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+              Fecha de Inicio
+            </label>
+            <input 
+              type="date" 
+              className="input-field" 
+              value={accessStartDate}
+              onChange={(e) => setAccessStartDate(e.target.value)}
+              style={{ height: '42px' }}
+            />
+          </div>
+          <div style={{ flex: '1 1 200px' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+              Fecha de Fin
+            </label>
+            <input 
+              type="date" 
+              className="input-field" 
+              value={accessEndDate}
+              onChange={(e) => setAccessEndDate(e.target.value)}
+              style={{ height: '42px' }}
+            />
+          </div>
+          <div style={{ flex: '0 0 auto' }}>
+            <button 
+              className="btn btn-primary" 
+              onClick={exportAccessReport}
+              disabled={exportingAccess}
+              style={{ minWidth: '180px', height: '42px' }}
+            >
+              <Download size={18} /> {exportingAccess ? 'Exportando...' : 'Descargar Historial'}
+            </button>
+          </div>
         </div>
       </div>
 

@@ -187,7 +187,7 @@ def main() -> None:
     parser.add_argument(
         "--cooldown",
         type=float,
-        default=15.0,
+        default=5.0,
         help="Tiempo de cooldown en segundos para evitar registrar la misma patente repetidamente.",
     )
     parser.add_argument(
@@ -199,9 +199,9 @@ def main() -> None:
     parser.add_argument(
         "--event-type",
         type=str,
-        default="entrada",
-        choices=["entrada", "salida"],
-        help="Tipo de evento (entrada o salida).",
+        default="auto",
+        choices=["entrada", "salida", "auto"],
+        help="Tipo de evento (entrada, salida o auto).",
     )
     parser.add_argument(
         "--show",

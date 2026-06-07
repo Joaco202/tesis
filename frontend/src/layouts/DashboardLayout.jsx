@@ -35,11 +35,14 @@ export const DashboardLayout = () => {
     borderBottom: 'none',
     borderLeft: 'none',
     backgroundColor: 'var(--bg-secondary)',
-    position: isMobile ? 'fixed' : 'relative',
+    position: isMobile ? 'fixed' : 'sticky',
+    top: 0,
+    left: 0,
     height: '100vh',
     zIndex: 50,
     transform: isMobile && !isMobileMenuOpen ? 'translateX(-100%)' : 'translateX(0)',
     transition: 'transform 0.3s ease',
+    overflowY: 'auto',
   };
 
   return (

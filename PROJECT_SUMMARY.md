@@ -1,6 +1,6 @@
 # Vision + OCR Pipeline para Detección de Placas - Documentación Completa
 
-**Fecha de generación:** Mayo 3, 2026 · **Última actualización:** 26 de mayo de 2026  
+**Fecha de generación:** Mayo 3, 2026 · **Última actualización:** 6 de junio de 2026  
 **Proyecto:** tesis (Detección de placas vehiculares con visión por computadora y reconocimiento óptico de caracteres)  
 **Estado:** ✅ GPU habilitada — PyTorch 2.11+cu128 · PaddleOCR 3.5.0 · PaddlePaddle-GPU 3.0.0 · Python 3.12.10
 
@@ -1199,9 +1199,51 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 
 ---
 
+## 21. Simulador Inteligente (Modo Auto) y Exportador de Accesos
+
+**Objetivo:** Desarrollar el modo de cámara autónomo y habilitar el reporte de flujo vehicular histórico filtrado por fechas.
+**Fecha de Ejecución:** 6 de junio de 2026
+
+### 1. Inferencia Inteligente en Tiempo Real (Modo Auto)
+- Se actualizó el argumento `--event-type` del simulador de cámara continua [continuous_inference.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/scripts/continuous_inference.py) para permitir el valor `"auto"` (establecido ahora como predeterminado).
+- Este modo aprovecha la lógica integrada en la base de datos: si un vehículo ingresa y no tiene un acceso abierto activo en Supabase (`fecha_salida IS NULL`), la base de datos lo registra de forma automática como una **entrada**. Si ya cuenta con una sesión abierta, la actualiza cerrando el registro como una **salida**.
+- **Análisis de Impacto en Rendimiento y Concurrencia:**
+  - **Carga en CPU:** Prácticamente nula en la máquina local. La verificación del estado de acceso abierto se delega al motor PostgreSQL de Supabase. Al estar optimizada por el índice parcial `idx_accesos_abiertos (vehiculo_patente) WHERE fecha_salida IS NULL` (definido en `schema.sql`), la consulta toma menos de 1ms en base de datos.
+  - **Latencia:** La consulta añade un viaje de red extra (`SELECT`) previo al guardado. No obstante, al realizarse de forma asíncrona dentro del hilo de trabajo secundario (`worker_thread_func`), no añade bloqueo ni degrada la fluidez (FPS) de la visualización en tiempo real.
+  - **Reducción de Cooldown:** Se redujo el parámetro predeterminado `--cooldown` de 15 a **5 segundos** para responder con mayor agilidad ante flujos continuos de vehículos sin duplicar registros.
+
+### 2. Exportación de Accesos Históricos (HU05)
+- Se implementó un panel dedicado a reportes en [ManagerDashboard.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/ManagerDashboard.jsx) que incluye controles de tipo `<input type="date">` para delimitar las fechas de consulta (`Desde` / `Hasta`).
+- El botón de descarga ejecuta una consulta a la tabla `accesos` de Supabase filtrando por los timestamps ISO correspondientes y descarga un reporte en CSV (`reporte_accesos_fecha.csv`) codificado en UTF-8 con la marca BOM para visualización directa y correcta de caracteres especiales en MS Excel.
+
+### 3. Registro de Incidencias desde el Panel de Guardia
+- Se implementó la lógica interactiva del botón **"Reportar Incidencia"** en el panel de guardia [GuardDashboard.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/GuardDashboard.jsx) que anteriormente no ejecutaba ninguna acción.
+- Al hacer clic, se despliega un modal estilizado (con la misma estética de glassmorphism corporativa) que prellena la patente del vehículo y el ID de acceso.
+- Permite al guardia registrar incidentes en tiempo real para opciones no automatizadas (tales como: *"Vehículo mal estacionado"*, *"Vehículo con problema menor"*, *"Obstáculo en vía"* u *"Otro"*), excluyendo la opción de error de lectura para no mermar la fiabilidad del flujo. La incidencia ingresada se persiste directamente en la tabla `incidencias` de Supabase y aparece al instante en el dashboard del encargado para su resolución.
+
+### 4. Corrección de Altura y Posicionamiento del Sidebar
+- Se ajustó el estilo del componente lateral izquierdo en [DashboardLayout.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/layouts/DashboardLayout.jsx) cambiando `position` a `sticky` (en lugar de `relative` en escritorio) con `top: 0`, `left: 0`, `height: '100vh'` y `overflowY: 'auto'`.
+- Esto garantiza que el fondo y los controles del panel cubran en todo momento la pantalla completa (toda la altura visible del viewport), permaneciendo fijo y utilizable mientras el área de contenido derecha con flujos/tablas largas se desplaza verticalmente, eliminando espacios vacíos bajo el sidebar.
+
+---
+
+## 22. Incorporación del Día en el Panel del Guardia y Limpieza de "(IA)"
+
+**Objetivo:** Agregar la visualización de la fecha/día junto con la hora y limpiar el texto "(IA)" del registro de la cámara en vivo del panel de guardia.
+**Fecha de Ejecución:** 6 de junio de 2026
+
+### 1. Actualización de Visualización de Tiempos
+- Se renombró el encabezado de la columna de la tabla de "Hora" a "Fecha/Hora" en [GuardDashboard.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/GuardDashboard.jsx).
+- Se actualizó el formateador de fecha para los eventos en tiempo real, cambiando de `'HH:mm:ss'` a `'dd-MM-yyyy HH:mm:ss'`. Esto permite que el guardia conozca exactamente la fecha además de la hora en el flujo continuo del timeline.
+
+### 2. Remoción del texto "(IA)"
+- Se eliminó el texto "(IA)" del título "Registro en Vivo (Cámara IA)" (ahora "Registro en Vivo (Cámara)") y de la columna "Confianza (IA)" (ahora "Confianza") en el panel del guardia para simplificar y limpiar visualmente la interfaz de cara a los operarios.
+
+---
+
 ## Resumen Ejecutivo
 
-Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 20 fases de desarrollo completadas son:
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 22 fases de desarrollo completadas son:
 
 1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
 2. ✅ 1,000 imágenes sintéticas generadas.
@@ -1223,6 +1265,8 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 18. ✅ **Refinamiento de Detección de Recortes y OCR** — Solución del bug de 1-canal en `preprocess_plate_crop` (implementando Smart Resize BGR) y desempate determinista de variantes por orden alfabético para evitar la aleatoriedad, logrando un 89.25% de precisión en el dataset real sin dobles bboxes.
 19. ✅ **Benchmarking de Rendimiento en CPU** — Evaluación de latencia en modo CPU local, registrando tiempos optimizados de ~0.95s para inferencias sobre recortes y ~9.5s para la imagen completa.
 20. ✅ **Dockerización y Portabilidad CPU-only** — Diseño de `requirements-cpu.txt` y `Dockerfile` para habilitar el despliegue directo en servidores institucionales de la universidad sin soporte GPU.
+21. ✅ **Simulador Autónomo, Exportador, Paginación y Fix de Layout** — Habilitación del modo de inferencia `auto` en la cámara, descarga de logs de accesos CSV con filtros de fecha, paginación del registro en vivo (20/50/100 registros), y corrección del posicionamiento del sidebar (`position: sticky`) para cubrir toda la pantalla al desbordar el contenido derecho.
+22. ✅ **Visualización de Fecha y Día en Registro en Vivo y Remoción de "(IA)"** — Incorporación del día y fecha junto a la hora (`dd-MM-yyyy HH:mm:ss`), actualización del encabezado a "Fecha/Hora" y eliminación del texto "(IA)" de la tabla del timeline y títulos de la vista de guardia.
 
 ### Stack Tecnológico Final
 
@@ -1236,7 +1280,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 | React + Vite | 8.0 / 18.x | Frontend Web |
 | Supabase | Client JS | Real-Time DB (PostgreSQL) |
 
-**Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 26 de mayo de 2026  
+**Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 6 de junio de 2026  
 **Versión del Proyecto:** 1.0 (Producción-ready)  
 **Estado de Producción:** ✅ Totalmente operativo  
 
