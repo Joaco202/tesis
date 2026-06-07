@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Download, AlertTriangle, Filter, Plus, X, Check, Clock as ClockIcon, Car, Search } from 'lucide-react';
+import { Download, AlertTriangle, Filter, Plus, X, Check, Clock as ClockIcon, Car, Search, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { format } from 'date-fns';
 
@@ -27,6 +27,258 @@ const modalContentStyle = {
   boxShadow: 'var(--shadow-lg)',
   padding: '2rem',
   position: 'relative',
+};
+
+const CustomDatePicker = ({ label, value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  // Current view year & month (default to value's month/year or current date)
+  const today = new Date();
+  const initialDate = value ? new Date(value + 'T00:00:00') : today;
+  const [viewYear, setViewYear] = useState(initialDate.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initialDate.getMonth()); // 0-indexed
+
+  // Format value to display (e.g. dd-MM-yyyy)
+  const displayValue = value ? format(new Date(value + 'T00:00:00'), 'dd-MM-yyyy') : '';
+
+  // Get number of days in the month
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  // Get weekday of the 1st of the month (0 = Sunday, 1 = Monday, etc.)
+  const getFirstDayOfMonth = (year, month) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const daysInMonth = getDaysInMonth(viewYear, viewMonth);
+  const firstDay = getFirstDayOfMonth(viewYear, viewMonth);
+
+  const monthsSpanish = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  ];
+
+  const handlePrevMonth = () => {
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear(prev => prev - 1);
+    } else {
+      setViewMonth(prev => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear(prev => prev + 1);
+    } else {
+      setViewMonth(prev => prev + 1);
+    }
+  };
+
+  const handleSelectDay = (day) => {
+    const monthStr = String(viewMonth + 1).padStart(2, '0');
+    const dayStr = String(day).padStart(2, '0');
+    const newDateStr = `${viewYear}-${monthStr}-${dayStr}`;
+    onChange(newDateStr);
+    setIsOpen(false);
+  };
+
+  // Check if a day is the selected value
+  const isSelected = (day) => {
+    if (!value) return false;
+    const dateObj = new Date(value + 'T00:00:00');
+    return (
+      dateObj.getFullYear() === viewYear &&
+      dateObj.getMonth() === viewMonth &&
+      dateObj.getDate() === day
+    );
+  };
+
+  // Check if a day is today
+  const isToday = (day) => {
+    return (
+      today.getFullYear() === viewYear &&
+      today.getMonth() === viewMonth &&
+      today.getDate() === day
+    );
+  };
+
+  // Build grid
+  const cells = [];
+  // Empty cells for offset
+  for (let i = 0; i < firstDay; i++) {
+    cells.push(<div key={`empty-${i}`} style={{ width: '32px', height: '32px' }} />);
+  }
+  // Day cells
+  for (let d = 1; d <= daysInMonth; d++) {
+    const selected = isSelected(d);
+    const todayCell = isToday(d);
+    
+    cells.push(
+      <button
+        key={`day-${d}`}
+        type="button"
+        onClick={() => handleSelectDay(d)}
+        style={{
+          width: '32px',
+          height: '32px',
+          borderRadius: '50%',
+          border: 'none',
+          background: selected ? 'var(--ubb-blue)' : 'none',
+          color: selected ? '#ffffff' : todayCell ? 'var(--ubb-blue)' : 'var(--text-primary)',
+          fontWeight: selected || todayCell ? '600' : 'normal',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '0.875rem',
+          transition: 'all 0.2s ease',
+        }}
+        onMouseEnter={(e) => {
+          if (!selected) e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+        }}
+        onMouseLeave={(e) => {
+          if (!selected) e.currentTarget.style.backgroundColor = 'transparent';
+        }}
+      >
+        {d}
+      </button>
+    );
+  }
+
+  // Close when clicking outside
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [isOpen]);
+
+  return (
+    <div ref={containerRef} className="custom-datepicker-container" style={{ position: 'relative', flex: '0 0 220px' }}>
+      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+        {label}
+      </label>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="input-field" 
+        style={{ 
+          height: '42px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between', 
+          padding: '0 1rem', 
+          cursor: 'pointer',
+          userSelect: 'none',
+          border: '1px solid var(--border-color)',
+          borderRadius: 'var(--radius-md)',
+          backgroundColor: 'var(--bg-secondary)',
+        }}
+      >
+        <span style={{ color: displayValue ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '0.875rem' }}>
+          {displayValue || 'Seleccionar fecha...'}
+        </span>
+        <CalendarIcon size={16} style={{ color: 'var(--text-secondary)' }} />
+      </div>
+
+      {isOpen && (
+        <div 
+          style={{
+            position: 'absolute',
+            top: 'calc(100% + 8px)',
+            left: 0,
+            zIndex: 1000,
+            width: '280px',
+            backgroundColor: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '1rem',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem',
+          }}
+        >
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--text-primary)' }}>
+              {monthsSpanish[viewMonth]} {viewYear}
+            </span>
+            <div style={{ display: 'flex', gap: '0.25rem' }}>
+              <button 
+                type="button" 
+                onClick={handlePrevMonth}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button 
+                type="button" 
+                onClick={handleNextMonth}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* Days of week */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 32px)', gap: '4px', justifyContent: 'center' }}>
+            {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((day, idx) => (
+              <div 
+                key={idx} 
+                style={{ 
+                  fontSize: '0.75rem', 
+                  fontWeight: 600, 
+                  color: 'var(--text-secondary)', 
+                  width: '32px', 
+                  height: '32px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center' 
+                }}
+              >
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Days grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 32px)', gap: '4px', justifyContent: 'center' }}>
+            {cells}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export const ManagerDashboard = () => {
@@ -440,13 +692,13 @@ export const ManagerDashboard = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         <div className="card">
           <h3 style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Ocupación Máxima (Día)</h3>
-          <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ubb-blue)' }}>{kpis.peakOccupancy}%</p>
+          <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text-primary)' }}>{kpis.peakOccupancy}%</p>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>A las {kpis.peakTime} hrs</p>
         </div>
         <div className="card">
           <h3 style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Total Vehículos Únicos</h3>
-          <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--ubb-orange)' }}>{kpis.uniqueVehicles}</p>
-          <p style={{ fontSize: '0.75rem', color: 'var(--status-success)' }}>Ingresos del día de hoy</p>
+          <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text-primary)' }}>{kpis.uniqueVehicles}</p>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Ingresos del día de hoy</p>
         </div>
         <div className="card">
           <h3 style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Tiempo Promedio Estadía</h3>
@@ -455,7 +707,7 @@ export const ManagerDashboard = () => {
         </div>
         <div className="card" style={{ borderLeft: '4px solid var(--status-danger)' }}>
           <h3 style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Incidencias Activas</h3>
-          <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--status-danger)' }}>{kpis.activeIncidents}</p>
+          <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--text-primary)' }}>{kpis.activeIncidents}</p>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Abiertas o en revisión</p>
         </div>
       </div>
@@ -487,30 +739,16 @@ export const ManagerDashboard = () => {
           Selecciona un rango de fechas para consultar y descargar el historial completo de ingresos y egresos de vehículos en formato CSV.
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'flex-end' }}>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-              Fecha de Inicio
-            </label>
-            <input 
-              type="date" 
-              className="input-field" 
-              value={accessStartDate}
-              onChange={(e) => setAccessStartDate(e.target.value)}
-              style={{ height: '42px' }}
-            />
-          </div>
-          <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
-              Fecha de Fin
-            </label>
-            <input 
-              type="date" 
-              className="input-field" 
-              value={accessEndDate}
-              onChange={(e) => setAccessEndDate(e.target.value)}
-              style={{ height: '42px' }}
-            />
-          </div>
+          <CustomDatePicker 
+            label="Fecha de Inicio" 
+            value={accessStartDate} 
+            onChange={setAccessStartDate} 
+          />
+          <CustomDatePicker 
+            label="Fecha de Fin" 
+            value={accessEndDate} 
+            onChange={setAccessEndDate} 
+          />
           <div style={{ flex: '0 0 auto' }}>
             <button 
               className="btn btn-primary" 
@@ -823,7 +1061,7 @@ export const ManagerDashboard = () => {
                 >
                   <option value="Automóvil">Automóvil</option>
                   <option value="Camioneta">Camioneta</option>
-                  <option value="Furgón">Furgón</option>
+                  <option value="SUV">SUV</option>
                   <option value="Motocicleta">Motocicleta</option>
                   <option value="Otro">Otro</option>
                 </select>

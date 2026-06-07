@@ -1259,6 +1259,29 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 - Se programó la lógica de persistencia interactiva usando la función `upsert` de Supabase para integrarse transparentemente con las patentes ingresadas automáticamente por las cámaras y evitar duplicidad de registros.
 - Se configuró la suscripción en tiempo real a la tabla `vehiculos` para que cualquier cambio realizado desde el modal actualice la vista al instante para todos los encargados conectados.
 
+### 3. Ajuste Estético de KPI Cards y Limitación de Ancho de Controles
+- Se estandarizó la combinación de colores en las tarjetas de indicadores (KPIs), estableciendo los valores principales en blanco puro (`var(--text-primary)`) y el texto de estado en un tono grisáceo neutral (`var(--text-secondary)`), alineándose a las tarjetas secundarias y mejorando la consistencia estética.
+- Se limitó el ancho (`flex: '0 0 220px'`) de las cajas de selección de fecha del exportador histórico, evitando que se expandieran a lo largo de toda la pantalla y reduciendo significativamente su impacto visual horizontal en pantallas de escritorio.
+
+---
+
+## 24. Calendario de Fecha Personalizado (Estilo Dark y Alineación Centrada)
+
+**Objetivo:** Reemplazar los controles de fecha nativos del navegador por un selector de calendario personalizado con estilo oscuro uniforme y alineación centrada perfecta.
+**Fecha de Ejecución:** 7 de junio de 2026
+
+### 1. Componente CustomDatePicker
+- Se desarrolló e integró el componente `CustomDatePicker` en [ManagerDashboard.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/ManagerDashboard.jsx) para los controles de fecha de inicio y fin.
+- Cuenta con un menú desplegable (popover) con un diseño estilo dark mode, indicadores de meses en español con controles de navegación bidireccionales (`ChevronLeft` / `ChevronRight`).
+
+### 2. Estilización del Día Seleccionado
+- Se reemplazó el color naranja por el azul institucional de la universidad (`var(--ubb-blue)`) para resaltar el día seleccionado mediante un círculo de fondo y texto blanco.
+- Cuenta con lógica de detección del día actual (`today`) y cierre automático al hacer clic fuera del componente utilizando una referencia de React (`useRef`).
+
+### 3. Alineación Centrada de los Días y Traducción
+- Se modificaron los encabezados semanales de `span` a `div` y se les aplicó un centrado con flexbox (`display: flex`, `alignItems: 'center'`, `justifyContent: 'center'`, `width: '32px'`, `height: '32px'`) coincidiendo con el modelo de cajas de los días numéricos para evitar desfases visuales de alineación.
+- Se tradujeron las iniciales de los días de la semana a español (`D`, `L`, `M`, `M`, `J`, `V`, `S`) para integrarse consistentemente con el idioma del mes/año.
+
 ---
 
 ## Resumen Ejecutivo
@@ -1288,6 +1311,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 21. ✅ **Simulador Autónomo, Exportador, Paginación y Fix de Layout** — Habilitación del modo de inferencia `auto` en la cámara, descarga de logs de accesos CSV con filtros de fecha, paginación del registro en vivo (20/50/100 registros), y corrección del posicionamiento del sidebar (`position: sticky`) para cubrir toda la pantalla al desbordar el contenido derecho.
 22. ✅ **Visualización de Fecha, Día, Limpieza de "(IA)" y Centrado en Registro en Vivo** — Incorporación del día y fecha junto a la hora (`dd-MM-yyyy HH:mm:ss`), actualización del encabezado a "Fecha/Hora", eliminación del texto "(IA)" y centrado de todas las columnas (cabeceras y celdas) de la tabla del timeline.
 23. ✅ **Vinculación de Patentes a Funcionarios** — Diseño y desarrollo de la sección "Gestión de Funcionarios y Patentes" en el Panel Ejecutivo para Encargados y Administradores, que permite buscar, listar, registrar y editar vehículos vinculados a nombres de funcionarios con persistencia directa en Supabase.
+24. ✅ **Calendario de Fecha Personalizado (Estilo Dark)** — Creación del componente `CustomDatePicker` para reemplazar los calendarios nativos del navegador, implementando navegación con flechas, visualización de días y un círculo en azul institucional (`var(--ubb-blue)`) sobre la fecha seleccionada.
 
 ### Stack Tecnológico Final
 
@@ -1304,7 +1328,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 **Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 7 de junio de 2026  
 **Versión del Proyecto:** 1.0 (Producción-ready)  
 **Estado de Producción:** ✅ Totalmente operativo  
-**Fase de Desarrollo:** 23 fases de desarrollo completadas  
+**Fase de Desarrollo:** 24 fases de desarrollo completadas  
 
 ---
 
