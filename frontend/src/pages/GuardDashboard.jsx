@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car, ArrowRight, ArrowLeft, Clock, Search, X } from 'lucide-react';
+import { Car, ArrowRight, ArrowLeft, Clock, Search, X, Eye, Camera } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '../lib/supabase';
 
@@ -48,6 +48,14 @@ export const GuardDashboard = () => {
   const [incidentType, setIncidentType] = useState('Vehículo mal estacionado');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedImageEvent, setSelectedImageEvent] = useState(null);
+
+  const handleOpenImageModal = (ev) => {
+    setSelectedImageEvent(ev);
+    setIsImageModalOpen(true);
+  };
 
   // Fetch data
   useEffect(() => {
@@ -101,7 +109,7 @@ export const GuardDashboard = () => {
         // 5. Fetch Latest Accesses for Timeline
         const { data, error: dataError } = await supabase
           .from('accesos')
-          .select('id, vehiculo_patente, fecha_entrada, fecha_salida, confianza_ocr, zona_id')
+          .select('id, vehiculo_patente, fecha_entrada, fecha_salida, confianza_ocr, zona_id, imagen_origen, imagen_origen_salida')
           .order('fecha_entrada', { ascending: false })
           .limit(500);
 
@@ -117,7 +125,10 @@ export const GuardDashboard = () => {
                 plate: row.vehiculo_patente,
                 type: 'in',
                 timestamp: new Date(row.fecha_entrada),
-                confidence: row.confianza_ocr || 0.95
+                confidence: row.confianza_ocr || 0.95,
+                imagen_origen: row.imagen_origen,
+                imagen_origen_salida: row.imagen_origen_salida,
+                fecha_salida: row.fecha_salida
               });
             }
             
@@ -130,7 +141,10 @@ export const GuardDashboard = () => {
                 plate: row.vehiculo_patente,
                 type: 'out',
                 timestamp: new Date(row.fecha_salida),
-                confidence: row.confianza_ocr || 0.95
+                confidence: row.confianza_ocr || 0.95,
+                imagen_origen: row.imagen_origen,
+                imagen_origen_salida: row.imagen_origen_salida,
+                fecha_salida: row.fecha_salida
               });
             }
           });
@@ -367,13 +381,22 @@ export const GuardDashboard = () => {
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block', textAlign: 'center' }}>{(ev.confidence * 100).toFixed(1)}%</span>
                     </td>
                     <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
-                      <button 
-                        className="btn btn-secondary" 
-                        style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
-                        onClick={() => handleOpenModal(ev)}
-                      >
-                        Reportar Incidencia
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                        <button 
+                          className="btn btn-secondary" 
+                          style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
+                          onClick={() => handleOpenModal(ev)}
+                        >
+                          Reportar Incidencia
+                        </button>
+                        <button 
+                          className="btn btn-primary" 
+                          style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                          onClick={() => handleOpenImageModal(ev)}
+                        >
+                          <Eye size={14} /> Fotos
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -470,6 +493,107 @@ export const GuardDashboard = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Ver Imágenes (Ingreso/Salida) */}
+      {isImageModalOpen && selectedImageEvent && (
+        <div style={modalOverlayStyle}>
+          <div style={{ ...modalContentStyle, maxWidth: '700px' }} className="animate-fade-in">
+            <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Camera size={20} color="var(--ubb-blue)" />
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>
+                  Imágenes de Registro: <span style={{ color: 'var(--text-primary)', letterSpacing: '1px' }}>{selectedImageEvent.plate}</span>
+                </h3>
+              </div>
+              <button onClick={() => setIsImageModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+              {/* Columna Ingreso */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, textAlign: 'center' }}>
+                  Ingreso
+                </h4>
+                <div style={{
+                  height: '240px',
+                  backgroundColor: 'rgba(15, 23, 42, 0.4)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-color)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}>
+                  {selectedImageEvent.imagen_origen ? (
+                    <img 
+                      src={selectedImageEvent.imagen_origen} 
+                      alt="Ingreso de vehículo" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.parentNode.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.875rem;">Error al cargar imagen</span>';
+                      }}
+                    />
+                  ) : (
+                    <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem' }}>
+                      <Car size={32} style={{ opacity: 0.3, marginBottom: '0.5rem', margin: '0 auto' }} />
+                      <span style={{ fontSize: '0.875rem', display: 'block' }}>Sin imagen de ingreso</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Columna Salida */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, textAlign: 'center' }}>
+                  Salida
+                </h4>
+                <div style={{
+                  height: '240px',
+                  backgroundColor: 'rgba(15, 23, 42, 0.4)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-color)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}>
+                  {selectedImageEvent.imagen_origen_salida ? (
+                    <img 
+                      src={selectedImageEvent.imagen_origen_salida} 
+                      alt="Salida de vehículo" 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.parentNode.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.875rem;">Error al cargar imagen</span>';
+                      }}
+                    />
+                  ) : (
+                    <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem' }}>
+                      <Car size={32} style={{ opacity: 0.3, marginBottom: '0.5rem', margin: '0 auto' }} />
+                      <span style={{ fontSize: '0.875rem', display: 'block' }}>
+                        {selectedImageEvent.type === 'in' && !selectedImageEvent.fecha_salida 
+                          ? 'Vehículo aún dentro' 
+                          : 'Sin imagen de salida'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => setIsImageModalOpen(false)}>
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

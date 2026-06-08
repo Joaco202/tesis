@@ -393,6 +393,7 @@ class VisionOCRPipeline:
         camera_id: str,
         image_origin: str,
         timestamp_utc: datetime | None = None,
+        image: np.ndarray | None = None,
     ) -> PersistenceSummary:
         if self.repository is None:
             return PersistenceSummary(enabled=False, saved_events=[], errors=[])
@@ -400,6 +401,7 @@ class VisionOCRPipeline:
         persisted: list[AccessEventResult] = []
         errors: list[str] = []
         seen_plates: set[str] = set()
+        timestamp = timestamp_utc or datetime.now(timezone.utc)
 
         for item in results:
             if not item.plate_text:
@@ -410,14 +412,76 @@ class VisionOCRPipeline:
                 continue
             seen_plates.add(plate)
 
+            resolved_image_origin = image_origin
+            if image is not None:
+                try:
+                    annotated = image.copy()
+                    d = item.detection
+                    cv2.rectangle(annotated, (d.x1, d.y1), (d.x2, d.y2), (0, 180, 0), 2)
+                    text = item.plate_text or " | ".join(x.text for x in item.ocr[:2])
+                    label = f"{d.cls_name} {d.confidence:.2f}"
+                    if text:
+                        label = f"{label} - {text[:60]}"
+                    cv2.putText(
+                        annotated,
+                        label,
+                        (d.x1, max(d.y1 - 8, 8)),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (30, 30, 30),
+                        2,
+                        cv2.LINE_AA,
+                    )
+                    cv2.putText(
+                        annotated,
+                        label,
+                        (d.x1, max(d.y1 - 8, 8)),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5,
+                        (255, 255, 255),
+                        1,
+                        cv2.LINE_AA,
+                    )
+                    
+                    # Encode to JPEG bytes
+                    success, buffer = cv2.imencode('.jpg', annotated)
+                    if success:
+                        import tempfile
+                        with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp_file:
+                            tmp_path = Path(tmp_file.name)
+                            tmp_path.write_bytes(buffer.tobytes())
+                            
+                        # Unique filename in bucket
+                        ts_str = timestamp.strftime('%Y%m%d_%H%M%S')
+                        safe_plate = "".join([c for c in plate if c.isalnum()])
+                        remote_filename = f"{camera_id}_{ts_str}_{safe_plate}.jpg"
+                        
+                        self.repository.client.upload_file(
+                            bucket="access-images",
+                            remote_path=remote_filename,
+                            file_path=tmp_path,
+                            content_type="image/jpeg"
+                        )
+                        
+                        # Clean up temp file
+                        try:
+                            tmp_path.unlink()
+                        except Exception:
+                            pass
+                            
+                        base_url_clean = self.repository.client.base_url.rstrip('/')
+                        resolved_image_origin = f"{base_url_clean}/storage/v1/object/public/access-images/{remote_filename}"
+                except Exception as upload_err:
+                    print(f"Warning: Failed to upload annotated image to Supabase Storage: {upload_err}")
+
             try:
                 saved = self.repository.guardar_acceso(
                     patente=plate,
                     event_type=event_type,
                     camera_id=camera_id,
                     confianza=item.plate_confidence,
-                    image_origin=image_origin,
-                    timestamp_utc=timestamp_utc,
+                    image_origin=resolved_image_origin,
+                    timestamp_utc=timestamp,
                 )
                 persisted.append(saved)
             except HTTPError as exc:

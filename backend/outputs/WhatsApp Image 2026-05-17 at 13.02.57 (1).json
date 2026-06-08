@@ -1,14 +1,14 @@
 {
   "camera_id": "camara-1",
   "event_type": "entrada",
-  "timestamp_utc": "2026-05-26T04:28:40.639612+00:00",
+  "timestamp_utc": "2026-06-08T01:35:29.686159+00:00",
   "total_detections": 1,
   "events": [
     {
       "detection": {
         "cls_id": 0,
         "cls_name": "Patente",
-        "confidence": 0.8604795932769775,
+        "confidence": 0.8605091571807861,
         "x1": 555,
         "y1": 801,
         "x2": 660,

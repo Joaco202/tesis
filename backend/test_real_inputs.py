@@ -126,6 +126,7 @@ def main() -> None:
                         event_type=args.event_type,
                         camera_id=args.camera_id,
                         image_origin=img_path.name,
+                        image=image,
                     )
                     
                     if persist_summary.saved_events:

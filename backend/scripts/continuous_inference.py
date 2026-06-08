@@ -149,6 +149,7 @@ def worker_thread_func(pipeline: VisionOCRPipeline, state: SharedState, args, la
                             event_type=args.event_type,
                             camera_id=args.camera_id,
                             image_origin=img_origin,
+                            image=frame,
                         )
                         if persist_summary.saved_events:
                             print(f"  ✅ Guardado exitoso. Acceso ID: {persist_summary.saved_events[0].access_id}")

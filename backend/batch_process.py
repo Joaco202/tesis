@@ -50,6 +50,7 @@ def main():
                 event_type=cfg.runtime.default_event_type,
                 camera_id=cfg.runtime.default_camera_id,
                 image_origin=str(image_path),
+                image=image,
             )
             
             json_path, annotated_path = pipeline.save_outputs(
