@@ -25,35 +25,47 @@ class SharedState:
         self.lock = threading.Lock()
 
 
-def grabber_thread_func(state: SharedState, is_video: bool, source_path: Path, delay: float, limit: int | None = None):
-    """Hilo Productor: Captura imágenes desde video o directorio de forma continua."""
+def grabber_thread_func(state: SharedState, is_video: bool, is_camera: bool, source_val, delay: float, limit: int | None = None):
+    """Hilo Productor: Captura imágenes desde cámara, video o directorio de forma continua."""
     try:
-        if is_video:
-            cap = cv2.VideoCapture(str(source_path))
+        if is_camera or is_video:
+            if is_camera:
+                # Usar CAP_DSHOW en Windows para inicio rápido de webcam
+                cap = cv2.VideoCapture(source_val, cv2.CAP_DSHOW)
+                if not cap.isOpened():
+                    cap = cv2.VideoCapture(source_val)
+            else:
+                cap = cv2.VideoCapture(str(source_val))
+                
             if not cap.isOpened():
-                print("Error: No se pudo abrir el archivo de video.")
+                print(f"Error: No se pudo abrir el origen de captura: {source_val}")
                 return
                 
-            frame_interval = 10  # Procesar 1 de cada 10 frames de video para mantener fluidez
+            frame_interval = 10 if is_video else 1  # Sin saltarse frames en webcam
             frame_count = 0
             
             try:
                 while state.running:
                     ret, frame = cap.read()
                     if not ret:
-                        break
+                        if is_video:
+                            break
+                        else:
+                            time.sleep(0.1)
+                            continue
                     frame_count += 1
                     if frame_count % frame_interval != 0:
                         continue
                         
                     with state.lock:
                         state.latest_frame = frame.copy()
-                    # Pequeño sleep para no saturar I/O
-                    time.sleep(0.01)
+                    if is_video:
+                        time.sleep(0.01)
             finally:
                 cap.release()
         else:
             # Directorio de imágenes
+            source_path = Path(source_val)
             valid_exts = {".jpg", ".jpeg", ".png"}
             all_images = [p for p in source_path.iterdir() if p.suffix.lower() in valid_exts]
             
@@ -177,7 +189,7 @@ def main() -> None:
         "--source",
         type=str,
         required=True,
-        help="Ruta a un archivo de video (.mp4, .avi) o carpeta con imágenes.",
+        help="Ruta a un archivo de video (.mp4, .avi), carpeta con imágenes, o índice de cámara (ej. 0).",
     )
     parser.add_argument(
         "--delay",
@@ -231,13 +243,21 @@ def main() -> None:
     # Cargar pipeline
     pipeline = VisionOCRPipeline(cfg)
     
-    source_path = Path(args.source)
-    is_video = source_path.is_file() and source_path.suffix.lower() in {
-        ".mp4",
-        ".avi",
-        ".mov",
-        ".mkv",
-    }
+    is_camera = args.source.isdigit()
+    is_video = False
+    source_val = None
+    
+    if is_camera:
+        source_val = int(args.source)
+    else:
+        source_path = Path(args.source)
+        source_val = source_path
+        is_video = source_path.is_file() and source_path.suffix.lower() in {
+            ".mp4",
+            ".avi",
+            ".mov",
+            ".mkv",
+        }
     
     state = SharedState()
     last_detections: dict[str, float] = {}
@@ -245,7 +265,7 @@ def main() -> None:
     # Crear e iniciar hilos
     grabber_thread = threading.Thread(
         target=grabber_thread_func,
-        args=(state, is_video, source_path, args.delay, args.limit),
+        args=(state, is_video, is_camera, source_val, args.delay, args.limit),
         daemon=True
     )
     worker_thread = threading.Thread(

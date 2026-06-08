@@ -1335,9 +1335,41 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 
 ---
 
+## 28. Persistencia de Imágenes de Autos en Supabase Storage y Modal Comparativo
+
+**Objetivo:** Persistir fotos de ingreso y salida en Supabase Storage con retención de 30 días, y añadir un modal comparativo para el guardia.
+**Fecha de Ejecución:** 8 de junio de 2026
+
+### 1. Subida de Imágenes Binarias a Supabase
+- Se implementó la subida de imágenes binarias mediante el método `upload_file` en el cliente HTTP de Supabase en [db.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/src/vision_ocr_pipeline/db.py).
+- Se actualizó [pipeline.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/src/vision_ocr_pipeline/pipeline.py) para generar y guardar temporalmente en formato JPG el frame anotado de la detección, subirlo al bucket público `access-images` de Supabase Storage con un nombre estructurado (`{camera_id}_{timestamp}_{plate}.jpg`), persistir la URL pública en las columnas `imagen_origen` (ingreso) o `imagen_origen_salida` (salida) de la tabla `accesos`, y borrar el archivo temporal del disco.
+- Se actualizaron `batch_process.py`, `continuous_inference.py` y `test_real_inputs.py` para inyectar los frames en `persist_results`.
+
+### 2. Modal Comparativo Lado a Lado (ING/SAL)
+- Se actualizó el panel del guardia [GuardDashboard.jsx](file:///c:/Users/joako/Documents/GitHub/tesis/frontend/src/pages/GuardDashboard.jsx) para seleccionar y recuperar los campos de imagen.
+- Se implementó un botón **"Fotos"** (con icono de ojo `Eye`) en la tabla de flujo vehicular en tiempo real. Al hacer clic, se despliega un modal elegante que muestra la foto de **INGRESO** y la foto de **SALIDA** del auto lado a lado (`object-fit: contain`). Si el auto aún está en el recinto, muestra el estado *"Vehículo aún dentro"*.
+- Las imágenes del modal admiten expansión a pantalla completa (full-screen overlay) al hacer clic sobre ellas, y se pueden cerrar presionando la tecla **`Esc`** para agilizar la interacción del guardia.
+
+### 3. Expiración Automática de Almacenamiento (30 días)
+- Se implementó la política y automatización en base de datos mediante el script [storage_policy.sql](file:///c:/Users/joako/Documents/GitHub/tesis/backend/sql/storage_policy.sql).
+- Define una función y un trigger PostgreSQL (`trg_clean_old_images`) que se ejecuta de forma asíncrona tras cada inserción en la tabla `accesos` para purgar de `storage.objects` todas las fotos de vehículos de más de 30 días de antigüedad, protegiendo el límite de almacenamiento.
+
+---
+
+## 29. Soporte de Cámara Web / Webcam en Tiempo Real en Inferencia Continua
+
+**Objetivo:** Permitir la captura de video en tiempo real de forma directa usando la cámara web de la laptop o cámaras conectadas por USB.
+**Fecha de Ejecución:** 8 de junio de 2026
+
+### 1. Inferencia Continua mediante Webcam
+- Se actualizó el analizador de argumentos del simulador [continuous_inference.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/scripts/continuous_inference.py) para evaluar el parámetro `--source`. Si el valor es una cadena numérica (ej. `0`), se parsea como un índice entero de cámara (`int`).
+- El hilo productor (`grabber_thread_func`) inicializa `cv2.VideoCapture` usando dicho índice. En Windows, utiliza `cv2.CAP_DSHOW` para una inicialización veloz y estabilidad de frames de la cámara integrada, contando con un fallback de reintento automático si ocurren interrupciones temporales del flujo de hardware.
+
+---
+
 ## Resumen Ejecutivo
 
-Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 27 fases de desarrollo completadas son:
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 29 fases de desarrollo completadas son:
 
 1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
 2. ✅ 1,000 imágenes sintéticas generadas.
@@ -1366,28 +1398,33 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 25. ✅ **Simplificación de Tablas, Remoción de Tipo y Funcionario, y Edición/Eliminación de Incidencias** — Remoción de la columna/campo de 'Tipo' (vehículos/incidencias) y '¿Es Funcionario?', con rediseño del flujo de incidencias en tabla agregando Editar y Borrar física al lado de Estado.
 26. ✅ **Paginación Homologada en Registro en Vivo** — Cambio de los tamaños de visualización a `20, 30, 50` registros en la tabla de accesos del Panel de Guardia, homologando todas las tablas del sistema.
 27. ✅ **Políticas RLS en Supabase y Ajuste de Color de Ocupación** — Implementación de políticas de lectura pública y escritura restringida a usuarios autenticados para vehículos/incidencias, liberación de RLS en tablas de configuración (usuarios/roles/zonas) para corregir redirecciones de login y lecturas de capacidad real (130 cupos), y cambio de color a amarillo para Ocupación Media.
+28. ✅ **Persistencia de Imágenes en Supabase Storage y Modal Comparativo** — Configuración de subidas binarias de frames anotados, almacenamiento en bucket `access-images`, limpieza automática a los 30 días (trigger de base de datos) y modal interactivo con fotos Lado a Lado (ING/SAL) ampliables y cerrables con `Esc` en el panel de guardia.
+29. ✅ **Soporte de Cámara Web / Webcam en Tiempo Real** — Actualización del CLI del simulador continuo asíncrono para aceptar índices enteros de cámara (ej. `0`), permitiendo capturar en vivo mediante webcams USB con CAP_DSHOW y fallback de frames.
 
 ### Stack Tecnológico Final
 
 | Componente | Versión | Aceleración / Rol |
 |---|---|---|
 | Python | 3.12.10 | Backend Core |
-| YOLOv8 (ultralytics) | 8.4.46 | GPU (RTX 5070) ✅ |
-| PyTorch | 2.11.0+cu128 | GPU (RTX 5070) ✅ |
+| YOLOv8 (ultralytics) | 8.4.46 | GPU (RTX 5070) ✅ / CPU |
+| PyTorch | 2.11.0+cu128 | GPU (RTX 5070) ✅ / CPU |
 | PaddlePaddle | 3.0.0 GPU | GPU (RTX 5070) ✅ (Detección YOLO) / CPU (OCR) |
 | PaddleOCR | 3.5.0 | CPU (estabilidad Blackwell en Windows) |
 | React + Vite | 8.0 / 18.x | Frontend Web |
 | Supabase | Client JS | Real-Time DB (PostgreSQL) |
 
-**Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 7 de junio de 2026  
+**Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 8 de junio de 2026  
 **Versión del Proyecto:** 1.0 (Producción-ready)  
 **Estado de Producción:** ✅ Totalmente operativo  
-**Fase de Desarrollo:** 27 fases de desarrollo completadas  
+**Fase de Desarrollo:** 29 fases de desarrollo completadas  
 
 ---
 
-*Para ejecutar el pipeline en GPU:*
+*Para ejecutar el pipeline en GPU o CPU:*
 `cd backend && .\.venv\Scripts\activate && python -m vision_ocr_pipeline run infer --source inputs/raw --debug`
 
-*Para ejecutar la simulación de inferencia continua:*
-`cd backend && .\.venv\Scripts\activate && python scripts/continuous_inference.py --source inputs/raw --delay 0.5 --no-persist`
+*Para ejecutar la simulación de inferencia continua con webcam:*
+`cd backend && .\.venv\Scripts\activate && python scripts/continuous_inference.py --source 0 --show`
+
+*Para ejecutar la simulación de inferencia continua con imágenes/video:*
+`cd backend && .\.venv\Scripts\activate && python scripts/continuous_inference.py --source inputs/raw --delay 0.5 --show`
