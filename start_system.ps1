@@ -60,7 +60,7 @@ if (Test-Path $backendPath) {
     # Instalar o verificar dependencias de python
     Write-Host "  [i] Verificando e instalando dependencias de Python..." -ForegroundColor DarkYellow
     & $venvPython -m pip install --upgrade pip
-    & $venvPython -m pip install -r requirements.txt
+    & $venvPython -m pip install -r requirements-cpu.txt
     if ($LASTEXITCODE -ne 0) {
         Write-Warning "Hubo algunos problemas instalando dependencias. Intentando continuar..."
     }
