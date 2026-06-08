@@ -48,7 +48,6 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Cargar configuración y forzar desactivación si se pasa --no-persist
     cfg = load_config("config.yaml")
     if args.no_persist:
         cfg.supabase.enabled = False
@@ -62,7 +61,6 @@ def main() -> None:
         print(f"Tabla Accesos: {cfg.supabase.accesses_table}")
     print("=" * 60)
 
-    # Iniciar pipeline
     pipeline = VisionOCRPipeline(cfg)
     print(f"Detector cargado con pesos: {pipeline.detector._model_path}")
     print(f"PaddleOCR configurado con idioma: {pipeline.ocr.cfg.lang}")
@@ -73,7 +71,6 @@ def main() -> None:
         print(f"Error: El directorio {source_dir} no existe.")
         return
 
-    # Buscar imágenes de forma case-insensitive, priorizando WhatsApp
     valid_exts = {".jpg", ".jpeg", ".png"}
     all_images = [p for p in source_dir.iterdir() if p.suffix.lower() in valid_exts]
     whatsapp_images = [p for p in all_images if "whatsapp" in p.name.lower()]
@@ -107,7 +104,6 @@ def main() -> None:
             elapsed = time.perf_counter() - start_time
             total_time += elapsed
             
-            # Buscar resultado con texto de patente
             main_result = next((r for r in results if r.plate_text), None)
             
             if main_result:
@@ -131,12 +127,12 @@ def main() -> None:
                     
                     if persist_summary.saved_events:
                         evt = persist_summary.saved_events[0]
-                        print(f"    ✅ Guardado con éxito. ID Acceso: {evt.access_id}")
+                        print(f"     Guardado con éxito. ID Acceso: {evt.access_id}")
                     if persist_summary.errors:
                         for err in persist_summary.errors:
-                            print(f"    ❌ Error al guardar: {err}")
+                            print(f"   Error al guardar: {err}")
             else:
-                print(f"  ✗ No se detectó patente válida.")
+                print(f"  No se detectó patente válida.")
                 if results:
                     print("    Detecciones y OCR internos:")
                     for r_idx, r in enumerate(results, 1):
@@ -144,7 +140,6 @@ def main() -> None:
                         print(f"      [{r_idx}] Localización: {r.detection.cls_name} ({r.detection.confidence:.2%}) | OCR: {ocr_txts}")
                 print(f"    Tiempo de inferencia: {elapsed:.3f} s")
                 
-            # Guardar archivos JSON e imágenes anotadas
             json_path, annot_path = pipeline.save_outputs(
                 image=image,
                 results=results,
@@ -156,14 +151,13 @@ def main() -> None:
                 save_annotated=True,
             )
             if annot_path:
-                print(f"    📂 Guardado resultado anotado en: {annot_path.name}")
+                print(f"    Guardado resultado anotado en: {annot_path.name}")
                 
         except Exception as e:
-            print(f"  ❌ Error inesperado al procesar {img_path.name}: {e}")
+            print(f"   Error inesperado al procesar {img_path.name}: {e}")
         
         print("-" * 60)
 
-    # Resumen final
     avg_time = total_time / len(images) if images else 0.0
     detection_rate = detected_count / len(images) if images else 0.0
     print("=" * 60)
@@ -173,6 +167,9 @@ def main() -> None:
     print(f"  Tiempo total: {total_time:.3f} s")
     print(f"  Tiempo promedio por imagen: {avg_time:.3f} s")
     print("=" * 60)
+    
+    if cfg.supabase.enabled and pipeline.offline_queue:
+        pipeline.offline_queue.sync_queue()
 
 
 if __name__ == "__main__":

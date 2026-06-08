@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-"""
-Script para procesar todas las imágenes de inputs/raw de forma automática.
-"""
 from pathlib import Path
 from rich.console import Console
 from rich.progress import track
@@ -11,23 +7,19 @@ from src.vision_ocr_pipeline.pipeline import VisionOCRPipeline
 
 console = Console()
 
-# Configuración
 INPUT_DIR = Path("inputs/raw")
 OUTPUT_DIR = Path("outputs")
 CONFIG_PATH = Path("config.yaml")
 SUPPORTED_FORMATS = {".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp"}
 
 def main():
-    # Validar directorios
     if not INPUT_DIR.exists():
         console.print(f"[red]Error:[/red] {INPUT_DIR} no existe.", style="bold")
         return
     
-    # Cargar configuración
     cfg = load_config(CONFIG_PATH if CONFIG_PATH.exists() else None)
     pipeline = VisionOCRPipeline(cfg)
     
-    # Buscar imágenes
     images = [
         f for f in INPUT_DIR.iterdir() 
         if f.is_file() and f.suffix.lower() in SUPPORTED_FORMATS
@@ -71,12 +63,14 @@ def main():
             failed += 1
             console.print(f"[red]✗[/red] {image_path.name}: {str(e)}")
     
-    # Resumen
     console.print(f"\n[cyan]{'='*60}[/cyan]")
     console.print(f"[green]Exitosas:[/green] {successful}/{len(images)}")
     if failed > 0:
         console.print(f"[red]Fallidas:[/red] {failed}/{len(images)}")
     console.print(f"[cyan]Resultados en:[/cyan] {OUTPUT_DIR}")
+    
+    if cfg.supabase.enabled and pipeline.offline_queue:
+        pipeline.offline_queue.sync_queue()
 
 if __name__ == "__main__":
     main()

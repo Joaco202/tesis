@@ -1367,9 +1367,36 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 
 ---
 
+## 29. Soporte de Cámara Web / Webcam en Tiempo Real en Inferencia Continua
+
+**Objetivo:** Permitir la captura de video en tiempo real de forma directa usando la cámara web de la laptop o cámaras conectadas por USB.
+**Fecha de Ejecución:** 8 de junio de 2026
+
+### 1. Inferencia Continua mediante Webcam
+- Se actualizó el analizador de argumentos del simulador [continuous_inference.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/scripts/continuous_inference.py) para evaluar el parámetro `--source`. Si el valor es una cadena numérica (ej. `0`), se parsea como un índice entero de cámara (`int`).
+- El hilo productor (`grabber_thread_func`) inicializa `cv2.VideoCapture` usando dicho índice. En Windows, utiliza `cv2.CAP_DSHOW` para una inicialización veloz y estabilidad de frames de la cámara integrada, contando con un fallback de reintento automático si ocurren interrupciones temporales del flujo de hardware.
+
+---
+
+## 30. Cola de Sincronización Local Offline (Modo Resiliente a Pérdidas de Conexión)
+
+**Objetivo:** Implementar un mecanismo de contingencia para almacenar eventos y frames anotados en almacenamiento local cuando se pierde la conexión a internet/Supabase, y sincronizarlos automáticamente al restablecerse.
+**Fecha de Ejecución:** 8 de junio de 2026
+
+### 1. Módulo de Cola Offline (OfflineQueue)
+- Se desarrolló el archivo [offline_queue.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/src/vision_ocr_pipeline/offline_queue.py). Este módulo inicializa una estructura local en el directorio `backend/data/offline/`.
+- **Almacenamiento Local:** Los eventos detectados se guardan en un archivo JSON (`offline_queue.json`) y las copias de los frames de video anotados se escriben en disco (`images/`).
+- **Lógica de Sincronización:** El método `sync_queue()` intenta subir las imágenes locales a Supabase Storage, resolver las URLs públicas y registrar los accesos correspondientes con sus marcas de tiempo originales. Una vez sincronizado un registro con éxito, remueve el evento del JSON y elimina la imagen temporal local.
+
+### 2. Captura y Reintento Automático
+- Se modificó `persist_results` en [pipeline.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/src/vision_ocr_pipeline/pipeline.py) para que, en caso de fallar la inserción en Supabase, capture la excepción y guarde el evento en la cola offline local, devolviendo un resultado de estado simulado (`saved_offline`) para mantener la interfaz.
+- Se incorporó un hilo secundario en segundo plano (`sync_thread`) en [continuous_inference.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/scripts/continuous_inference.py) que ejecuta de manera asíncrona un ciclo de sincronización cada 20 segundos. Los scripts de lote [test_real_inputs.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/test_real_inputs.py) y [batch_process.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/batch_process.py) ejecutan también un ciclo de sincronización al finalizar.
+
+---
+
 ## Resumen Ejecutivo
 
-Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 29 fases de desarrollo completadas son:
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 30 fases de desarrollo completadas son:
 
 1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
 2. ✅ 1,000 imágenes sintéticas generadas.
@@ -1400,6 +1427,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 27. ✅ **Políticas RLS en Supabase y Ajuste de Color de Ocupación** — Implementación de políticas de lectura pública y escritura restringida a usuarios autenticados para vehículos/incidencias, liberación de RLS en tablas de configuración (usuarios/roles/zonas) para corregir redirecciones de login y lecturas de capacidad real (130 cupos), y cambio de color a amarillo para Ocupación Media.
 28. ✅ **Persistencia de Imágenes en Supabase Storage y Modal Comparativo** — Configuración de subidas binarias de frames anotados, almacenamiento en bucket `access-images`, limpieza automática a los 30 días (trigger de base de datos) y modal interactivo con fotos Lado a Lado (ING/SAL) ampliables y cerrables con `Esc` en el panel de guardia.
 29. ✅ **Soporte de Cámara Web / Webcam en Tiempo Real** — Actualización del CLI del simulador continuo asíncrono para aceptar índices enteros de cámara (ej. `0`), permitiendo capturar en vivo mediante webcams USB con CAP_DSHOW y fallback de frames.
+30. ✅ **Cola de Sincronización Local Offline** — Implementación de amortiguador de persistencia resiliente mediante JSON local y almacenamiento temporal de imágenes, sincronizándose automáticamente mediante hilo secundario en segundo plano tras reconexiones.
 
 ### Stack Tecnológico Final
 
@@ -1416,7 +1444,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 **Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 8 de junio de 2026  
 **Versión del Proyecto:** 1.0 (Producción-ready)  
 **Estado de Producción:** ✅ Totalmente operativo  
-**Fase de Desarrollo:** 29 fases de desarrollo completadas  
+**Fase de Desarrollo:** 30 fases de desarrollo completadas  
 
 ---
 
