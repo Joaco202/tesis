@@ -36,9 +36,9 @@ export const DashboardLayout = () => {
     borderLeft: 'none',
     backgroundColor: 'var(--bg-secondary)',
     position: isMobile ? 'fixed' : 'sticky',
-    top: 0,
+    top: isMobile ? 0 : 0,
     left: 0,
-    height: '100vh',
+    height: isMobile ? '100vh' : '100%',
     zIndex: 50,
     transform: isMobile && !isMobileMenuOpen ? 'translateX(-100%)' : 'translateX(0)',
     transition: 'transform 0.3s ease',
@@ -46,20 +46,45 @@ export const DashboardLayout = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
-      {/* Mobile Top Bar */}
-      {isMobile && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: 'var(--ubb-blue)', color: 'white' }}>
-          <h2 style={{ fontSize: '1.25rem', margin: 0, fontWeight: 700 }}>UBB Parking</h2>
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
+
+      {/* ── Header Corporativo UBB (ancho completo) ── */}
+      <header style={{
+        backgroundColor: 'var(--ubb-blue)',
+        padding: '0.65rem 1.5rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
+        flexShrink: 0,
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+          <img src="/logoUBB2.png" alt="Logo UBB" style={{ height: '34px', width: 'auto' }} />
+          <div>
+            <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', margin: 0, lineHeight: 1.2 }}>Universidad del Bío-Bío</p>
+            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.75)', margin: 0 }}>Campus Fernando May</p>
+          </div>
+        </div>
+        {/* Botón hamburguesa en mobile */}
+        {isMobile && (
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '0.25rem' }}
+          >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-        </div>
-      )}
+        )}
+      </header>
+
+      {/* ── Contenedor horizontal: sidebar + main ── */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
       {/* Overlay for mobile */}
       {isMobile && isMobileMenuOpen && (
-        <div 
+        <div
           onClick={closeMenu}
           style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 40 }}
         />
@@ -139,6 +164,7 @@ export const DashboardLayout = () => {
       <main style={{ flex: 1, padding: isMobile ? '1rem' : '2rem', overflowY: 'auto' }}>
         <Outlet />
       </main>
+      </div>
     </div>
   );
 };
