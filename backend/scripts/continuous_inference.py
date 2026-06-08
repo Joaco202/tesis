@@ -6,6 +6,7 @@ import time
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
+import numpy  # Evita OverflowError al inicializar float128 en Windows importándolo antes que OpenCV
 import cv2
 
 # Agregar carpeta base al PATH
