@@ -37,12 +37,10 @@ export const GuardDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
-  // Reset page to 1 when search or pageSize changes
   useEffect(() => {
     setCurrentPage(1);
   }, [search, pageSize]);
 
-  // Modal and incident states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [incidentType, setIncidentType] = useState('Vehículo mal estacionado');
@@ -65,28 +63,25 @@ export const GuardDashboard = () => {
         startOfToday.setHours(0, 0, 0, 0);
         const todayIso = startOfToday.toISOString();
 
-        // 1. Fetch Occupancy Count (vehículos actualmente dentro en Aula Magna)
         const { count, error: countError } = await supabase
           .from('accesos')
           .select('*', { count: 'exact', head: true })
           .is('fecha_salida', null);
-          
+
         if (!countError && count !== null) {
           setOccupancy(prev => ({ ...prev, current: count }));
         }
 
-        // 2. Fetch Aula Magna Capacity
         const { data: zoneData, error: zoneError } = await supabase
           .from('zonas')
           .select('capacidad')
           .eq('nombre', 'Aula Magna')
           .single();
-          
+
         if (!zoneError && zoneData) {
           setOccupancy(prev => ({ ...prev, max: zoneData.capacidad }));
         }
 
-        // 3. Fetch Entries Today
         const { count: entriesCount, error: entriesError } = await supabase
           .from('accesos')
           .select('*', { count: 'exact', head: true })
@@ -96,7 +91,6 @@ export const GuardDashboard = () => {
           setDailyTotals(prev => ({ ...prev, entries: entriesCount }));
         }
 
-        // 4. Fetch Exits Today
         const { count: exitsCount, error: exitsError } = await supabase
           .from('accesos')
           .select('*', { count: 'exact', head: true })
@@ -106,7 +100,6 @@ export const GuardDashboard = () => {
           setDailyTotals(prev => ({ ...prev, exits: exitsCount }));
         }
 
-        // 5. Fetch Latest Accesses for Timeline
         const { data, error: dataError } = await supabase
           .from('accesos')
           .select('id, vehiculo_patente, fecha_entrada, fecha_salida, confianza_ocr, zona_id, imagen_origen, imagen_origen_salida')
@@ -116,7 +109,6 @@ export const GuardDashboard = () => {
         if (!dataError && data) {
           let timeline = [];
           data.forEach(row => {
-            // Entry event
             if (row.fecha_entrada) {
               timeline.push({
                 id: row.id + '-in',
@@ -131,8 +123,7 @@ export const GuardDashboard = () => {
                 fecha_salida: row.fecha_salida
               });
             }
-            
-            // Exit event
+
             if (row.fecha_salida) {
               timeline.push({
                 id: row.id + '-out',
@@ -148,8 +139,7 @@ export const GuardDashboard = () => {
               });
             }
           });
-          
-          // Sort timeline descending
+
           timeline.sort((a, b) => b.timestamp - a.timestamp);
           setEvents(timeline);
         }
@@ -160,7 +150,6 @@ export const GuardDashboard = () => {
 
     fetchDashboardData();
 
-    // Subscribe to changes
     const channel = supabase.channel('guard:accesos')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'accesos' }, () => {
         fetchDashboardData();
@@ -198,7 +187,7 @@ export const GuardDashboard = () => {
     setSubmitting(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       const newInc = {
         acceso_id: selectedEvent.accessId,
         vehiculo_patente: selectedEvent.plate,
@@ -228,10 +217,10 @@ export const GuardDashboard = () => {
 
   const availableSpots = Math.max(0, occupancy.max - occupancy.current);
   const occupancyPercentage = (occupancy.current / occupancy.max) * 100;
-  
+
   let statusColor = 'var(--status-success)';
   let statusText = 'Operando Normal';
-  
+
   if (occupancyPercentage > 90) {
     statusColor = 'var(--status-danger)';
     statusText = 'Capacidad Llena';
@@ -243,7 +232,7 @@ export const GuardDashboard = () => {
     statusText = 'Ocupación Media';
   }
 
-  const radius = 52; // 120/2 - 8
+  const radius = 52;
   const circumference = 2 * Math.PI * radius;
   const clampedPercentage = Math.min(100, Math.max(0, occupancyPercentage));
   const strokeDashoffset = circumference - (clampedPercentage / 100) * circumference;
@@ -268,13 +257,13 @@ export const GuardDashboard = () => {
           <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
             <div style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="120" height="120" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
-                <circle 
+                <circle
                   cx="60" cy="60" r={radius}
                   fill="transparent"
                   stroke="var(--border-color)"
                   strokeWidth="8"
                 />
-                <circle 
+                <circle
                   cx="60" cy="60" r={radius}
                   fill="transparent"
                   stroke={statusColor}
@@ -323,8 +312,8 @@ export const GuardDashboard = () => {
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
-                <select 
-                  value={pageSize} 
+                <select
+                  value={pageSize}
                   onChange={(e) => setPageSize(Number(e.target.value))}
                   className="input-field"
                   style={{ width: '80px', padding: '0.25rem 0.5rem', height: '38px' }}
@@ -336,10 +325,10 @@ export const GuardDashboard = () => {
               </div>
               <div style={{ position: 'relative' }}>
                 <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                <input 
-                  type="text" 
-                  placeholder="Buscar patente..." 
-                  className="input-field" 
+                <input
+                  type="text"
+                  placeholder="Buscar patente..."
+                  className="input-field"
                   style={{ paddingLeft: '2.5rem', width: '220px', height: '38px' }}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
@@ -364,7 +353,7 @@ export const GuardDashboard = () => {
                   <tr key={ev.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                     <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '1.125rem', letterSpacing: '1px', textAlign: 'center' }}>{ev.plate}</td>
                     <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
-                      {ev.type === 'in' 
+                      {ev.type === 'in'
                         ? <span className="badge badge-success"><ArrowRight size={14} style={{ marginRight: '4px' }} /> Ingreso</span>
                         : <span className="badge badge-warning"><ArrowLeft size={14} style={{ marginRight: '4px' }} /> Salida</span>
                       }
@@ -382,15 +371,15 @@ export const GuardDashboard = () => {
                     </td>
                     <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
                       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                        <button 
-                          className="btn btn-secondary" 
+                        <button
+                          className="btn btn-secondary"
                           style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
                           onClick={() => handleOpenModal(ev)}
                         >
                           Reportar Incidencia
                         </button>
-                        <button 
-                          className="btn btn-primary" 
+                        <button
+                          className="btn btn-primary"
                           style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
                           onClick={() => handleOpenImageModal(ev)}
                         >
@@ -416,8 +405,8 @@ export const GuardDashboard = () => {
                 Mostrando {Math.min(totalItems, (currentPage - 1) * pageSize + 1)} - {Math.min(totalItems, currentPage * pageSize)} de {totalItems} registros
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button 
-                  className="btn btn-secondary" 
+                <button
+                  className="btn btn-secondary"
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                   style={{ padding: '0.5rem 1rem' }}
@@ -427,8 +416,8 @@ export const GuardDashboard = () => {
                 <div style={{ display: 'flex', alignItems: 'center', padding: '0 0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
                   Página {currentPage} de {totalPages}
                 </div>
-                <button 
-                  className="btn btn-secondary" 
+                <button
+                  className="btn btn-secondary"
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                   style={{ padding: '0.5rem 1rem' }}
@@ -451,7 +440,7 @@ export const GuardDashboard = () => {
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleReportIncident} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.25rem' }}>Vehículo Seleccionado</label>
@@ -462,7 +451,7 @@ export const GuardDashboard = () => {
 
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Tipo de Incidencia</label>
-                <select 
+                <select
                   className="input-field"
                   value={incidentType}
                   onChange={(e) => setIncidentType(e.target.value)}
@@ -473,11 +462,11 @@ export const GuardDashboard = () => {
                   <option value="Otro">Otro</option>
                 </select>
               </div>
-              
+
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Detalles / Descripción *</label>
-                <textarea 
-                  className="input-field" 
+                <textarea
+                  className="input-field"
                   rows="3"
                   placeholder="Detalles sobre por qué se reporta esta incidencia..."
                   value={description}
@@ -485,7 +474,7 @@ export const GuardDashboard = () => {
                   required
                 />
               </div>
-              
+
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancelar</button>
                 <button type="submit" className="btn btn-primary" disabled={submitting}>
@@ -517,7 +506,7 @@ export const GuardDashboard = () => {
               {/* Columna Ingreso */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, textAlign: 'center' }}>
-                  Ingreso
+                  ING (Ingreso)
                 </h4>
                 <div style={{
                   height: '240px',
@@ -531,9 +520,9 @@ export const GuardDashboard = () => {
                   position: 'relative'
                 }}>
                   {selectedImageEvent.imagen_origen ? (
-                    <img 
-                      src={selectedImageEvent.imagen_origen} 
-                      alt="Ingreso de vehículo" 
+                    <img
+                      src={selectedImageEvent.imagen_origen}
+                      alt="Ingreso de vehículo"
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       onError={(e) => {
                         e.target.style.display = 'none';
@@ -552,7 +541,7 @@ export const GuardDashboard = () => {
               {/* Columna Salida */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, textAlign: 'center' }}>
-                  Salida
+                  SAL (Salida)
                 </h4>
                 <div style={{
                   height: '240px',
@@ -566,9 +555,9 @@ export const GuardDashboard = () => {
                   position: 'relative'
                 }}>
                   {selectedImageEvent.imagen_origen_salida ? (
-                    <img 
-                      src={selectedImageEvent.imagen_origen_salida} 
-                      alt="Salida de vehículo" 
+                    <img
+                      src={selectedImageEvent.imagen_origen_salida}
+                      alt="Salida de vehículo"
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       onError={(e) => {
                         e.target.style.display = 'none';
@@ -579,8 +568,8 @@ export const GuardDashboard = () => {
                     <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem' }}>
                       <Car size={32} style={{ opacity: 0.3, marginBottom: '0.5rem', margin: '0 auto' }} />
                       <span style={{ fontSize: '0.875rem', display: 'block' }}>
-                        {selectedImageEvent.type === 'in' && !selectedImageEvent.fecha_salida 
-                          ? 'Vehículo aún dentro' 
+                        {selectedImageEvent.type === 'in' && !selectedImageEvent.fecha_salida
+                          ? 'Vehículo aún dentro'
                           : 'Sin imagen de salida'}
                       </span>
                     </div>
