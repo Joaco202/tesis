@@ -1,5 +1,5 @@
 # start_system.ps1
-# Script unificado para iniciar el sistema de Detección de Placas UBB
+# Script unificado para iniciar el sistema de Deteccion de Placas UBB
 
 Write-Host "==========================================================" -ForegroundColor Cyan
 Write-Host "   Iniciando Sistema de Control de Acceso Vehicular UBB   " -ForegroundColor Cyan
@@ -11,9 +11,9 @@ $frontendPath = Join-Path $PSScriptRoot "frontend"
 
 if (Test-Path $frontendPath) {
     Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$frontendPath'; npm run dev"
-    Write-Host "  ✓ Servidor de Vite iniciado en una nueva consola." -ForegroundColor Green
+    Write-Host "  [OK] Servidor de Vite iniciado en una nueva consola." -ForegroundColor Green
 } else {
-    Write-Error "No se encontró el directorio frontend en '$frontendPath'."
+    Write-Error "No se encontro el directorio frontend en '$frontendPath'."
 }
 
 # 2. Activar el entorno virtual del Backend en la consola actual
@@ -25,21 +25,21 @@ if (Test-Path $backendPath) {
     $venvActivate = Join-Path $backendPath ".venv\Scripts\Activate.ps1"
     if (Test-Path $venvActivate) {
         . $venvActivate
-        Write-Host "  ✓ Entorno virtual (.venv) activado." -ForegroundColor Green
-        Write-Host "  ✓ Directorio actual cambiado a: $backendPath" -ForegroundColor Green
-        Write-Host "  ✓ Python optimizado con modo UTF-8 activo." -ForegroundColor Green
+        Write-Host "  [OK] Entorno virtual (.venv) activado." -ForegroundColor Green
+        Write-Host "  [OK] Directorio actual cambiado a: $backendPath" -ForegroundColor Green
+        Write-Host "  [OK] Python optimizado con modo UTF-8 activo." -ForegroundColor Green
         Write-Host ""
-        Write-Host "Para correr una inferencia de prueba sobre las imágenes reales:" -ForegroundColor Cyan
+        Write-Host "Para correr una inferencia de prueba sobre las imagenes reales:" -ForegroundColor Cyan
         Write-Host "  python -X utf8 test_real_inputs.py --limit 3" -ForegroundColor Gray
         Write-Host ""
-        Write-Host "Para iniciar la simulación de flujo continuo / video:" -ForegroundColor Cyan
+        Write-Host "Para iniciar la simulacion de flujo continuo / video:" -ForegroundColor Cyan
         Write-Host "  python -X utf8 scripts/continuous_inference.py --source inputs/raw --delay 2.0" -ForegroundColor Gray
         Write-Host ""
     } else {
-        Write-Warning "No se encontró el script de activación en '$venvActivate'."
+        Write-Warning "No se encontro el script de activacion en '$venvActivate'."
     }
 } else {
-    Write-Error "No se encontró el directorio backend en '$backendPath'."
+    Write-Error "No se encontro el directorio backend en '$backendPath'."
 }
 
 Write-Host "==========================================================" -ForegroundColor Cyan

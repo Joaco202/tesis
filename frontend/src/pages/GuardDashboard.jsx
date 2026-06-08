@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Car, ArrowRight, ArrowLeft, Clock, Search, X, Eye, Camera } from 'lucide-react';
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { supabase } from '../lib/supabase';
 
 const modalOverlayStyle = {
@@ -49,6 +50,7 @@ export const GuardDashboard = () => {
 
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImageEvent, setSelectedImageEvent] = useState(null);
+  const [zoomedImage, setZoomedImage] = useState(null);
 
   const handleOpenImageModal = (ev) => {
     setSelectedImageEvent(ev);
@@ -168,6 +170,23 @@ export const GuardDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Cerrar modales al presionar la tecla Escape
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        if (zoomedImage) {
+          setZoomedImage(null);
+        } else if (isImageModalOpen) {
+          setIsImageModalOpen(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [zoomedImage, isImageModalOpen]);
+
   const filteredEvents = events.filter(e => e.plate.toLowerCase().includes(search.toLowerCase()));
   const totalItems = filteredEvents.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
@@ -246,7 +265,7 @@ export const GuardDashboard = () => {
             <p style={{ color: 'var(--text-secondary)' }}>Monitoreo en tiempo real del Aula Magna</p>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{format(currentTime, "dd 'de' MMMM, yyyy")}</p>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{format(currentTime, "dd 'de' MMMM, yyyy", { locale: es })}</p>
             <p style={{ fontSize: '1.25rem', fontWeight: 600 }}>{format(currentTime, "HH:mm:ss")}</p>
           </div>
         </div>
@@ -506,7 +525,7 @@ export const GuardDashboard = () => {
               {/* Columna Ingreso */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, textAlign: 'center' }}>
-                  ING (Ingreso)
+                  Ingreso
                 </h4>
                 <div style={{
                   height: '240px',
@@ -523,7 +542,8 @@ export const GuardDashboard = () => {
                     <img
                       src={selectedImageEvent.imagen_origen}
                       alt="Ingreso de vehículo"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', cursor: 'pointer' }}
+                      onClick={() => setZoomedImage(selectedImageEvent.imagen_origen)}
                       onError={(e) => {
                         e.target.style.display = 'none';
                         e.target.parentNode.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.875rem;">Error al cargar imagen</span>';
@@ -541,7 +561,7 @@ export const GuardDashboard = () => {
               {/* Columna Salida */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, textAlign: 'center' }}>
-                  SAL (Salida)
+                  Salida
                 </h4>
                 <div style={{
                   height: '240px',
@@ -558,7 +578,8 @@ export const GuardDashboard = () => {
                     <img
                       src={selectedImageEvent.imagen_origen_salida}
                       alt="Salida de vehículo"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', cursor: 'pointer' }}
+                      onClick={() => setZoomedImage(selectedImageEvent.imagen_origen_salida)}
                       onError={(e) => {
                         e.target.style.display = 'none';
                         e.target.parentNode.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.875rem;">Error al cargar imagen</span>';
@@ -583,6 +604,62 @@ export const GuardDashboard = () => {
                 Cerrar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Zoom de Imagen Completa */}
+      {zoomedImage && (
+        <div 
+          style={{
+            ...modalOverlayStyle,
+            zIndex: 1100,
+            backgroundColor: 'rgba(10, 15, 30, 0.9)',
+          }}
+          onClick={() => setZoomedImage(null)}
+        >
+          <div 
+            style={{
+              position: 'relative',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setZoomedImage(null)}
+              style={{
+                position: 'absolute',
+                top: '-40px',
+                right: '0',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+              }}
+            >
+              <X size={20} /> Cerrar
+            </button>
+            <img 
+              src={zoomedImage} 
+              alt="Visualización completa" 
+              style={{
+                maxWidth: '100%',
+                maxHeight: '80vh',
+                objectFit: 'contain',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+              }} 
+            />
           </div>
         </div>
       )}
