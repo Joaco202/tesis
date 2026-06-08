@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Download, AlertTriangle, Filter, Plus, X, Check, Clock as ClockIcon, Car, Search, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Download, AlertTriangle, Filter, Plus, X, Check, Clock as ClockIcon, Car, Search, Calendar as CalendarIcon, ChevronLeft, ChevronRight, RotateCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { format } from 'date-fns';
 
@@ -789,7 +789,7 @@ export const ManagerDashboard = () => {
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button className="btn btn-secondary" onClick={fetchData}>
-            <Filter size={18} /> Actualizar
+            <RotateCw size={18} /> Actualizar
           </button>
           <button className="btn btn-primary" onClick={exportReport}>
             <Download size={18} /> Exportar Reporte
@@ -940,7 +940,7 @@ export const ManagerDashboard = () => {
                       style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
                       onClick={() => handleOpenVehicleModal(veh)}
                     >
-                      Editar/Vincular
+                      Editar
                     </button>
                   </td>
                 </tr>

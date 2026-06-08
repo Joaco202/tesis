@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn } from 'lucide-react';
+import { LogIn, AlertCircle } from 'lucide-react';
 
 export const Login = () => {
   const [email, setEmail] = useState('');
@@ -9,7 +9,7 @@ export const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  const { signIn, mockSignIn } = useAuth();
+  const { signIn } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -23,17 +23,16 @@ export const Login = () => {
       navigate('/dashboard/guardia'); // Default redirect, protected route will handle unauthorized
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Error al iniciar sesión');
+      const msg = err.message === 'Invalid login credentials'
+        ? 'Email y/o contraseña incorrectos'
+        : (err.message || 'Error al iniciar sesión');
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleMockLogin = (role) => {
-    mockSignIn(role);
-    if (role === 'guardia') navigate('/dashboard/guardia');
-    if (role === 'encargado' || role === 'admin') navigate('/dashboard/encargado');
-  };
+
 
   return (
     <div className="flex-center" style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '1rem' }}>
@@ -44,8 +43,18 @@ export const Login = () => {
         </div>
 
         {error && (
-          <div className="badge-danger" style={{ padding: '0.75rem', borderRadius: 'var(--radius-md)', marginBottom: '1rem', textAlign: 'center', fontSize: '0.875rem' }}>
-            {error}
+          <div className="badge-danger" style={{ 
+            padding: '0.75rem', 
+            borderRadius: 'var(--radius-md)', 
+            marginBottom: '1rem', 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            fontSize: '0.875rem' 
+          }}>
+            <AlertCircle size={18} style={{ flexShrink: 0 }} />
+            <span>{error}</span>
           </div>
         )}
 
@@ -79,14 +88,7 @@ export const Login = () => {
           </button>
         </form>
 
-        <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
-            Zona de Pruebas (Mock Login sin DB)
-          </p>
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={() => handleMockLogin('admin')} className="btn btn-secondary" style={{ fontSize: '0.75rem' }}>Rol Admin</button>
-          </div>
-        </div>
+
       </div>
     </div>
   );

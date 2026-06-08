@@ -43,7 +43,9 @@ export const AuthProvider = ({ children }) => {
         .single();
       
       if (data && data.roles && data.roles.nombre) {
-        setRole(data.roles.nombre);
+        const dbRole = data.roles.nombre;
+        const mappedRole = dbRole === 'administrador' ? 'admin' : dbRole;
+        setRole(mappedRole);
       } else {
         if (error) console.warn('Error fetching user role:', error);
         setRole('guardia'); // Fallback default

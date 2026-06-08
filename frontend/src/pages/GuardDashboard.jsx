@@ -438,7 +438,7 @@ export const GuardDashboard = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Tipo de Incidencia *</label>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Tipo de Incidencia</label>
                 <select 
                   className="input-field"
                   value={incidentType}
@@ -447,7 +447,6 @@ export const GuardDashboard = () => {
                 >
                   <option value="Vehículo mal estacionado">Vehículo mal estacionado</option>
                   <option value="Vehículo con problema menor">Vehículo con problema menor</option>
-                  <option value="Obstáculo en vía">Obstáculo en vía</option>
                   <option value="Otro">Otro</option>
                 </select>
               </div>
