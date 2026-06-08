@@ -40,6 +40,7 @@ class VisionOCRPipeline:
         self.ocr = PaddleOCREngine(cfg.ocr, use_gpu=use_gpu)
         self.repository: SupabaseRepository | None = None
         self._fallback_ocr = None
+        self.offline_queue = None
 
         if cfg.supabase.enabled:
             client = SupabaseClient(
@@ -52,6 +53,8 @@ class VisionOCRPipeline:
                 vehicles_table=cfg.supabase.vehicles_table,
                 accesses_table=cfg.supabase.accesses_table,
             )
+            from .offline_queue import OfflineQueue
+            self.offline_queue = OfflineQueue(self.repository)
 
     def process_image(self, image_path: str | Path) -> tuple[np.ndarray, list[DetectionResult]]:
         image_path = Path(image_path)
@@ -75,7 +78,6 @@ class VisionOCRPipeline:
                     h, w = crop.shape[:2]
                     aspect_ratio = w / h if h > 0 else 0
                     
-                    # Si es una patente tipo moto/arrastre (cercana a cuadrada, relación de aspecto < 2.0)
                     if 0 < aspect_ratio < 2.0:
                         mid_y = h // 2
                         top_half = crop[0:mid_y, :]
@@ -89,7 +91,6 @@ class VisionOCRPipeline:
                         
                         ocr_text = ocr_top + ocr_bottom
                     else:
-                        # Formato estándar de una sola línea
                         ocr_input = preprocess_plate_crop(crop)
                         ocr_text = self.ocr.read_text(ocr_input)
                         
@@ -103,14 +104,10 @@ class VisionOCRPipeline:
                     )
                 )
 
-        # Fallback: ejecutar búsqueda por regiones OCR cuando ninguna detección tiene texto
-        # O cuando la detección primaria no devolvió texto — intentamos el fallback y lo
-        # priorizamos si encuentra una placa.
         need_fallback = not any(item.plate_text for item in output) or (output and output[0].plate_text is None)
         if need_fallback:
             fallback_result = self._detect_plate_via_ocr_regions(image)
             if fallback_result:
-                # Priorizar el resultado del fallback insertándolo al frente.
                 output.insert(0, fallback_result)
 
         return output
@@ -137,7 +134,6 @@ class VisionOCRPipeline:
                 self._fallback_ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, use_gpu=use_gpu)
         ocr = self._fallback_ocr
 
-        # Detectar cajas de texto con OCR
         try:
             raw = normalize_ocr_output(ocr.ocr(image))
         except Exception:
@@ -171,7 +167,6 @@ class VisionOCRPipeline:
                     ar = bw / bh
                     area = bw * bh
 
-                    # Filtrar regiones plausibles para patente (umbrales relajados para mayor recall)
                     if conf < 0.20:
                         continue
                     if ar < 1.2 or ar > 10.0:
@@ -197,7 +192,6 @@ class VisionOCRPipeline:
                 score += 0.25
             return score
 
-        # Agrupar cajas horizontalmente cercanas
         merged_boxes = self._merge_horizontally_close_boxes(word_boxes)
 
         def bbox_for_plate(items_with_boxes: list[tuple[OCRText, tuple[int, int, int, int]]], plate_text: str | None) -> tuple[int, int, int, int] | None:
@@ -228,7 +222,6 @@ class VisionOCRPipeline:
 
             return None
 
-        # Para cada región candidata, expandir y buscar patente
         best_plate_text: str | None = None
         best_plate_conf: float | None = None
         best_detection: Detection | None = None
@@ -288,7 +281,6 @@ class VisionOCRPipeline:
                     y2=ey2,
                 )
 
-        # También evaluar OCR en toda la imagen y comparar contra las regiones.
         full_raw = raw
 
         if full_raw:
@@ -413,6 +405,7 @@ class VisionOCRPipeline:
             seen_plates.add(plate)
 
             resolved_image_origin = image_origin
+            image_bytes_to_queue = None
             if image is not None:
                 try:
                     annotated = image.copy()
@@ -443,15 +436,14 @@ class VisionOCRPipeline:
                         cv2.LINE_AA,
                     )
                     
-                    # Encode to JPEG bytes
                     success, buffer = cv2.imencode('.jpg', annotated)
                     if success:
+                        image_bytes_to_queue = buffer.tobytes()
                         import tempfile
                         with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp_file:
                             tmp_path = Path(tmp_file.name)
-                            tmp_path.write_bytes(buffer.tobytes())
+                            tmp_path.write_bytes(image_bytes_to_queue)
                             
-                        # Unique filename in bucket
                         ts_str = timestamp.strftime('%Y%m%d_%H%M%S')
                         safe_plate = "".join([c for c in plate if c.isalnum()])
                         remote_filename = f"{camera_id}_{ts_str}_{safe_plate}.jpg"
@@ -463,7 +455,6 @@ class VisionOCRPipeline:
                             content_type="image/jpeg"
                         )
                         
-                        # Clean up temp file
                         try:
                             tmp_path.unlink()
                         except Exception:
@@ -484,11 +475,28 @@ class VisionOCRPipeline:
                     timestamp_utc=timestamp,
                 )
                 persisted.append(saved)
-            except HTTPError as exc:
-                err_body = exc.read().decode("utf-8", errors="ignore")
-                errors.append(f"{plate}: HTTP {exc.code} - {err_body}")
-            except (URLError, TimeoutError, ValueError) as exc:
-                errors.append(f"{plate}: {exc}")
+            except Exception as exc:
+                if self.offline_queue:
+                    try:
+                        self.offline_queue.add_event(
+                            patente=plate,
+                            event_type=event_type,
+                            camera_id=camera_id,
+                            confianza=item.plate_confidence or 0.0,
+                            timestamp=timestamp,
+                            image_bytes=image_bytes_to_queue
+                        )
+                        simulated = AccessEventResult(
+                            plate_text=plate,
+                            event_type=event_type,
+                            access_id=None,
+                            status="saved_offline",
+                        )
+                        persisted.append(simulated)
+                    except Exception as queue_err:
+                        errors.append(f"Failed to queue event offline: {queue_err}")
+                else:
+                    errors.append(f"{plate}: {exc}")
 
         return PersistenceSummary(enabled=True, saved_events=persisted, errors=errors)
 

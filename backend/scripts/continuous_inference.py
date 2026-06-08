@@ -286,6 +286,29 @@ def main() -> None:
     grabber_thread.start()
     worker_thread.start()
     
+    # Hilo de Sincronización de Cola Offline (si Supabase está habilitado)
+    if pipeline.offline_queue:
+        def sync_loop():
+            # Esperar 2 segundos antes de intentar sincronizar al inicio
+            time.sleep(2.0)
+            while state.running:
+                try:
+                    pipeline.offline_queue.sync_queue()
+                except Exception as sync_err:
+                    print(f"⚠️ Error en hilo de sincronización offline: {sync_err}")
+                
+                # Dormir 20 segundos en pequeños intervalos para apagado rápido
+                for _ in range(20):
+                    if not state.running:
+                        break
+                    time.sleep(1.0)
+        
+        sync_thread = threading.Thread(
+            target=sync_loop,
+            daemon=True
+        )
+        sync_thread.start()
+    
     # Hilo Principal: GUI Event Loop (OpenCV imshow)
     try:
         while state.running:
