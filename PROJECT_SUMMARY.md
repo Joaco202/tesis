@@ -1362,41 +1362,66 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 **Fecha de Ejecución:** 8 de junio de 2026
 
 ### 1. Inferencia Continua mediante Webcam
-- Se actualizó el analizador de argumentos del simulador [continuous_inference.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/scripts/continuous_inference.py) para evaluar el parámetro `--source`. Si el valor es una cadena numérica (ej. `0`), se parsea como un índice entero de cámara (`int`).
+- Se actualizó el analizador de argumentos del simulador [continuous_inference.py](file:///c:/Users/joako/tesis/backend/scripts/continuous_inference.py) para evaluar el parámetro `--source`. Si el valor es una cadena numérica (ej. `0`), se parsea como un índice entero de cámara (`int`).
 - El hilo productor (`grabber_thread_func`) inicializa `cv2.VideoCapture` usando dicho índice. En Windows, utiliza `cv2.CAP_DSHOW` para una inicialización veloz y estabilidad de frames de la cámara integrada, contando con un fallback de reintento automático si ocurren interrupciones temporales del flujo de hardware.
 
 ---
 
-## 29. Soporte de Cámara Web / Webcam en Tiempo Real en Inferencia Continua
+## 30. Compatibilidad con Python 3.13 y Correcciones de Ejecución del Backend
 
-**Objetivo:** Permitir la captura de video en tiempo real de forma directa usando la cámara web de la laptop o cámaras conectadas por USB.
+**Objetivo:** Adaptar y estabilizar el backend de IA para ejecutarse en entornos locales actualizados con Python 3.13 y resolver caídas de librerías.
 **Fecha de Ejecución:** 8 de junio de 2026
 
-### 1. Inferencia Continua mediante Webcam
-- Se actualizó el analizador de argumentos del simulador [continuous_inference.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/scripts/continuous_inference.py) para evaluar el parámetro `--source`. Si el valor es una cadena numérica (ej. `0`), se parsea como un índice entero de cámara (`int`).
-- El hilo productor (`grabber_thread_func`) inicializa `cv2.VideoCapture` usando dicho índice. En Windows, utiliza `cv2.CAP_DSHOW` para una inicialización veloz y estabilidad de frames de la cámara integrada, contando con un fallback de reintento automático si ocurren interrupciones temporales del flujo de hardware.
+### 1. Actualización de Compatibilidad con NumPy (Python 3.13)
+- Se detectó que el entorno virtual local ejecuta **Python 3.13.7**, lo cual provocaba fallas críticas de compatibilidad con `numpy 1.26.4` (específicamente un crash de inicio en `getlimits.py` por `OverflowError: cannot convert longdouble infinity to integer` y fallas en `np.arange` por `ValueError: arange: cannot compute length`).
+- Se actualizó NumPy a la versión **`2.3.5`**, la cual ofrece soporte estable para Python 3.13 y satisface la restricción de dependencias de `paddlex` (que exige `numpy < 2.4`).
+
+### 2. Corrección del Modelo YOLO en config.yaml
+- Se corrigió el archivo [config.yaml](file:///c:/Users/joako/tesis/backend/config.yaml) para cambiar la ruta del detector predeterminada a [yolo26n.pt](file:///c:/Users/joako/tesis/backend/yolo26n.pt) (presente en la raíz del backend), solventando un `FileNotFoundError` crítico en el pipeline que buscaba carpetas de entrenamiento inexistentes (`runs/detect/finetune-chilean/weights/best.pt`).
+
+### 3. Bypass de Falla de oneDNN (MKL-DNN) en PaddleOCR
+- Se identificó un bug del backend de ejecución de PaddlePaddle en CPU (error `ConvertPirAttribute2RuntimeAttribute` con atributos tipo double) durante la inferencia OCR.
+- Se forzó el parámetro `enable_mkldnn=False` en las inicializaciones de la clase `PaddleOCR` dentro de [ocr_engine.py](file:///c:/Users/joako/tesis/backend/src/vision_ocr_pipeline/ocr_engine.py), derivando el procesamiento a los kernels estándar de CPU de manera estable y libre de crashes.
 
 ---
 
-## 30. Cola de Sincronización Local Offline (Modo Resiliente a Pérdidas de Conexión)
+## 31. Migración de Limpieza de Imágenes al Backend Python (Fix del Error 403 en Supabase Storage)
 
-**Objetivo:** Implementar un mecanismo de contingencia para almacenar eventos y frames anotados en almacenamiento local cuando se pierde la conexión a internet/Supabase, y sincronizarlos automáticamente al restablecerse.
+**Objetivo:** Eliminar el trigger PostgreSQL que causaba un error `HTTP 403` al insertar accesos, y reemplazar la lógica de expiración de imágenes de 30 días con una implementación correcta en el backend Python usando la Storage REST API de Supabase.
 **Fecha de Ejecución:** 8 de junio de 2026
 
-### 1. Módulo de Cola Offline (OfflineQueue)
-- Se desarrolló el archivo [offline_queue.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/src/vision_ocr_pipeline/offline_queue.py). Este módulo inicializa una estructura local en el directorio `backend/data/offline/`.
-- **Almacenamiento Local:** Los eventos detectados se guardan en un archivo JSON (`offline_queue.json`) y las copias de los frames de video anotados se escriben en disco (`images/`).
-- **Lógica de Sincronización:** El método `sync_queue()` intenta subir las imágenes locales a Supabase Storage, resolver las URLs públicas y registrar los accesos correspondientes con sus marcas de tiempo originales. Una vez sincronizado un registro con éxito, remueve el evento del JSON y elimina la imagen temporal local.
+### 1. Diagnóstico del Error 403
 
-### 2. Captura y Reintento Automático
-- Se modificó `persist_results` en [pipeline.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/src/vision_ocr_pipeline/pipeline.py) para que, en caso de fallar la inserción en Supabase, capture la excepción y guarde el evento en la cola offline local, devolviendo un resultado de estado simulado (`saved_offline`) para mantener la interfaz.
-- Se incorporó un hilo secundario en segundo plano (`sync_thread`) en [continuous_inference.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/scripts/continuous_inference.py) que ejecuta de manera asíncrona un ciclo de sincronización cada 20 segundos. Los scripts de lote [test_real_inputs.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/test_real_inputs.py) y [batch_process.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/batch_process.py) ejecutan también un ciclo de sincronización al finalizar.
+- Se identificó que el trigger `trg_clean_old_images` creado en la Fase 28 ejecutaba `DELETE FROM storage.objects` directamente desde SQL. Supabase bloqueó esta operación con `HTTP 403 - {"code":"42501","message":"Direct deletion from storage tables is not allowed. Use the Storage API instead."}` como consecuencia de una actualización de sus políticas que prohíbe la eliminación directa de la tabla interna `storage.objects`, incluso con funciones `SECURITY DEFINER`.
+- El error se propagaba hacia `persist_results` y era reportado como fallo de persistencia del acceso, aunque la imagen se subía correctamente.
+- **Solución de base de datos (paso manual):** Ejecutar en el SQL Editor de Supabase:
+  ```sql
+  DROP TRIGGER IF EXISTS trg_clean_old_images ON public.accesos;
+  DROP FUNCTION IF EXISTS public.trg_func_clean_old_images();
+  DROP FUNCTION IF EXISTS public.clean_old_access_images();
+  ```
+
+### 2. Nuevo Método `delete_file` en el Cliente HTTP
+
+- Se agregó el método `delete_file(bucket, remote_path)` a la clase `SupabaseClient` en [db.py](file:///c:/Users/joako/tesis/backend/src/vision_ocr_pipeline/db.py).
+- Llama a `DELETE /storage/v1/object/{bucket}/{remote_path}` con las cabeceras `apikey` y `Authorization`, que es la única forma autorizada de borrar archivos del Storage de Supabase.
+
+### 3. Nuevo Método `limpiar_imagenes_antiguas` en el Repositorio
+
+- Se agregó el método `limpiar_imagenes_antiguas(dias=30)` a la clase `SupabaseRepository` en [repository.py](file:///c:/Users/joako/tesis/backend/src/vision_ocr_pipeline/repository.py).
+- Lógica: consulta la tabla `accesos` filtrada por `fecha_entrada < (ahora - N días)`, extrae la ruta relativa del archivo desde las URLs públicas almacenadas en `imagen_origen` e `imagen_origen_salida`, llama a `delete_file` por cada una, y finalmente limpia esas columnas en la BD para evitar reintentos en ejecuciones futuras.
+
+### 4. Limpieza Automática Periódica en `continuous_inference.py`
+
+- Se añadió una variable `last_cleanup: float = 0.0` en `main()` para rastrear el timestamp de la última ejecución.
+- En el loop principal de GUI/control, se evalúa si han pasado más de **86.400 segundos (24 horas)** desde la última limpieza y, si es así, se llama `pipeline.repository.limpiar_imagenes_antiguas(dias=30)`.
+- El resultado se imprime como `[Mantenimiento] 🗑️ N imagen(es) antiguas eliminadas del Storage.` si hay archivos eliminados.
+- Esta ejecución ocurre en el hilo principal para evitar condiciones de carrera con los hilos de captura y persistencia.
 
 ---
 
-## Resumen Ejecutivo
 
-Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 30 fases de desarrollo completadas son:
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las **31 fases** de desarrollo completadas son:
 
 1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
 2. ✅ 1,000 imágenes sintéticas generadas.
@@ -1427,13 +1452,14 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 27. ✅ **Políticas RLS en Supabase y Ajuste de Color de Ocupación** — Implementación de políticas de lectura pública y escritura restringida a usuarios autenticados para vehículos/incidencias, liberación de RLS en tablas de configuración (usuarios/roles/zonas) para corregir redirecciones de login y lecturas de capacidad real (130 cupos), y cambio de color a amarillo para Ocupación Media.
 28. ✅ **Persistencia de Imágenes en Supabase Storage y Modal Comparativo** — Configuración de subidas binarias de frames anotados, almacenamiento en bucket `access-images`, limpieza automática a los 30 días (trigger de base de datos) y modal interactivo con fotos Lado a Lado (ING/SAL) ampliables y cerrables con `Esc` en el panel de guardia.
 29. ✅ **Soporte de Cámara Web / Webcam en Tiempo Real** — Actualización del CLI del simulador continuo asíncrono para aceptar índices enteros de cámara (ej. `0`), permitiendo capturar en vivo mediante webcams USB con CAP_DSHOW y fallback de frames.
-30. ✅ **Cola de Sincronización Local Offline** — Implementación de amortiguador de persistencia resiliente mediante JSON local y almacenamiento temporal de imágenes, sincronizándose automáticamente mediante hilo secundario en segundo plano tras reconexiones.
+30. ✅ **Compatibilidad con Python 3.13 y Estabilización del Backend** — Upgrade a NumPy `2.3.5` para dar soporte nativo a Python 3.13, reemplazo de modelo default por `yolo26n.pt` para evitar `FileNotFoundError`, y bypass de crashes por oneDNN en CPU vía `enable_mkldnn=False`.
+31. ✅ **Migración de Limpieza de Imágenes al Backend Python** — Eliminación del trigger PostgreSQL que causaba `HTTP 403` al insertar accesos. Implementación de `delete_file()` en `SupabaseClient` y `limpiar_imagenes_antiguas()` en `SupabaseRepository` usando la Storage REST API. Limpieza automática cada 24 horas desde el loop de `continuous_inference.py`.
 
 ### Stack Tecnológico Final
 
 | Componente | Versión | Aceleración / Rol |
 |---|---|---|
-| Python | 3.12.10 | Backend Core |
+| Python | 3.12.10 / 3.13.7 | Backend Core |
 | YOLOv8 (ultralytics) | 8.4.46 | GPU (RTX 5070) ✅ / CPU |
 | PyTorch | 2.11.0+cu128 | GPU (RTX 5070) ✅ / CPU |
 | PaddlePaddle | 3.0.0 GPU | GPU (RTX 5070) ✅ (Detección YOLO) / CPU (OCR) |
@@ -1444,7 +1470,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 **Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 8 de junio de 2026  
 **Versión del Proyecto:** 1.0 (Producción-ready)  
 **Estado de Producción:** ✅ Totalmente operativo  
-**Fase de Desarrollo:** 30 fases de desarrollo completadas  
+**Fase de Desarrollo:** 31 fases de desarrollo completadas  
 
 ---
 

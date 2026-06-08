@@ -1,5 +1,5 @@
 detection:
-  model: runs/detect/finetune-chilean/weights/best.pt
+  model: yolo26n.pt
   confidence: 0.25
   iou: 0.45
   classes: null
@@ -20,7 +20,7 @@ ocr:
   max_confusion_subs: 2
   aggressive_confusion: true
 runtime:
-  device: cuda
+  device: cpu
   save_annotated: true
   default_camera_id: camara-1
   default_event_type: entrada

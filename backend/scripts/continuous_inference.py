@@ -4,7 +4,7 @@ import argparse
 import sys
 import time
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import numpy  # Evita OverflowError al inicializar float128 en Windows importándolo antes que OpenCV
 import cv2
@@ -262,6 +262,7 @@ def main() -> None:
     
     state = SharedState()
     last_detections: dict[str, float] = {}
+    last_cleanup: float = 0.0  # Timestamp de la última limpieza de imágenes antiguas
     
     # Crear e iniciar hilos
     grabber_thread = threading.Thread(
@@ -361,6 +362,16 @@ def main() -> None:
                 else:
                     # Si no se muestra la ventana, dormir brevemente
                     time.sleep(0.03)
+
+            # Limpieza de imágenes antiguas: ejecutar una vez cada 24 horas
+            if cfg.supabase.enabled and (time.time() - last_cleanup) > 86400:
+                last_cleanup = time.time()
+                try:
+                    eliminadas = pipeline.repository.limpiar_imagenes_antiguas(dias=30)
+                    if eliminadas:
+                        print(f"[Mantenimiento] 🗑️  {eliminadas} imagen(es) antiguas eliminadas del Storage.")
+                except Exception as err:
+                    print(f"[Mantenimiento] ⚠️  Error en limpieza de imágenes: {err}")
             else:
                 time.sleep(0.01)
     except KeyboardInterrupt:

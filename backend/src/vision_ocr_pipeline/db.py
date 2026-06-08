@@ -56,6 +56,28 @@ class SupabaseClient:
                 return {}
             return json.loads(raw)
 
+    def delete_file(
+        self,
+        bucket: str,
+        remote_path: str,
+    ) -> dict[str, Any]:
+        """Elimina un archivo del Storage de Supabase usando la Storage API REST."""
+        base = self.base_url.rstrip("/")
+        url = f"{base}/storage/v1/object/{bucket}/{remote_path}"
+        headers = {
+            "apikey": self.service_key,
+            "Authorization": f"Bearer {self.service_key}",
+        }
+        req = request.Request(url, headers=headers, method="DELETE")
+        try:
+            with request.urlopen(req, timeout=self.timeout_seconds) as resp:
+                raw = resp.read().decode("utf-8")
+                if not raw:
+                    return {}
+                return json.loads(raw)
+        except Exception:
+            return {}
+
     def insert(
         self,
         table: str,

@@ -86,6 +86,7 @@ class PaddleOCREngine:
                 use_angle_cls=cfg.use_angle_cls,
                 lang=cfg.lang,
                 device=device_str,
+                enable_mkldnn=False,
             )
         except TypeError:
             try:
@@ -94,6 +95,7 @@ class PaddleOCREngine:
                     use_angle_cls=cfg.use_angle_cls,
                     lang=cfg.lang,
                     use_gpu=gpu_available,
+                    enable_mkldnn=False,
                 )
             except Exception as exc:
                 print(
@@ -101,7 +103,12 @@ class PaddleOCREngine:
                     f"Detalle: {exc}"
                 )
                 try:
-                    self._ocr = PaddleOCR(use_angle_cls=cfg.use_angle_cls, lang=cfg.lang, use_gpu=False)
+                    self._ocr = PaddleOCR(
+                        use_angle_cls=cfg.use_angle_cls,
+                        lang=cfg.lang,
+                        use_gpu=False,
+                        enable_mkldnn=False,
+                    )
                 except Exception as exc2:
                     print(
                         "[WARN] PaddleOCR no se pudo inicializar en este entorno. "

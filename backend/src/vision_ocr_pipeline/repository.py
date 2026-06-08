@@ -156,3 +156,50 @@ class SupabaseRepository:
             access_id=None,
             status="skipped_invalid_event_type",
         )
+
+    def limpiar_imagenes_antiguas(self, dias: int = 30) -> int:
+        """Elimina del Storage de Supabase las imágenes de accesos con más de `dias` días.
+
+        Consulta la tabla de accesos buscando registros con fecha_entrada anterior
+        al corte, extrae la ruta del archivo desde la URL pública y llama a la
+        Storage API REST para borrarlo. Finalmente limpia las columnas de URL en BD.
+
+        Returns:
+            Cantidad de imágenes eliminadas correctamente.
+        """
+        from datetime import timedelta
+
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=dias)).isoformat()
+        BUCKET = "access-images"
+
+        registros = self.client.select(
+            self.accesses_table,
+            query_params={
+                "select": "id,imagen_origen,imagen_origen_salida",
+                "fecha_entrada": f"lt.{cutoff}",
+            },
+        )
+
+        eliminadas = 0
+        for reg in registros:
+            urls_a_borrar = [
+                reg.get("imagen_origen"),
+                reg.get("imagen_origen_salida"),
+            ]
+            for url in urls_a_borrar:
+                if not url or f"{BUCKET}/" not in url:
+                    continue
+                # Extraer path relativo desde la URL pública
+                remote_path = url.split(f"{BUCKET}/")[-1]
+                result = self.client.delete_file(BUCKET, remote_path)
+                if result is not None:
+                    eliminadas += 1
+
+            # Limpiar las columnas de imagen en la BD para no reintentar
+            self.client.update(
+                self.accesses_table,
+                {"imagen_origen": None, "imagen_origen_salida": None},
+                query_params={"id": f"eq.{reg['id']}"},
+            )
+
+        return eliminadas
