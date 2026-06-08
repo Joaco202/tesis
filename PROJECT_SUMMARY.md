@@ -1385,9 +1385,43 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 
 ---
 
-## Resumen Ejecutivo
+## 31. Migración de Limpieza de Imágenes al Backend Python (Fix del Error 403 en Supabase Storage)
 
-Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 30 fases de desarrollo completadas son:
+**Objetivo:** Eliminar el trigger PostgreSQL que causaba un error `HTTP 403` al insertar accesos, y reemplazar la lógica de expiración de imágenes de 30 días con una implementación correcta en el backend Python usando la Storage REST API de Supabase.
+**Fecha de Ejecución:** 8 de junio de 2026
+
+### 1. Diagnóstico del Error 403
+
+- Se identificó que el trigger `trg_clean_old_images` creado en la Fase 28 ejecutaba `DELETE FROM storage.objects` directamente desde SQL. Supabase bloqueó esta operación con `HTTP 403 - {"code":"42501","message":"Direct deletion from storage tables is not allowed. Use the Storage API instead."}` como consecuencia de una actualización de sus políticas que prohíbe la eliminación directa de la tabla interna `storage.objects`, incluso con funciones `SECURITY DEFINER`.
+- El error se propagaba hacia `persist_results` y era reportado como fallo de persistencia del acceso, aunque la imagen se subía correctamente.
+- **Solución de base de datos (paso manual):** Ejecutar en el SQL Editor de Supabase:
+  ```sql
+  DROP TRIGGER IF EXISTS trg_clean_old_images ON public.accesos;
+  DROP FUNCTION IF EXISTS public.trg_func_clean_old_images();
+  DROP FUNCTION IF EXISTS public.clean_old_access_images();
+  ```
+
+### 2. Nuevo Método `delete_file` en el Cliente HTTP
+
+- Se agregó el método `delete_file(bucket, remote_path)` a la clase `SupabaseClient` en [db.py](file:///c:/Users/joako/tesis/backend/src/vision_ocr_pipeline/db.py).
+- Llama a `DELETE /storage/v1/object/{bucket}/{remote_path}` con las cabeceras `apikey` y `Authorization`, que es la única forma autorizada de borrar archivos del Storage de Supabase.
+
+### 3. Nuevo Método `limpiar_imagenes_antiguas` en el Repositorio
+
+- Se agregó el método `limpiar_imagenes_antiguas(dias=30)` a la clase `SupabaseRepository` en [repository.py](file:///c:/Users/joako/tesis/backend/src/vision_ocr_pipeline/repository.py).
+- Lógica: consulta la tabla `accesos` filtrada por `fecha_entrada < (ahora - N días)`, extrae la ruta relativa del archivo desde las URLs públicas almacenadas en `imagen_origen` e `imagen_origen_salida`, llama a `delete_file` por cada una, y finalmente limpia esas columnas en la BD para evitar reintentos en ejecuciones futuras.
+
+### 4. Limpieza Automática Periódica en `continuous_inference.py`
+
+- Se añadió una variable `last_cleanup: float = 0.0` en `main()` para rastrear el timestamp de la última ejecución.
+- En el loop principal de GUI/control, se evalúa si han pasado más de **86.400 segundos (24 horas)** desde la última limpieza y, si es así, se llama `pipeline.repository.limpiar_imagenes_antiguas(dias=30)`.
+- El resultado se imprime como `[Mantenimiento] 🗑️ N imagen(es) antiguas eliminadas del Storage.` si hay archivos eliminados.
+- Esta ejecución ocurre en el hilo principal para evitar condiciones de carrera con los hilos de captura y persistencia.
+
+---
+
+
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las **31 fases** de desarrollo completadas son:
 
 1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
 2. ✅ 1,000 imágenes sintéticas generadas.
@@ -1419,6 +1453,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 28. ✅ **Persistencia de Imágenes en Supabase Storage y Modal Comparativo** — Configuración de subidas binarias de frames anotados, almacenamiento en bucket `access-images`, limpieza automática a los 30 días (trigger de base de datos) y modal interactivo con fotos Lado a Lado (ING/SAL) ampliables y cerrables con `Esc` en el panel de guardia.
 29. ✅ **Soporte de Cámara Web / Webcam en Tiempo Real** — Actualización del CLI del simulador continuo asíncrono para aceptar índices enteros de cámara (ej. `0`), permitiendo capturar en vivo mediante webcams USB con CAP_DSHOW y fallback de frames.
 30. ✅ **Compatibilidad con Python 3.13 y Estabilización del Backend** — Upgrade a NumPy `2.3.5` para dar soporte nativo a Python 3.13, reemplazo de modelo default por `yolo26n.pt` para evitar `FileNotFoundError`, y bypass de crashes por oneDNN en CPU vía `enable_mkldnn=False`.
+31. ✅ **Migración de Limpieza de Imágenes al Backend Python** — Eliminación del trigger PostgreSQL que causaba `HTTP 403` al insertar accesos. Implementación de `delete_file()` en `SupabaseClient` y `limpiar_imagenes_antiguas()` en `SupabaseRepository` usando la Storage REST API. Limpieza automática cada 24 horas desde el loop de `continuous_inference.py`.
 
 ### Stack Tecnológico Final
 
@@ -1435,7 +1470,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 **Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 8 de junio de 2026  
 **Versión del Proyecto:** 1.0 (Producción-ready)  
 **Estado de Producción:** ✅ Totalmente operativo  
-**Fase de Desarrollo:** 30 fases de desarrollo completadas  
+**Fase de Desarrollo:** 31 fases de desarrollo completadas  
 
 ---
 
