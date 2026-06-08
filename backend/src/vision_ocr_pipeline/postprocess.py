@@ -125,8 +125,15 @@ def normalize_plate_text(text: str) -> str:
 
 
 def is_likely_plate(text: str) -> bool:
-    """Evalúa de forma general si una cadena tiene estructura de patente."""
-    if len(text) < 5 or len(text) > 8:
+    """Evalúa si una cadena tiene estructura de patente chilena.
+
+    Acepta:
+    - Coincidencia exacta con STRICT_NEW_PLATE (LLLL+DD) o OLD_PLATE (LL+DDDD)
+    - Fallback estricto: exactamente 6 caracteres con distribución 4+2 (nuevo) o 2+4 (antiguo).
+      No se permite ninguna otra combinación.
+    """
+    if len(text) != 6:
+        # Los patrones chilenos son siempre de 6 caracteres
         return False
 
     if any(pattern.match(text) for pattern in PLATE_PATTERNS):
@@ -134,7 +141,22 @@ def is_likely_plate(text: str) -> bool:
 
     letters = sum(ch.isalpha() for ch in text)
     digits = sum(ch.isdigit() for ch in text)
-    return letters >= 2 and digits >= 2
+
+    # Solo permitir distribuciones coherentes con formato chileno:
+    # Nuevo: 4 letras + 2 dígitos → los 4 primeros mayoritariamente letras
+    # Antiguo: 2 letras + 4 dígitos → los 2 primeros mayoritariamente letras
+    if letters + digits < 6:
+        # Tiene caracteres que no son letra ni dígito → rechazar
+        return False
+
+    if letters == 4 and digits == 2:
+        # Candidato a formato nuevo: exigir que los dígitos estén al final
+        return text[4:].replace("O", "0").replace("I", "1").isdigit() or text[4:].isdigit()
+    if letters == 2 and digits == 4:
+        # Candidato a formato antiguo: exigir que las letras estén al inicio
+        return text[:2].isalpha()
+
+    return False
 
 
 def generate_corrected_variants(candidate: str, cfg: OCRConfig | None = None) -> list[str]:

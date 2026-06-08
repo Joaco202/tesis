@@ -1,6 +1,6 @@
 detection:
   model: yolo26n.pt
-  confidence: 0.25
+  confidence: 0.50
   iou: 0.45
   classes: null
 ocr:
@@ -20,7 +20,7 @@ ocr:
   max_confusion_subs: 2
   aggressive_confusion: true
 runtime:
-  device: cpu
+  device: cuda
   save_annotated: true
   default_camera_id: camara-1
   default_event_type: entrada

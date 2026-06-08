@@ -14,15 +14,20 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from src.vision_ocr_pipeline.config import load_config
 from src.vision_ocr_pipeline.pipeline import VisionOCRPipeline, DetectionResult
+from src.vision_ocr_pipeline.postprocess import STRICT_NEW_PLATE, OLD_PLATE
 
 
 class SharedState:
     def __init__(self):
         self.running = True
         self.producer_done = False
-        self.latest_frame = None         # Frame crudo para inferencia
-        self.display_frame = None        # Frame anotado para mostrar en GUI
-        self.plate_overlay = None        # Info de patente detectada para overlay en pantalla: (texto, conf, timestamp)
+        # Buffer para el hilo WORKER (se consume: el worker lo pone en None al leerlo)
+        self.inference_frame = None
+        # Buffer para el DISPLAY (nunca se borra, solo el grabber lo sobreescribe).
+        # El display SIEMPRE tiene el frame más reciente de la cámara → 30 FPS garantizados.
+        self.display_frame = None
+        self.last_bbox = None            # Último bounding box: (x1, y1, x2, y2) o None
+        self.plate_overlay = None        # (texto, confianza, elapsed) del último acierto
         self.lock = threading.Lock()
 
 
@@ -57,9 +62,15 @@ def grabber_thread_func(state: SharedState, is_video: bool, is_camera: bool, sou
                     frame_count += 1
                     if frame_count % frame_interval != 0:
                         continue
-                        
+                    
+                    frame_copy = frame.copy()
                     with state.lock:
-                        state.latest_frame = frame.copy()
+                        # display_frame: siempre el más reciente, NUNCA se pone en None
+                        state.display_frame = frame_copy
+                        # inference_frame: solo se actualiza si el worker ya consumió el anterior
+                        # (evita que el grabber sature al worker con frames que no puede procesar)
+                        if state.inference_frame is None:
+                            state.inference_frame = frame_copy
                     if is_video:
                         time.sleep(0.01)
             finally:
@@ -70,7 +81,7 @@ def grabber_thread_func(state: SharedState, is_video: bool, is_camera: bool, sou
             valid_exts = {".jpg", ".jpeg", ".png"}
             all_images = [p for p in source_path.iterdir() if p.suffix.lower() in valid_exts]
             
-            # Priorizar imágenes de WhatsApp si existen (como en test_real_inputs.py)
+            # Priorizar imágenes de WhatsApp si existen
             whatsapp_images = [p for p in all_images if "whatsapp" in p.name.lower()]
             if whatsapp_images:
                 images = sorted(whatsapp_images, key=lambda x: x.name)
@@ -90,9 +101,9 @@ def grabber_thread_func(state: SharedState, is_video: bool, is_camera: bool, sou
                 frame = cv2.imread(str(img_path))
                 if frame is not None:
                     with state.lock:
-                        state.latest_frame = (frame.copy(), img_path.name)
+                        state.display_frame = frame.copy()
+                        state.inference_frame = (frame.copy(), img_path.name)
                 img_idx += 1
-                # Esperar el delay especificado para simular el paso continuo de vehículos
                 time.sleep(delay)
     finally:
         with state.lock:
@@ -100,86 +111,105 @@ def grabber_thread_func(state: SharedState, is_video: bool, is_camera: bool, sou
 
 
 def worker_thread_func(pipeline: VisionOCRPipeline, state: SharedState, args, last_detections: dict[str, float]):
-    """Hilo Consumidor: Procesa frames usando el pipeline y escribe a Supabase."""
+    """Hilo Consumidor: Procesa frames usando el pipeline y escribe a Supabase.
+    
+    Estrategia de rendimiento:
+    - YOLO corre en CADA frame (~7ms, GPU, sin GIL significativo) → bbox fluido en display
+    - OCR corre cada OCR_INTERVAL segundos máximo → evita que PaddleOCR bloquee el GIL y congele el display
+    """
+    # Intervalo mínimo entre llamadas al OCR (segundos).
+    # Con 0.5s: el OCR puede correr hasta 2 veces/segundo, pero YOLO siempre corre.
+    OCR_INTERVAL = 0.5
+    last_ocr_time = 0.0  # Timestamp de la última vez que se ejecutó el OCR
+
     while True:
         frame = None
         img_origin = "continuous_inference"
         
         with state.lock:
-            if state.latest_frame is not None:
-                if isinstance(state.latest_frame, tuple):
-                    frame, img_origin = state.latest_frame
+            if state.inference_frame is not None:
+                if isinstance(state.inference_frame, tuple):
+                    frame, img_origin = state.inference_frame
                 else:
-                    frame = state.latest_frame
-                state.latest_frame = None  # Consumir el frame
+                    frame = state.inference_frame
+                state.inference_frame = None
             elif state.producer_done or not state.running:
                 break
                 
         if frame is None:
-            time.sleep(0.05)
+            time.sleep(0.02)
             continue
             
-        # Inferencia
+        # ── Decidir si correr OCR en este frame ──
+        now_t = time.time()
+        run_ocr = (now_t - last_ocr_time) >= OCR_INTERVAL
+
+        # Inferencia (YOLO siempre; OCR según throttle; sin fallback pesado de escaneo completo por CPU)
         start_time = time.perf_counter()
-        results = pipeline.process_frame(frame)
+        results = pipeline.process_frame(frame, run_ocr=run_ocr, run_fallback=False)
         elapsed = time.perf_counter() - start_time
-        
-        # Anotar el frame para mostrar en la interfaz
-        annotated = frame.copy()
+
+        if run_ocr:
+            last_ocr_time = time.time()
+
         plate_found = None
+        bbox_found = None
         
-        if results and results[0].plate_text:
+        if results:
             res = results[0]
             d = res.detection
-            plate = res.plate_text.strip().upper()
-            plate_found = (plate, res.plate_confidence, elapsed)
-            
-            # Dibujar bounding box
-            cv2.rectangle(annotated, (d.x1, d.y1), (d.x2, d.y2), (0, 255, 0), 2)
-            cv2.putText(
-                annotated,
-                f"{plate} ({res.plate_confidence:.2%})",
-                (d.x1, max(d.y1 - 10, 20)),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.7,
-                (0, 255, 0),
-                2,
-            )
-            
-            # Procesar persistencia si pasa el cooldown
-            now = time.time()
-            last_time = last_detections.get(plate, 0.0)
-            if now - last_time > args.cooldown:
-                last_detections[plate] = now
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] ✓ DETECTADA: [ {plate} ] (Inferencia: {elapsed:.3f}s)")
-                
-                # Persistencia asíncrona
-                if pipeline.cfg.supabase.enabled:
-                    print(f"  Persistiendo patente {plate} en Supabase...")
-                    try:
-                        persist_summary = pipeline.persist_results(
-                            results=[res],
-                            event_type=args.event_type,
-                            camera_id=args.camera_id,
-                            image_origin=img_origin,
-                            image=frame,
-                        )
-                        if persist_summary.saved_events:
-                            print(f"  ✅ Guardado exitoso. Acceso ID: {persist_summary.saved_events[0].access_id}")
-                        if persist_summary.errors:
-                            print(f"  ❌ Error de persistencia: {persist_summary.errors[0]}")
-                    except Exception as err:
-                        print(f"  ❌ Error inesperado persistiendo en Supabase: {err}")
-            else:
-                # Ignorada por cooldown activo
-                pass
-        else:
-            print(f"[{datetime.now().strftime('%H:%M:%S')}] ✗ Sin patente detectada (Inferencia: {elapsed:.3f}s) - {img_origin}")
+            bbox_found = (d.x1, d.y1, d.x2, d.y2)
+
+            if res.plate_text:
+                plate = res.plate_text.strip().upper()
+
+                # ── Validación de formato estricto (antes de persistir) ──
+                # Solo se guardan en DB placas que coincidan exactamente con
+                # los patrones oficiales chilenos: LLLL+DD (nuevo) o LL+DDDD (antiguo)
+                is_valid_format = bool(STRICT_NEW_PLATE.match(plate) or OLD_PLATE.match(plate))
+
+                if not is_valid_format:
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠ Lectura descartada (formato inválido): [ {plate} ]")
+                else:
+                    plate_found = (plate, res.plate_confidence, elapsed)
+                    
+                    # Procesar persistencia si pasa el cooldown
+                    last_time = last_detections.get(plate, 0.0)
+                    if now_t - last_time > args.cooldown:
+                        last_detections[plate] = now_t
+                        print(f"[{datetime.now().strftime('%H:%M:%S')}] ✓ DETECTADA: [ {plate} ] (OCR: {elapsed:.3f}s)")
+                        
+                        if pipeline.cfg.supabase.enabled:
+                            print(f"  Persistiendo patente {plate} en Supabase...")
+                            try:
+                                persist_summary = pipeline.persist_results(
+                                    results=[res],
+                                    event_type=args.event_type,
+                                    camera_id=args.camera_id,
+                                    image_origin=img_origin,
+                                    image=frame,
+                                )
+                                if persist_summary.saved_events:
+                                    print(f"  ✅ Guardado exitoso. Acceso ID: {persist_summary.saved_events[0].access_id}")
+                                if persist_summary.errors:
+                                    print(f"  ❌ Error de persistencia: {persist_summary.errors[0]}")
+                            except Exception as err:
+                                print(f"  ❌ Error inesperado persistiendo en Supabase: {err}")
+
+            elif run_ocr:
+                # Solo loguear "sin patente" cuando realmente corrió el OCR
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] ✗ Sin patente detectada (OCR: {elapsed:.3f}s) - {img_origin}")
                 
         with state.lock:
-            state.display_frame = annotated
             if plate_found:
                 state.plate_overlay = plate_found
+                state.last_bbox = bbox_found
+            elif bbox_found:
+                # Actualizar bbox aunque no haya patente (muestra el cuadro verde del YOLO)
+                state.last_bbox = bbox_found
+            else:
+                state.last_bbox = None
+
 
 
 def main() -> None:
@@ -310,58 +340,81 @@ def main() -> None:
         sync_thread.start()
     
     # Hilo Principal: GUI Event Loop (OpenCV imshow)
+    # Siempre muestra el frame CRUDO más reciente a ~30 FPS.
+    # Las anotaciones (bbox + banner) se dibujan ENCIMA del frame crudo — sin mezcla, sin ghosting.
+    _display_fps_t = time.perf_counter()
+    _display_fps_count = 0
+    _display_fps_label = "-- FPS"
     try:
         while state.running:
-            # Verificar condición de salida: productor terminado, sin frames pendientes
-            # y worker ya inactivo. Se chequea is_alive() fuera del lock para no retenerlo.
+            # Verificar condición de salida
             _producer_done_and_empty = False
             with state.lock:
-                if state.producer_done and state.latest_frame is None:
+                if state.producer_done and state.inference_frame is None:
                     _producer_done_and_empty = True
             if _producer_done_and_empty and not worker_thread.is_alive():
                 state.running = False
                 break
+
             frame_to_show = None
             overlay_info = None
-            
+            bbox = None
+
             with state.lock:
+                # display_frame SIEMPRE tiene el frame más reciente de la cámara
+                # (el grabber lo actualiza continuamente, nunca lo borra)
                 if state.display_frame is not None:
                     frame_to_show = state.display_frame.copy()
-                elif state.latest_frame is not None:
-                    # Si no hay frame procesado aún, mostrar el crudo para mantener la fluidez
-                    if isinstance(state.latest_frame, tuple):
-                        frame_to_show = state.latest_frame[0].copy()
-                    else:
-                        frame_to_show = state.latest_frame.copy()
                 overlay_info = state.plate_overlay
-            
+                bbox = state.last_bbox
+
             if frame_to_show is not None:
-                # Dibujar banner superior con la última lectura de patente si está disponible
+                # ── Dibujar bounding box directamente sobre el frame crudo (sin blend) ──
+                if bbox is not None:
+                    x1, y1, x2, y2 = bbox
+                    cv2.rectangle(frame_to_show, (x1, y1), (x2, y2), (0, 255, 80), 2)
+
+                # ── Banner superior con última patente detectada ──
                 if overlay_info:
-                    plate_txt, plate_conf, elapsed = overlay_info
-                    cv2.rectangle(frame_to_show, (0, 0), (frame_to_show.shape[1], 40), (30, 30, 30), -1)
+                    plate_txt, plate_conf, inf_elapsed = overlay_info
+                    banner_h = 44
+                    cv2.rectangle(frame_to_show, (0, 0), (frame_to_show.shape[1], banner_h), (15, 15, 15), -1)
                     cv2.putText(
                         frame_to_show,
-                        f"ULTIMA LECTURA: {plate_txt} ({plate_conf:.1%}) | INF: {elapsed:.2f}s",
-                        (10, 25),
+                        f"  ULTIMA: {plate_txt}  ({plate_conf:.1%})  |  INF: {inf_elapsed:.2f}s",
+                        (4, 29),
                         cv2.FONT_HERSHEY_SIMPLEX,
-                        0.6,
-                        (0, 255, 0),
+                        0.68,
+                        (0, 235, 0),
                         2,
                     )
-                
-                # Mostrar en ventana
+
+                # ── FPS counter (esquina inf-derecha) ──
+                _display_fps_count += 1
+                now_t = time.perf_counter()
+                if now_t - _display_fps_t >= 1.0:
+                    _display_fps_label = f"{_display_fps_count} FPS"
+                    _display_fps_count = 0
+                    _display_fps_t = now_t
+                h_f, w_f = frame_to_show.shape[:2]
+                cv2.putText(
+                    frame_to_show, _display_fps_label,
+                    (w_f - 80, h_f - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 220, 80), 1,
+                )
+
                 if args.show:
                     h, w = frame_to_show.shape[:2]
                     resized = cv2.resize(frame_to_show, (w // 2, h // 2))
-                    cv2.imshow("Monitoreo de Acceso Vehicular - UBB (Asincrono)", resized)
-                    # waitKey con tasa pequeña para capturar teclas rápidamente
-                    if cv2.waitKey(30) & 0xFF == ord("q"):
+                    cv2.imshow("Monitoreo de Acceso Vehicular - UBB", resized)
+                    # 33ms = 30 FPS máx en el display, completamente independiente de la IA
+                    if cv2.waitKey(33) & 0xFF == ord("q"):
                         state.running = False
                         break
                 else:
-                    # Si no se muestra la ventana, dormir brevemente
                     time.sleep(0.03)
+            else:
+                time.sleep(0.01)
 
             # Limpieza de imágenes antiguas: ejecutar una vez cada 24 horas
             if cfg.supabase.enabled and (time.time() - last_cleanup) > 86400:
@@ -372,8 +425,6 @@ def main() -> None:
                         print(f"[Mantenimiento] 🗑️  {eliminadas} imagen(es) antiguas eliminadas del Storage.")
                 except Exception as err:
                     print(f"[Mantenimiento] ⚠️  Error en limpieza de imágenes: {err}")
-            else:
-                time.sleep(0.01)
     except KeyboardInterrupt:
         print("\nSimulación interrumpida por el usuario.")
     finally:

@@ -42,6 +42,17 @@ class VisionOCRPipeline:
         self._fallback_ocr = None
         self.offline_queue = None
 
+        # Warmup de GPU: fuerza la compilación de shaders CUDA en el primer frame
+        # para que las inferencias reales sean inmediatas (~7ms en RTX 5070)
+        if cfg.runtime.device not in ("cpu", ""):
+            try:
+                import numpy as _np
+                _dummy = _np.zeros((480, 640, 3), dtype=_np.uint8)
+                self.detector.detect(_dummy)
+                print(f"[GPU] Warmup completado. Dispositivo: {cfg.runtime.device}")
+            except Exception as _e:
+                print(f"[GPU] Warmup falló (se continúa normalmente): {_e}")
+
         if cfg.supabase.enabled:
             client = SupabaseClient(
                 base_url=cfg.supabase.url,
@@ -56,21 +67,40 @@ class VisionOCRPipeline:
             from .offline_queue import OfflineQueue
             self.offline_queue = OfflineQueue(self.repository)
 
-    def process_image(self, image_path: str | Path) -> tuple[np.ndarray, list[DetectionResult]]:
+    def process_image(self, image_path: str | Path, run_ocr: bool = True) -> tuple[np.ndarray, list[DetectionResult]]:
         image_path = Path(image_path)
         image = cv2.imread(str(image_path))
         if image is None:
             raise ValueError(f"No se pudo leer la imagen: {image_path}")
 
-        results = self.process_frame(image)
+        results = self.process_frame(image, run_ocr=run_ocr)
         return image, results
 
-    def process_frame(self, image: np.ndarray) -> list[DetectionResult]:
+    def process_frame(self, image: np.ndarray, run_ocr: bool = True, run_fallback: bool = True) -> list[DetectionResult]:
+        """Procesa un frame del pipeline de detección y OCR.
+
+        Args:
+            image: Frame de entrada (BGR numpy array).
+            run_ocr: Si False, solo corre YOLO (~7ms GPU) y omite el OCR y el fallback.
+                     Útil para mantener el display fluido cuando no se necesita leer la patente.
+            run_fallback: Si False, no ejecuta el escaneo pesado por regiones de OCR en caso de falla de YOLO.
+                          Recomendado en modo video/webcam continuo para evitar latencias de 2s.
+        """
         detections = sorted(self.detector.detect(image), key=lambda det: det.confidence, reverse=True)
         output: list[DetectionResult] = []
 
         if detections:
             for det in detections:
+                if not run_ocr:
+                    # Modo rápido: solo bbox, sin OCR (el display muestra el cuadro verde sin texto)
+                    output.append(DetectionResult(
+                        detection=det,
+                        ocr=[],
+                        plate_text=None,
+                        plate_confidence=None,
+                    ))
+                    continue
+
                 crop = image[max(det.y1, 0) : max(det.y2, 0), max(det.x1, 0) : max(det.x2, 0)]
                 if not crop.size:
                     ocr_text = []
@@ -104,11 +134,13 @@ class VisionOCRPipeline:
                     )
                 )
 
-        need_fallback = not any(item.plate_text for item in output) or (output and output[0].plate_text is None)
-        if need_fallback:
-            fallback_result = self._detect_plate_via_ocr_regions(image)
-            if fallback_result:
-                output.insert(0, fallback_result)
+        # Fallback por regiones (solo si run_ocr=True, run_fallback=True y no se detectó patente con YOLO)
+        if run_ocr and run_fallback:
+            need_fallback = not any(item.plate_text for item in output) or (output and output[0].plate_text is None)
+            if need_fallback:
+                fallback_result = self._detect_plate_via_ocr_regions(image)
+                if fallback_result:
+                    output.insert(0, fallback_result)
 
         return output
 
@@ -135,7 +167,15 @@ class VisionOCRPipeline:
         ocr = self._fallback_ocr
 
         try:
-            raw = normalize_ocr_output(ocr.ocr(image))
+            if getattr(self.ocr, "is_paddlex", False):
+                raw = normalize_ocr_output(list(ocr.predict(
+                    image,
+                    use_doc_orientation_classify=False,
+                    use_doc_unwarping=False,
+                    use_textline_orientation=False
+                )))
+            else:
+                raw = normalize_ocr_output(ocr.ocr(image))
         except Exception:
             return None
 
@@ -234,7 +274,15 @@ class VisionOCRPipeline:
                 continue
 
             try:
-                crop_raw = normalize_ocr_output(ocr.ocr(crop))
+                if getattr(self.ocr, "is_paddlex", False):
+                    crop_raw = normalize_ocr_output(list(ocr.predict(
+                        crop,
+                        use_doc_orientation_classify=False,
+                        use_doc_unwarping=False,
+                        use_textline_orientation=False
+                    )))
+                else:
+                    crop_raw = normalize_ocr_output(ocr.ocr(crop))
             except Exception:
                 continue
 
@@ -400,6 +448,13 @@ class VisionOCRPipeline:
                 continue
 
             plate = item.plate_text.strip().upper()
+            
+            # Validación estricta de formato chileno antes de cualquier acción de persistencia
+            is_valid_format = any(pattern.match(plate) for pattern in PLATE_PATTERNS)
+            if not is_valid_format:
+                print(f"[pipeline] ⚠ Lectura descartada (formato inválido): [ {plate} ]")
+                continue
+
             if not plate or plate in seen_plates:
                 continue
             seen_plates.add(plate)

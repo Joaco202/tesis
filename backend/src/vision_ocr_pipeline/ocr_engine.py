@@ -66,6 +66,7 @@ class PaddleOCREngine:
     def __init__(self, cfg: OCRConfig, use_gpu: bool | None = None) -> None:
         self.cfg = cfg
         self._ocr = None
+        self.is_paddlex = False
 
         try:
             from paddleocr import PaddleOCR
@@ -88,6 +89,7 @@ class PaddleOCREngine:
                 device=device_str,
                 enable_mkldnn=False,
             )
+            self.is_paddlex = True
         except TypeError:
             try:
                 # PaddleOCR 2.x — usa parámetro `use_gpu`
@@ -129,12 +131,24 @@ class PaddleOCREngine:
             return []
 
         try:
-            result = self._ocr.ocr(image)
-        except TypeError:
-            result = self._ocr.ocr(image, cls=self.cfg.use_angle_cls)
+            if self.is_paddlex:
+                # Optimización de velocidad extrema para PaddleX: omitir clasificación
+                # de orientación del documento y enderezado 3D (unwarping) para recortes
+                result = list(self._ocr.predict(
+                    image,
+                    use_doc_orientation_classify=False,
+                    use_doc_unwarping=False,
+                    use_textline_orientation=False
+                ))
+            else:
+                result = self._ocr.ocr(image)
         except Exception as exc:
-            print(f"[WARN] OCR fallo en inferencia y se omite este recorte. Detalle: {exc}")
-            return []
+            # Fallback en caso de fallo en predict con PaddleX
+            try:
+                result = self._ocr.ocr(image)
+            except Exception as exc2:
+                print(f"[WARN] OCR fallo en inferencia y se omite este recorte. Detalle: {exc2}")
+                return []
 
         result = normalize_ocr_output(result)
         texts: list[OCRText] = []

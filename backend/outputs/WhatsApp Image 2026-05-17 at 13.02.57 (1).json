@@ -1,7 +1,7 @@
 {
   "camera_id": "camara-1",
   "event_type": "entrada",
-  "timestamp_utc": "2026-06-08T01:35:29.686159+00:00",
+  "timestamp_utc": "2026-06-08T18:35:20.535724+00:00",
   "total_detections": 1,
   "events": [
     {
@@ -17,13 +17,17 @@
       "ocr": [
         {
           "text": "LK°35",
-          "confidence": 0.6170207858085632
+          "confidence": 0.7712246179580688
+        },
+        {
+          "text": "TC",
+          "confidence": 0.6683440208435059
         }
       ],
       "ocr_best_raw_text": "LK°35",
-      "ocr_best_raw_confidence": 0.6170207858085632,
-      "plate_text": null,
-      "plate_confidence": null
+      "ocr_best_raw_confidence": 0.7712246179580688,
+      "plate_text": "LK3570",
+      "plate_confidence": 0.7197843194007874
     }
   ],
   "database": {
