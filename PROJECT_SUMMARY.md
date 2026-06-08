@@ -1362,14 +1362,32 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 **Fecha de Ejecución:** 8 de junio de 2026
 
 ### 1. Inferencia Continua mediante Webcam
-- Se actualizó el analizador de argumentos del simulador [continuous_inference.py](file:///c:/Users/joako/Documents/GitHub/tesis/backend/scripts/continuous_inference.py) para evaluar el parámetro `--source`. Si el valor es una cadena numérica (ej. `0`), se parsea como un índice entero de cámara (`int`).
+- Se actualizó el analizador de argumentos del simulador [continuous_inference.py](file:///c:/Users/joako/tesis/backend/scripts/continuous_inference.py) para evaluar el parámetro `--source`. Si el valor es una cadena numérica (ej. `0`), se parsea como un índice entero de cámara (`int`).
 - El hilo productor (`grabber_thread_func`) inicializa `cv2.VideoCapture` usando dicho índice. En Windows, utiliza `cv2.CAP_DSHOW` para una inicialización veloz y estabilidad de frames de la cámara integrada, contando con un fallback de reintento automático si ocurren interrupciones temporales del flujo de hardware.
+
+---
+
+## 30. Compatibilidad con Python 3.13 y Correcciones de Ejecución del Backend
+
+**Objetivo:** Adaptar y estabilizar el backend de IA para ejecutarse en entornos locales actualizados con Python 3.13 y resolver caídas de librerías.
+**Fecha de Ejecución:** 8 de junio de 2026
+
+### 1. Actualización de Compatibilidad con NumPy (Python 3.13)
+- Se detectó que el entorno virtual local ejecuta **Python 3.13.7**, lo cual provocaba fallas críticas de compatibilidad con `numpy 1.26.4` (específicamente un crash de inicio en `getlimits.py` por `OverflowError: cannot convert longdouble infinity to integer` y fallas en `np.arange` por `ValueError: arange: cannot compute length`).
+- Se actualizó NumPy a la versión **`2.3.5`**, la cual ofrece soporte estable para Python 3.13 y satisface la restricción de dependencias de `paddlex` (que exige `numpy < 2.4`).
+
+### 2. Corrección del Modelo YOLO en config.yaml
+- Se corrigió el archivo [config.yaml](file:///c:/Users/joako/tesis/backend/config.yaml) para cambiar la ruta del detector predeterminada a [yolo26n.pt](file:///c:/Users/joako/tesis/backend/yolo26n.pt) (presente en la raíz del backend), solventando un `FileNotFoundError` crítico en el pipeline que buscaba carpetas de entrenamiento inexistentes (`runs/detect/finetune-chilean/weights/best.pt`).
+
+### 3. Bypass de Falla de oneDNN (MKL-DNN) en PaddleOCR
+- Se identificó un bug del backend de ejecución de PaddlePaddle en CPU (error `ConvertPirAttribute2RuntimeAttribute` con atributos tipo double) durante la inferencia OCR.
+- Se forzó el parámetro `enable_mkldnn=False` en las inicializaciones de la clase `PaddleOCR` dentro de [ocr_engine.py](file:///c:/Users/joako/tesis/backend/src/vision_ocr_pipeline/ocr_engine.py), derivando el procesamiento a los kernels estándar de CPU de manera estable y libre de crashes.
 
 ---
 
 ## Resumen Ejecutivo
 
-Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 29 fases de desarrollo completadas son:
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las 30 fases de desarrollo completadas son:
 
 1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
 2. ✅ 1,000 imágenes sintéticas generadas.
@@ -1400,12 +1418,13 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 27. ✅ **Políticas RLS en Supabase y Ajuste de Color de Ocupación** — Implementación de políticas de lectura pública y escritura restringida a usuarios autenticados para vehículos/incidencias, liberación de RLS en tablas de configuración (usuarios/roles/zonas) para corregir redirecciones de login y lecturas de capacidad real (130 cupos), y cambio de color a amarillo para Ocupación Media.
 28. ✅ **Persistencia de Imágenes en Supabase Storage y Modal Comparativo** — Configuración de subidas binarias de frames anotados, almacenamiento en bucket `access-images`, limpieza automática a los 30 días (trigger de base de datos) y modal interactivo con fotos Lado a Lado (ING/SAL) ampliables y cerrables con `Esc` en el panel de guardia.
 29. ✅ **Soporte de Cámara Web / Webcam en Tiempo Real** — Actualización del CLI del simulador continuo asíncrono para aceptar índices enteros de cámara (ej. `0`), permitiendo capturar en vivo mediante webcams USB con CAP_DSHOW y fallback de frames.
+30. ✅ **Compatibilidad con Python 3.13 y Estabilización del Backend** — Upgrade a NumPy `2.3.5` para dar soporte nativo a Python 3.13, reemplazo de modelo default por `yolo26n.pt` para evitar `FileNotFoundError`, y bypass de crashes por oneDNN en CPU vía `enable_mkldnn=False`.
 
 ### Stack Tecnológico Final
 
 | Componente | Versión | Aceleración / Rol |
 |---|---|---|
-| Python | 3.12.10 | Backend Core |
+| Python | 3.12.10 / 3.13.7 | Backend Core |
 | YOLOv8 (ultralytics) | 8.4.46 | GPU (RTX 5070) ✅ / CPU |
 | PyTorch | 2.11.0+cu128 | GPU (RTX 5070) ✅ / CPU |
 | PaddlePaddle | 3.0.0 GPU | GPU (RTX 5070) ✅ (Detección YOLO) / CPU (OCR) |
@@ -1416,7 +1435,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 **Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 8 de junio de 2026  
 **Versión del Proyecto:** 1.0 (Producción-ready)  
 **Estado de Producción:** ✅ Totalmente operativo  
-**Fase de Desarrollo:** 29 fases de desarrollo completadas  
+**Fase de Desarrollo:** 30 fases de desarrollo completadas  
 
 ---
 
