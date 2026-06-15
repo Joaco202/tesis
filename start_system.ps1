@@ -90,4 +90,4 @@ Write-Host "Presiona 'q' en la ventana de la camara para detener el backend." -F
 Write-Host "==========================================================" -ForegroundColor Green
 
 # Ejecutar el backend con soporte de webcam (source 0) y mostrar la ventana en tiempo real
-python -X utf8 scripts/continuous_inference.py --source 0 --show
+#python -X utf8 scripts/continuous_inference.py --source 0 --show

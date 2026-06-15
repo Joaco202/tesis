@@ -1454,6 +1454,9 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 29. ✅ **Soporte de Cámara Web / Webcam en Tiempo Real** — Actualización del CLI del simulador continuo asíncrono para aceptar índices enteros de cámara (ej. `0`), permitiendo capturar en vivo mediante webcams USB con CAP_DSHOW y fallback de frames.
 30. ✅ **Compatibilidad con Python 3.13 y Estabilización del Backend** — Upgrade a NumPy `2.3.5` para dar soporte nativo a Python 3.13, reemplazo de modelo default por `yolo26n.pt` para evitar `FileNotFoundError`, y bypass de crashes por oneDNN en CPU vía `enable_mkldnn=False`.
 31. ✅ **Migración de Limpieza de Imágenes al Backend Python** — Eliminación del trigger PostgreSQL que causaba `HTTP 403` al insertar accesos. Implementación de `delete_file()` en `SupabaseClient` y `limpiar_imagenes_antiguas()` en `SupabaseRepository` usando la Storage REST API. Limpieza automática cada 24 horas desde el loop de `continuous_inference.py`.
+32. ✅ **Optimización de OCR (A/B Benchmark)** — Se removieron los preprocesadores de documentos de PaddleX que deformaban los recortes pequeños de patentes. En un benchmark con 90 imágenes reales del estacionamiento UBB, esta optimización aumentó la detección de patentes en un +63% y aceleró el OCR 3.3x.
+33. ✅ **Diseño de Arquitectura Remota / Desacoplada** — Se definió el flujo de conexión para pruebas en terreno donde un dispositivo local (PC 2) ejecuta la inferencia y se sincroniza mediante Supabase en la nube con un consumo mínimo de datos (variables de texto y recortes livianos).
+34. ✅ **Análisis de Normalización y Redundancias en DB** — Evaluación técnica de la tabla `incidencias` en base de datos. Se justificó la desnormalización (redundancia de `zona_id` y `vehiculo_patente`) para flexibilidad futura, estableciendo los caminos para migrar a una 3NF estricta si fuera requerido.
 
 ### Stack Tecnológico Final
 
