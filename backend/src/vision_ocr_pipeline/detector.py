@@ -22,6 +22,17 @@ class YoloDetector:
     def __init__(self, cfg: DetectionConfig, device: str = "cpu") -> None:
         self.cfg = cfg
         self.device = device
+        
+        # Fallback a CPU si CUDA no está disponible en PyTorch
+        if "cuda" in self.device or self.device == "gpu":
+            try:
+                import torch
+                if not torch.cuda.is_available():
+                    print(f"[Detector] Advertencia: Se solicitó '{self.device}' pero CUDA no está disponible. Usando 'cpu'.")
+                    self.device = "cpu"
+            except Exception:
+                self.device = "cpu"
+
         try:
             from ultralytics import YOLO
         except ImportError as exc:
