@@ -1,0 +1,153 @@
+
+===== PAGE 30 =====
+Antes de detallar los casos de uso, se identifican formalmente los actores que interactúan con el sistema:
+- Guardia de Seguridad: Funcionario encargado del monitoreo en terreno. Visualiza la ocupación en tiempo
+real, supervisa el flujo de vehículos detectados por la cámara y registra incidencias operativas.
+- Encargado de Estacionamiento: Responsable administrativo que genera reportes estadísticos de
+ocupación, gestiona el registro de vehículos institucionales frecuentes, administra las incidencias y exporta
+datos históricos en formato Excel para informes institucionales.
+- Administrador de TI: Perfil técnico con privilegios completos sobre la configuración del sistema: gestión de
+usuarios y roles, alta de cámaras y asociación con zonas del campus.
+- Conductor / Visitante: Actor externo que consulta la disponibilidad del estacionamiento en tiempo real a
+través de la interfaz pública, sin requerir autenticación.
+- Sistema de Visión Artificial (Edge): Actor no humano que ejecuta el pipeline de detección y reconocimiento
+de patentes de forma autónoma, generando los eventos de acceso que alimentan toda la plataforma.
+5.5.2 Descripción de los Casos de Uso
+A continuación, se detalla la especificación de los casos de uso principales del sistema, los cuales describen
+las interacciones entre los actores y los módulos de la aplicación web de gestión de estacionamiento.
+? Caso de uso: Iniciar sesión (CU_01)
+Nombre          Iniciar Sesión
+ID              CU_01
+Descripción     Permite el acceso de los usuarios autenticados (guardia, encargado, administrador) mediante
+credenciales únicas.
+Actor Principal Guardia, Encargado, Administrador.
+Actor Secund.   No hay.
+Pre-Condición   El usuario no debe estar autenticado en el sistema.
+Flujo Principal 1. El usuario accede a la URL de administración del sistema.
+                2. El sistema despliega la interfaz de inicio de sesión.
+                3. El usuario ingresa su correo electrónico y contraseña.
+                4. El sistema realiza la validación de credenciales mediante Supabase Auth.
+                5. El sistema identifica el rol asignado al usuario (administrador, guardia, encargado).
+                6. El sistema redirecciona al usuario al dashboard correspondiente a su rol.
+                7. Finaliza el caso de uso.
+===== PAGE 31 =====
+Post-Condición  El usuario se encuentra autenticado con los permisos correspondientes a su perfil.
+Flujo Alterno   3a. El sistema valida las credenciales y determina que son incorrectas. Muestra el mensaje
+"Credenciales inválidas" y recarga la interfaz de inicio de sesión.
+Tabla 16: Descripción caso de uso: iniciar sesión.
+? Caso de uso: Ver Ocupación en Tiempo Real (CU_02)
+Nombre          Ver Ocupación en Tiempo Real
+ID              CU_02
+Descripción     Permite al guardia de seguridad visualizar la ocupación actual del estacionamiento y los
+últimos eventos registrados.
+Actor Principal Guardia, Encargado.
+Actor Secund.   Sistema de visión artificial (Edge).
+Pre-Condición   El usuario debe estar autenticado en el sistema.
+Flujo Principal 1. El usuario accede al dashboard principal.
+                2. El sistema consulta las vistas 'resumen_ocupacion_total' y 'accesos_abiertos'.
+                3. El sistema despliega el porcentaje de ocupación, spots libres y la lista de vehículos activos.
+                4. El sistema de visión artificial detecta un nuevo ingreso/salida y actualiza la base de datos
+Supabase.
+                5. El dashboard recibe la actualización en tiempo real por WebSockets y refresca el contador y la
+tabla.
+Post-Condición  El usuario mantiene visualización en tiempo real de los datos del recinto.
+Flujo Alterno   No hay.
+Tabla 17: Descripción caso de uso: ver ocupación en tiempo real.
+26
+===== PAGE 27 =====
+27
+? Caso de uso: Generar Reportes y Estadísticas (CU_03)
+Nombre          Generar Reportes y Estadísticas
+ID              CU_03
+===== PAGE 32 =====
+Descripción     Permite al encargado generar estadísticas de ocupación por rango de fechas para la toma de
+decisiones operativas.
+Actor Principal Encargado.
+Actor Secund.   No hay.
+Pre-Condición   El usuario debe estar autenticado y poseer rol de encargado.
+Flujo Principal 1. El encargado accede a la sección de reportes del sistema.
+                2. El sistema despliega filtros de búsqueda por rango de fechas (usando el calendario interactivo).
+                3. El encargado selecciona las fechas y oprime "Generar Reporte".
+                4. El sistema realiza el cálculo de KPIs (ocupación máxima, hora pico, tiempo promedio de
+estadía) y genera los gráficos correspondientes.
+                5. El encargado visualiza los gráficos y la tabla con los datos consolidados.
+Post-Condición  El reporte es generado y visualizado en la pantalla.
+Flujo Alterno   3a. El rango de fechas seleccionado no posee registros de acceso. El sistema muestra la
+advertencia "No se encontraron registros para el período seleccionado" y mantiene la pantalla limpia.
+Tabla 18: Descripción caso de uso: generar reportes.
+? Caso de uso: Registrar y Resolver Incidencias (CU_04)
+Nombre          Registrar y Resolver Incidencias
+ID              CU_04
+Descripción     Permite registrar eventos anómalos vinculados a patentes o áreas del estacionamiento y
+realizar el seguimiento de su resolución.
+Actor Principal Guardia, Encargado.
+Actor Secund.   No hay.
+Pre-Condición   El usuario debe estar autenticado.
+Flujo Principal 1. El usuario presiona el botón "Registrar Incidencia" en el dashboard.
+                2. El sistema despliega un formulario solicitando tipo de incidencia (patente ilegible, vehículo mal
+estacionado, obstrucción, etc.), descripción, patente del vehículo (opcional) y zona (opcional).
+                3. El usuario completa los campos y envía el formulario.
+                4. El sistema registra la incidencia con estado 'abierta' y fecha de creación.
+                5. El encargado visualiza la incidencia en su panel, pudiendo cambiar el estado a 'en_revision' o
+'cerrada', registrando la fecha de cierre.
+Post-Condición  La incidencia queda registrada y actualizada en la base de datos.
+===== PAGE 33 =====
+Flujo Alterno   3a. El usuario intenta ingresar un formato de patente inválido en la incidencia. El sistema
+resalta el error y solicita corrección antes de guardar.
+Tabla 19: Descripción caso de uso: registrar y resolver incidencias.
+27
+===== PAGE 28 =====
+28
+? Caso de uso: Administrar Usuarios y Roles (CU_05)
+Nombre          Administrar Usuarios y Roles
+ID              CU_05
+Descripción     Permite al administrador crear, modificar o desactivar cuentas de usuarios y definir sus
+privilegios en el sistema.
+Actor Principal Administrador.
+Actor Secund.   No hay.
+Pre-Condición   El administrador debe estar autenticado con rol de administrador.
+Flujo Principal 1. El administrador accede al módulo de configuración de usuarios.
+                2. El sistema despliega la lista completa de usuarios registrados.
+                3. El administrador oprime "Crear Usuario" e ingresa nombre, email, selecciona el rol
+(administrador, guardia, encargado) y establece el estado inicial.
+                4. El sistema registra el nuevo usuario en la tabla 'usuarios' y le asigna el rol correspondiente.
+                5. El sistema notifica la creación.
+Post-Condición  Usuario registrado con privilegios asignados.
+Flujo Alterno   3a. El email del nuevo usuario ya existe en el sistema. El sistema cancela el registro y
+muestra el mensaje "El correo ingresado ya se encuentra registrado".
+Tabla 20: Descripción caso de uso: administrar usuarios.
+? Caso de uso: Exportar Datos de Estacionamiento (CU_06)
+Nombre          Exportar Datos de Estacionamiento
+ID              CU_06
+Descripción     Permite descargar la información de accesos e incidencias filtrada en formato compatible con
+===== PAGE 34 =====
+hojas de cálculo (CSV/Excel).
+Actor Principal Encargado.
+Actor Secund.   No hay.
+Pre-Condición   El usuario debe estar autenticado con rol de encargado.
+Flujo Principal 1. El encargado aplica filtros de búsqueda sobre el historial de accesos.
+                2. El encargado presiona el botón "Exportar a Excel" (o CSV).
+                3. El sistema compila los registros coincidentes de la base de datos.
+                4. El sistema genera y descarga automáticamente el archivo al computador del usuario.
+Post-Condición  El encargado obtiene un archivo local con los datos de acceso.
+Flujo Alterno   3a. El conjunto de datos a exportar está vacío. El sistema deshabilita el botón de exportación
+y muestra un mensaje informativo.
+Tabla 21: Descripción caso de uso: exportar datos.
+28
+===== PAGE 29 =====
+29
+? Caso de uso: Visualizar Ocupación desde Interfaz Pública (CU_07)
+Nombre          Visualizar Ocupación desde Interfaz Pública
+ID              CU_07
+Descripción     Permite a conductores externos y visitantes consultar la disponibilidad del estacionamiento en
+tiempo real desde sus dispositivos móviles antes de ingresar.
+Actor Principal Usuario Visitante / Conductor.
+Actor Secund.   No hay.
+Pre-Condición   Ninguna. La interfaz es pública.
+Flujo Principal 1. El conductor ingresa al sitio web público del estacionamiento.
+                2. El sistema consulta la vista 'resumen_ocupacion_total'.
+                3. El sistema despliega una interfaz simplificada indicando si existen cupos disponibles (verde), si
+está cerca del límite (amarillo) o si está completo (rojo).
+                4. El conductor planifica su llegada o decide estacionar fuera del recinto según la información.
+                5. Finaliza el caso de uso.
+Post-Condición  El conductor obtiene información veraz sobre el estacionamiento en tiempo real.

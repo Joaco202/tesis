@@ -4,7 +4,7 @@ import { Car, Clock, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const PublicStatus = () => {
-  const [occupancy, setOccupancy] = useState({ current: 0, max: 130 }); // Mock default max 130
+  const [occupancy, setOccupancy] = useState({ current: 0, max: 170 }); // Mock default max 170
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [updatedText, setUpdatedText] = useState('Hace instantes');

@@ -260,7 +260,7 @@ on conflict (nombre) do nothing;
 -- Ejemplo de zonas
 insert into public.zonas (nombre, descripcion, capacidad)
 values
-    ('Aula Magna', 'Zona principal de estacionamiento del Aula Magna', 130)
+    ('Aula Magna', 'Zona principal de estacionamiento del Aula Magna', 170)
 on conflict (nombre) do nothing;
 
 -- Ejemplo de cámaras

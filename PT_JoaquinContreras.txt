@@ -1,0 +1,1881 @@
+
+===== PAGE 1 =====
+1
+
+===== PAGE 1 =====
+1
+UNIVERSIDAD DEL BI
+O-BI
+O
+FACULTAD DE CIENCIAS EMPRESARIALES
+ESCUELA DE INGENIERI
+A CIVIL EN INFORMA 
+TICA
+Desarrollo de sistema web para la gestión del 
+estacionamiento del Campus Fernando May mediante 
+reconocimiento de patentes
+Estudiante
+Joaquín Antonio Contreras Bustamante
+08 de junio de 2026
+Chillán - Chile
+1
+===== PAGE 2 =====
+2
+Resumen
+Este proyecto se presenta para dar conformidad a los requisitos exigidos por la Universidad 
+del Bío-Bío en el proceso de titulación para la carrera Ingeniería Civil en Informática. El 
+proyecto  titulado  ?Desarrollo  de  sistema  web  para  la  gestión  del  estacionamiento  del 
+Campus Fernando May mediante reconocimiento de patentes?, tiene como finalidad diseñar 
+y desarrollar una aplicación web que aborde la gestión del estacionamiento interno de la 
+universidad.
+Un objetivo central es permitir a los conductores una mejor gestión de su tiempo, lo cual los 
+beneficia directamente al eliminar la búsqueda innecesaria de espacios y reducir los tiempos 
+
+===== PAGE 2 =====
+2
+
+de  espera  causados  por  la  congestión  en  horas  punta.  Al  contar  con  información  de 
+disponibilidad en tiempo real, el usuario evita la frustración de circular sin éxito y puede 
+tomar  decisiones  informadas  antes  de  ingresar  al  recinto,  optimizando  así sus  
+desplazamientos diarios y puntualidad. 
+La problemática actual es la ausencia de un monitoreo digital, solamente dependiendo de un 
+control visual por parte de guardias que no genera datos inmediatos. Frente a esto, el  
+software no solo apoyará al usuario final, sino que proveerá reportes y estadísticas que 
+facilitarán la toma de decisiones operativas y la planificación de los recursos físicos del 
+campus.
+2
+===== PAGE 3 =====
+3
+Abstract
+This project is submitted to meet the requirements set by the University of Bío-Bío for the 
+degree program in Civil Engineering with a specialization in Computer Science. The project, 
+titled ?Desarrollo de sistema web para la gestión del estacionamiento del Campus Fernando 
+May mediante reconocimiento de patentes?, aims to design and develop a web application to 
+manage the university?s on-campus parking.
+A key objective is to enable drivers to better manage their time, which directly benefits them 
+by  eliminating  the  unnecessary  search  for  spaces  and  reducing  wait  times  caused  by 
+congestion during peak hours. By having access to real-time availability information, users 
+avoid the frustration of driving around unsuccessfully and can make informed decisions  
+before entering the campus, thereby optimizing their daily commutes and punctuality. 
+The current problem is the lack of digital monitoring, relying solely on visual checks by  
+security guards that do not generate immediate data. In response, the software will not only 
+support end-users but also provide reports and statistics that will facilitate operational  
+decision-making and the planning of campus physical resources.
+3
+===== PAGE 4 =====
+4
+
+===== PAGE 3 =====
+3
+
+Índice General
+1 INTRODUCCIÓN                                                                                                                                               
+      ...........................................................................................................................  7  
+2 DEFINICION DE LA EMPRESA O INSTITUCIÓN                                                                                            
+       .................................................................................  8  
+2.1 DESCRIPCIÓN DE LA EMPRESA............................................................................................................8
+2.2 DESCRIPCIÓN DEL ÁREA DE
+ESTUDIO....................................................................................................9
+2.3 DESCRIPCIÓN DE LA
+PROBLEMÁTICA...................................................................................................10
+2.4 PROCESO DEL NEGOCIO ACTUAL.......................................................................................................11
+3 DEFINICIÓN PROYECTO                                                                                                                                 
+     ...............................................................................................................  12  
+3.1 OBJETIVOS DEL PROYECTO..............................................................................................................12
+3.2 AMBIENTE DE INGENIERÍA DE
+SOFTWARE............................................................................................12
+3.2.1 METODOLOGÍA DE
+DESARROLLO...........................................................................................................12
+3.2.2 HERRAMIENTAS DE APOYO AL
+DESARROLLO.............................................................................................13
+3.2.3 AMBIENTES.....................................................................................................................................13
+4 FACTIBILIDAD                                                                                                                                                  
+     .............................................................................................................................  14  
+4.1 FACTIBILIDAD TÉCNICA...................................................................................................................14
+4.2 FACTIBILIDAD OPERATIVA...............................................................................................................15
+4.3 FACTIBILIDAD ECONÓMICA..............................................................................................................16
+4.4 CONCLUSIÓN DE LA FACTIBILIDAD......................................................................................................18
+5 ANÁLISIS                                                                                                                                                           
+    ....................................................................................................................................  19  
+5.1 REQUISITOS FUNCIONALES..............................................................................................................19
+5.2 HISTORIAS DE USUARIOS................................................................................................................20
+5.3 MODELAMIENTO DE DATOS............................................................................................................23
+
+===== PAGE 4 =====
+4
+
+5.4 PROCESO DEL NEGOCIO FUTURO......................................................................................................25
+5.5 ESPECIFICACIÓN DE LOS CASOS DE
+USO................................................................................................26
+6 DISEÑO DEL SISTEMA.................................................................................................................30
+6.1 DISEÑO FÍSICO DE LA BASE DE
+DATOS....................................................................................................30
+6.2 DISEÑO DE INTERFAZ Y
+NAVEGACIÓN......................................................................................................32
+7 IMPLEMENTACIÓN Y ARQUITECTURA TÉCNICA DEL PIPELINE DE VISIÓN Y
+OCR..................................................................34
+7.1 OPTIMIZACIÓN DE LA DETECCIÓN Y LECTURA DE
+PATENTES..................................................................................34
+7.2 ARQUITECTURA EN EL BORDE Y SINCRONIZACIÓN EN TIEMPO
+REAL.............................................................................34
+7.3 RESISTENCIA A FALLOS Y SINCRONIZACIÓN
+OFFLINE..........................................................................................35
+8 PRUEBAS, BENCHMARK Y EVALUACIÓN DE
+RENDIMIENTO....................................................................................36
+8.1 RESULTADOS DEL BENCHMARK A/B SOBRE IMÁGENES
+REALES...................................................................................36
+8.2 ESPECIFICACIÓN DE LAS PRUEBAS DE
+SOFTWARE.................................................................................................36
+9 CONCLUSIONES Y TRABAJO
+FUTURO.............................................................................................................38
+10 REFERENCIAS
+BIBLIOGRÁFICAS..................................................................................................................39
+11 ANEXOS....................................................................................................................................40
+4
+===== PAGE 5 =====
+5
+Índice Tablas
+
+Índice Tablas
+
+Tabla 1: Factibilidad técnica – Hardware para Desarrollo...............................................................................14
+Tabla 2: Factibilidad técnica - Requisitos Usuario.............................................................................................. 14
+Tabla 3: Factibilidad operativa - Roles de los actores........................................................................................15
+Tabla 4: Factibilidad económica - Beneficios del Proyecto.............................................................................. 16
+Tabla 5: Factibilidad económica - Costo de la Inversión...................................................................................16
+Tabla 6: Factibilidad económica - Costo de Mantenimiento del Sistema.................................................... 17
+Tabla 7: Factibilidad económica - Flujo de caja del Proyecto..........................................................................17
+Tabla 8: Requisitos Funcionales................................................................................................................................19
+Tabla 9: Historia de usuario 1 - Ver Ocupación en Tiempo Real (Versión Inicial)...................................................20
+Tabla 10: Historia de usuario 2 - Generar Reportes y Estadísticas (Versión Inicial)............................................20
+Tabla 11: Historia de usuario 3 - Registrar y Resolver Incidencias (Versión Inicial)...........................................21
+Tabla 12: Historia de usuario 4 - Administrar Usuarios y Roles (Versión Inicial).................................................21
+Tabla 13: Historia de usuario 5 - Exportar Datos (Versión Inicial)..........................................................................21
+Tabla 14: Historia de usuario 6 - Visualizar estado de estacionamiento (Mapa de calor) (Versión Inicial)............22
+Tabla 15: Historia de usuario 7 - Panel de KPIs (Panel ejecutivo) (Versión Inicial)..................................................22
+Tabla 16: Historia de usuario 8 - Iniciar Sesión (Versión Detallada).......................................................................23
+Tabla 17: Historia de usuario 9 - Ver Ocupación en Tiempo Real (Versión Detallada)...........................................23
+Tabla 18: Historia de usuario 10 - Generar Reportes y Estadísticas (Versión Detallada)......................................23
+Tabla 19: Historia de usuario 11 - Registrar y Resolver Incidencias (Versión Detallada).....................................24
+Tabla 20: Historia de usuario 12 - Administrar Usuarios y Roles (Versión Detallada)............................................24
+Tabla 21: Historia de usuario 13 - Exportar Datos de Estacionamiento (Versión Detallada)..................................24
+Tabla 22: Historia de usuario 14 - Visualizar Ocupación desde Interfaz Pública (Versión Detallada)...................25
+Tabla 23: Descripción caso de uso: iniciar sesión (CU_01)...................................................................................26
+Tabla 24: Descripción caso de uso: ver ocupación en tiempo real (CU_02)...................................................................26
+Tabla 25: Descripción caso de uso: generar reportes y estadísticas (CU_03).............................................................27
+Tabla 26: Descripción caso de uso: registrar y resolver incidencias (CU_04).............................................................27
+Tabla 27: Descripción caso de uso: administrar usuarios y roles (CU_05)..............................................................28
+Tabla 28: Descripción caso de uso: exportar datos de estacionamiento (CU_06)..................................................28
+Tabla 29: Descripción caso de uso: visualizar ocupación pública (CU_07)...................................................................29
+Tabla 30: Comparación de rendimiento del OCR (A/B Benchmark)............................................................................36
+Tabla 31: Especificación pruebas de sistema..........................................................................................................36
+Tabla 32: Especificación pruebas de seguridad.......................................................................................................37
+Tabla 33: Especificación pruebas de usabilidad......................................................................................................37
+
+Índice Ilustraciones
+Ilustración 1: Extracto del organigrama de la VRAE, Región Ñuble.................................................................9
+Ilustración 2: BPMN de la gestión actual del estacionamiento en Aula Magna.........................................11
+Ilustración 3 Modelo Entidad Relación...................................................................................................................23
+Ilustración 4: Estructura del Dashboard de Guardia y modal de
+incidencias.................................................................40
+Ilustración 5: Estructura del Dashboard del Encargado y grilla de
+reportes.................................................................40
+Ilustración 6: Estructura de la pantalla de visualización
+pública..................................................................................40
+6
+===== PAGE 7 =====
+7
+1 INTRODUCCIÓN
+En la actualidad, el uso de las tecnologías de la información juega un rol fundamental en la 
+
+===== PAGE 7 =====
+7
+
+optimización  de  la  gestión  de  recursos  dentro  de  las  organizaciones.  En  particular,  las 
+instituciones de educación superior enfrentan el desafío de administrar de manera eficiente 
+sus recursos físicos, entre los cuales el estacionamiento vehicular es un elemento crítico para 
+la movilidad, la seguridad y la experiencia diaria de estudiantes, funcionarios, docentes y 
+visitantes.
+En el Campus Fernando May de la Universidad del Bío-Bío, la gestión del estacionamiento se 
+realiza principalmente de forma manual, basada en la supervisión visual por parte del  
+personal de seguridad, sin contar con registros digitales ni información en tiempo real sobre 
+la  disponibilidad  de  espacios.  Esta  situación  genera  dificultades  en  horarios  de  alta 
+concurrencia, tales como congestión vehicular y tiempos de espera prolongados.
+Frente al presente contexto, la solución propuesta consiste en el desarrollo e implementación 
+de un sistema web integral automatizado para el registro de ingreso y salida de vehículos en 
+el estacionamiento del Aula Magna del Campus Fernando May. El núcleo tecnológico del sistema 
+combina técnicas avanzadas de visión artificial para la detección de vehículos mediante el modelo 
+YOLOv8 y el reconocimiento óptico de caracteres (OCR) con PaddleOCR para la lectura precisa 
+de placas patentes. La plataforma procesa las capturas de video en un nodo local (Edge computing) 
+y sincroniza los eventos de acceso en tiempo real con una base de datos relacional Supabase en la 
+nube, permitiendo la visualización instantánea de la ocupación para conductores y facilitando al 
+personal de seguridad herramientas interactivas de monitoreo, gestión de incidencias y reportes 
+estadísticos.
+El desarrollo de este sistema busca contribuir a una mejor experiencia para los usuarios del 
+estacionamiento, reduciendo tiempos de búsqueda y congestión, así como facilitar la labor 
+del personal encargado mediante información clara, trazable y oportuna.
+7
+===== PAGE 8 =====
+8
+2 DEFINICIÓN DE LA EMPRESA O INSTITUCIÓN
+2.1 Descripción de la empresa 
+Antecedentes generales de la Empresa
+? Nombre: Universidad del Bío-Bío (UBB).
+? Dirección: Campus Fernando May, Chillán, Región de Ñuble, Chile.
+? Rubro: Institución estatal y pública de educación superior.
+? Productos/Servicios que ofrece: Formación profesional y técnica en diversas áreas 
+del conocimiento; investigación científica y tecnológica; vinculación con el medio  
+
+===== PAGE 8 =====
+8
+
+regional y nacional.
+Entorno
+? Competencia directa: Otras universidades con presencia en la Región de Ñuble y 
+Biobío, como la Universidad de Concepción, la Universidad Católica de la Santísima 
+Concepción, entre otras instituciones de educación superior.
+? Cuota de mercado: La Universidad del Bío-Bío es una de las principales instituciones 
+estatales en la zona centro-sur de Chile, con un fuerte posicionamiento regional en 
+Ñuble  y  Biobío.  Su  carácter  público  le  otorga  una  presencia  significativa  en  la 
+matrícula de estudiantes locales.
+Misión
+La Universidad del Bío-Bío es una institución de educación superior, comprometida con su 
+rol estatal, que colabora en aquellas políticas, planes y programas que fomenten el desarrollo 
+sostenible,  preferentemente  en  los  territorios  de  las  regiones  del  Bío-Bío  y  de  Ñuble, 
+proyectando  su  labor  al  resto  del  país  y  a  nivel  internacional.  Su  misión  es  cultivar, 
+desarrollar y transmitir el saber superior, en las diversas áreas del conocimiento y de las 
+culturas,  por  medio  de  la  docencia,  investigación,  creación,  extensión  y  transferencia 
+tecnológica,  expresados  de  manera  innovadora  bajo  principios  éticos  y  valóricos, 
+convocando y apoyando la construcción de ideales sociales direccionados al bien común y al 
+respeto irrestricto de los derechos humanos.
+La  Universidad  del  Bío-Bío  se  identifica  como  una  comunidad  pluralista,  con  sentido 
+democrático, abierta al libre intercambio de ideas, participativa y colaborativa, que fomenta 
+la  interculturalidad,  la  inclusión  de  la  discapacidad,  protege  el  desarrollo  pleno  y  el 
+reconocimiento  de  la  dignidad  de  las  personas,  basado  en  la  justicia  social  desde  una 
+perspectiva  de  género,  facilitando  la  igualdad  de  oportunidades  y  la  promoción  e 
+incorporación de las culturas de los pueblos originarios y de los/as inmigrantes.
+Asimismo, como elemento constitutivo e ineludible de su misión, la Universidad del Bío-Bío 
+reconoce la educación como un derecho que incentiva la movilidad social, por ello, asume su 
+compromiso  con  vocación  de  excelencia,  promoviendo  una  experiencia  de  enseñanza-
+aprendizaje transformadora, que legitima al otro en la convivencia, para la formación de 
+profesionales que atiendan los problemas y necesidades del país a través de su quehacer 
+interdisciplinario, con espíritu crítico, inclusivo, reflexivo y dialógico. La Universidad del Bío-
+Bío fomentará la formación de personas empáticas, colaborativas, respetuosas del entorno 
+en toda su diversidad, con inteligencia cultural y actitudes de liderazgo, preocupadas por la 
+
+===== PAGE 9 =====
+9
+
+salud y bienestar propio como de los demás, con el fin de forjar una ciudadanía solidaria y 
+democrática
+8
+===== PAGE 9 =====
+9
+Visión
+Ser  una  Universidad  comprometida  con  su  carácter  estatal  y  birregional,  innovadora, 
+inclusiva y compleja, con proyección nacional e internacional, que contribuye al progreso 
+sostenible de su territorio y sus habitantes, de excelencia en la formación de personas y con 
+sentido de equidad social y de género.
+Objetivos:
+? Formar profesionales íntegros y altamente capacitados.
+? Fomentar la investigación y el desarrollo científico-tecnológico.
+? Impulsar la innovación y la transferencia de conocimiento.
+? Potenciar la vinculación con el entorno social, productivo y cultural.
+Ilustración 1: Extracto del organigrama de la VRAE, Región Ñuble.
+2.2 Descripción del área de estudio
+Funciones y cargos relacionados con el proyecto
+? El área de estudio corresponde a la administración del Campus Fernando May de la 
+Universidad del Bío-Bío, particularmente en lo que respecta a la gestión de los  
+recursos físicos y servicios generales, dentro de los cuales se encuentra el uso y  
+control del estacionamiento.
+? La ejecución de este sistema se vincula directamente con la labor de Ronald Lagos 
+Ruiz en el Departamento de Bienes y Servicios. Sus responsabilidades incluyen la 
+supervisión de la infraestructura del campus y la coordinación eficiente del uso de 
+los  estacionamientos,  asegurando  la  correcta  administración  de  los  espacios 
+comunes.
+Objetivo del área.
+? El  objetivo  principal  del  área  vinculada  al  estacionamiento  es  garantizar  la 
+disponibilidad  y  correcta  administración  de  los  espacios  destinados  a  vehículos 
+9
+
+===== PAGE 10 =====
+10
+
+===== PAGE 10 =====
+10
+dentro del campus, facilitando la movilidad de docentes, funcionarios estudiantes y 
+visitantes. 
+Estructura organizativa específica del área y descripción de funciones.
+? Dentro de la estructura organizativa del campus, la gestión del estacionamiento se 
+encuentra  vinculada  jerárquicamente  a  la  Vicerrectoría  de  Asuntos  Económicos 
+(VRAE), de ella depende la Dirección de Administración y Presupuesto, esta a su vez 
+supervisa al Departamento de Bienes y Servicios, liderado por Ronald Lagos Ruiz, 
+quien es responsable de los servicios generales y de la coordinación de espacios  
+físicos como los estacionamientos, además del personal asociado a su operación y 
+mantenimiento.
+2.3 Descripción de la problemática 
+En la actualidad, la gestión del estacionamiento del Campus se realiza de manera informal, 
+sin presentar un sistema que permita registrar, controlar o informar en tiempo real la  
+disponibilidad de los espacios. El acceso de vehículos se efectúa únicamente mediante el 
+resguardo del personal de seguridad, quienes verifican de manera visual la entrada y salida, 
+sin llevar un registro de los vehículos que utilizan el recinto.
+Históricamente, el estacionamiento del Aula Magna contaba con un aforo limitado de 130 
+vehículos. Recientemente, el recinto fue ampliado mediante la habilitación de un sector con 
+suelo de arcilla y la colocación de soleras de delimitación a lo largo y en la sección media. 
+Esta obra de expansión permitió anexar espacio para aproximadamente 40 vehículos adicionales, 
+incrementando la capacidad total a 170 automóviles. 
+Sin embargo, a pesar de este aumento del aforo, el problema de saturación y congestión persiste. 
+En horarios de alta concurrencia (especialmente durante las mañanas y el mediodía) y durante 
+la realización de eventos masivos en el Aula Magna, la demanda de estacionamientos continúa 
+superando la capacidad de 170 plazas disponibles. Esto se traduce en tiempos de espera prolongados, 
+embotellamiento vehicular en las vías internas del campus y frustración para los conductores al 
+no contar con mecanismos que informen de forma previa y en tiempo real la disponibilidad de cupos.
+La ausencia de herramientas tecnológicas de control dificulta la toma de decisiones para  
+optimizar el uso del estacionamiento, impide proyectar políticas de ordenamiento vehicular 
+más eficientes y limita la posibilidad de ofrecer una mejor experiencia a sus usuarios.
+En consecuencia, la problemática principal se centra en la falta de un sistema automatizado 
+que permita gestionar de manera eficiente la disponibilidad del estacionamiento, lo que  
+motiva  la  necesidad  de  implementar  un  proyecto  basado  en  cámaras  y  algoritmos  de 
+reconocimiento automático de placas patentes, apoyado en una base de datos que registre el 
+ingreso y salida de vehículos en tiempo real.
+10
+
+===== PAGE 11 =====
+11
+
+===== PAGE 11 =====
+11
+2.4 Proceso del negocio actual
+Ilustración 2: BPMN de la gestión actual del estacionamiento en Aula Magna
+La ilustración actual muestra el flujo que efectúa un vehículo al momento de estacionarse 
+El diagrama presentado en la Ilustración 2 refleja la gestión del estacionamiento. El estado 
+actual es debido a la falta de herramientas tecnológicas y registros digitales de ingresos  
+vehiculares.
+Al no existir un sistema o base de datos que asocie la placa patente de un vehículo con un 
+usuario o funcionario de la institución, el personal de seguridad está obligado a gestionar 
+cualquier eventualidad de forma completamente manual. Como se observa en el flujo de  
+decisiones, la resolución rápida de una incidencia depende casi exclusivamente de que esté el 
+conductor.
+Cuando el usuario no se encuentra en el lugar, el guardia efectúa lo que en el modelo se  
+denomina "Tratar de resolver la situación", lo cual en la práctica significa buscar al dueño "a 
+ciegas" mediante preguntar a viva voz, buscar credenciales visibles en el auto o simplemente 
+esperar, lo que ralentiza el proceso. Finalmente, si la situación es de gravedad, se escala hacia 
+el encargado directo, Gustavo Córdoba. 
+Es relevante destacar un aspecto clave de la realidad operativa del protocolo de seguridad 
+identificado en las entrevistas: debido a la presión inmediata del tráfico y el flujo de 
+llamadas telefónicas y de radio concurrentes durante una emergencia, el personal de seguridad 
+prioriza la resolución in-situ de la incidencia antes de realizar labores informativas o de registro. 
+Por lo tanto, la comunicación formal y la documentación del evento suelen realizarse de manera 
+diferida o post-factum. La falta de un sistema digital que admita un registro retrospectivo y 
+fotográfico de las incidencias resueltas manuales genera que gran parte de esta información 
+operativa crítica se pierda, impidiendo la trazabilidad histórica de los eventos de seguridad.
+En conclusión, este diagrama evidencia cómo la falta de información previa y de monitoreo 
+en tiempo real limita la capacidad de acción del personal, justificando directamente el 
+implementar la automatización mediante reconocimiento óptico de patentes y una bitácora digital 
+con soporte para la gestión retrospectiva de incidentes.
+11
+===== PAGE 12 =====
+12
+3 DEFINICIÓN PROYECTO
+3.1 Objetivos del proyecto
+Implementar una solución tecnológica automatizada para la gestión y monitoreo del 
+estacionamiento del Aula Magna en el Campus Fernando May de la Universidad del Bío-Bío, que 
+permita visualizar la disponibilidad de espacios en tiempo real para los usuarios externos y 
+facilite al personal de seguridad y administración la gestión de accesos, registro de 
+incidencias y generación de reportes estadísticos detallados para la toma de decisiones 
+operativas.
+Objetivos específicos
+1. Desarrollar una aplicación web interactiva que permita tanto a conductores externos 
+visualizar la disponibilidad de espacios en tiempo real como a los operarios internos gestionar el 
+sistema.
+2. Diseñar e implementar un esquema de base de datos relacional robusto y seguro para almacenar 
+el historial de accesos, información de vehículos e incidencias.
+3. Diseñar una arquitectura técnica híbrida de bajo costo utilizando hardware de borde para el 
+procesamiento de imágenes y servicios en la nube para la base de datos y la aplicación web.
+4. Desarrollar un pipeline de visión artificial y reconocimiento óptico de caracteres (OCR) 
+eficiente para la detección y lectura autónoma de patentes de vehículos en los portales de acceso.
+5. Proveer un sistema de visualización de ocupación en tiempo real mediante WebSockets, 
+permitiendo actualizaciones instantáneas y minimizando la latencia de red.
+6. Realizar pruebas integrales de sistema, rendimiento y usabilidad para validar la precisión 
+del reconocimiento y la estabilidad de la plataforma bajo cargas de tráfico real.
+3.2 Ambiente de Ingeniería de Software
+3.2.1 Metodología de desarrollo
+Para la ejecución de este proyecto se optó por utilizar una metodología basada en principios 
+del agilismo, la cual fue adaptada para las necesidades de un proyecto llevado a cabo por un 
+único  desarrollador.
+Si bien este enfoque rescata prácticas valiosas de marcos de trabajo ágiles, tales como la 
+gestión de una lista de requerimientos y la división del trabajo en entregas funcionales, se 
+omitieron metodologías estrictas como Scrum que exigen la disponibilidad continua del  
+cliente  para  revisiones  semanales.
+El  proceso  de  desarrollo  se  estructuró de  la  siguiente  manera:
+Levantamiento de requisitos: Antes de iniciar la construcción del software, se realizaron 
+entrevistas y consultas de campo con los actores clave que interactúan en el recinto, incluyendo 
+al guardia de seguridad del sector, el Jefe de Seguridad, Gustavo Córdoba, y el encargado de 
+Bienes y Servicios, Ronald Lagos Ruiz. Durante este proceso, la entrevista con el Jefe de 
+Seguridad aportó detalles operacionales críticos:
+1. Redefinición de la Capacidad Real: Informó que las obras recientes de ampliación de la zona del 
+Aula Magna (suelo de arcilla y confinamiento con soleras) expandieron el aforo inicial de 130 
+a un total de 170 cupos vehiculares. Esto permitió corregir los parámetros del aforo del sistema.
+2. Dinámica del Protocolo de Seguridad: Reveló que, bajo situaciones de emergencia o congestión, 
+el personal de seguridad prioriza resolver el conflicto en terreno sobre el reporte simultáneo. 
+Consecuentemente, se estableció el requisito funcional de que la aplicación admita la creación 
+y resolución retrospectiva (diferida) de incidencias.
+3. Definición de Roles del Sistema: Se estructuró el perfil del "Encargado" web con los permisos 
+y vistas operacionales correspondientes al rol de Jefe de Seguridad de la institución.
+Esta recopilación permitió comprender el proceso manual real y definir el Backlog del proyecto.
+Fase  de  Desarrollo: La  programación  del  sistema  (incluyendo  la  aplicación  web  y  la 
+integración del modelo de visión artificial) se dividió en ciclos de desarrollo cortos. En cada 
+ciclo,  el  esfuerzo  se  centró en  programar,  probar  y  estabilizar módulos  específicos  (ej. 
+módulo  de  cámaras,  panel  de  incidencias),  logrando  un  crecimiento  progresivo  e 
+incremental  del  sistema.
+Fase de Revisión: A diferencia de las revisiones de sprint tradicionales, la revisión no se  
+realizó de manera fragmentada. En su lugar, el modelo adaptado contempla una validación 
+12
+
+===== PAGE 13 =====
+13
+
+===== PAGE 13 =====
+13
+de un prototipo maduro y altamente funcional, donde se presentan al usuario final todas las 
+funcionalidades integradas para su aprobación y ajustes finales previos al despliegue.
+3.2.2 Herramientas de apoyo al desarrollo
+Para el desarrollo se utilizarán las siguientes herramientas, indicando su propósito:
+Visual Studio Code
+? Entorno de desarrollo para backend en Python y frontend.
+? Para edición de código, depurar y gestionar extensiones para el desarrollo.
+GitHub
+? Repositorio remoto del proyecto.
+? Para  control  de  versiones,  revisión  de  código  y  almacenamiento  seguro  del 
+desarrollo.
+Supabase (PostgreSQL + autenticación + Realtime)
+? Servicio gestionado de base de datos y API.
+? Almacenar usuarios, zonas, incidencias y eventos, además de manejar autenticación 
+y sincronización en tiempo casi real para el tablero de ocupación.
+YOLOv8 +OpenCV + PaddleOCR
+? Librerías de visión por computador para Python.
+? Procesamiento las imágenes de la c ámara, detección de presencia de vehículos y 
+reconocimiento de las placas patentes para registrar entradas y salidas.
+3.2.3 Ambientes
+Ambiente de desarrollo
+? Windows 11
+? AMD Ryzen 7 / 32 GB RAM
+? VS Code
+? Supabase conectado en modo desarrollo
+Ambiente de Pruebas
+? Despliegue temporal en Render o Supabase Edge
+? Base de datos de pruebas
+? Cámara conectada para validaciones en terreno
+Ambiente de Producción
+
+===== PAGE 14 =====
+14
+
+? Hosting en Render / Supabase
+? Base de datos PostgreSQL en Supabase
+? Cámara instalada en el acceso del estacionamiento
+? Acceso para guardias, encargados y visitantes
+3.3 Definiciones, Siglas y Abreviaciones
+A continuación se definen los términos técnicos y acrónimos utilizados a lo largo de este documento, con el
+fin de facilitar la comprensión del lector:
+- OCR (Optical Character Recognition): Reconocimiento óptico de caracteres. Tecnología que permite
+extraer texto a partir de imágenes.
+- YOLO (You Only Look Once): Arquitectura de red neuronal convolucional diseñada para la detección de
+objetos en imágenes en tiempo real.
+- ROI (Region of Interest): Región de interés dentro de una imagen, correspondiente al área donde se ubica
+la placa patente.
+- Edge Computing: Paradigma de computación que procesa los datos lo más cerca posible de la fuente
+(cámara), en lugar de enviarlos a un servidor remoto.
+- RLS (Row Level Security): Mecanismo de seguridad de PostgreSQL que restringe el acceso a filas de una
+tabla según las políticas definidas para cada usuario.
+- JWT (JSON Web Token): Estándar abierto para la creación de tokens de acceso que permiten la
+autenticación segura entre cliente y servidor.
+- BPMN (Business Process Model and Notation): Notación gráfica estandarizada para modelar procesos de
+negocio.
+- KPI (Key Performance Indicator): Indicador clave de rendimiento utilizado para medir el desempeño de un
+proceso.
+- API REST: Interfaz de programación de aplicaciones basada en el protocolo HTTP, utilizada para la
+comunicación entre el sistema de borde y la base de datos en la nube.
+- WebSocket: Protocolo de comunicación bidireccional sobre TCP que permite actualizaciones en tiempo
+real entre el servidor y el cliente web.
+- SPA (Single Page Application): Aplicación web que carga una única página HTML y actualiza
+dinámicamente su contenido sin recargar la página completa.
+- Pipeline: Secuencia encadenada de etapas de procesamiento donde la salida de una etapa alimenta la
+siguiente.
+- Cooldown: Período de espera mínimo entre detecciones consecutivas de una misma patente para evitar
+
+===== PAGE 15 =====
+15
+
+registros duplicados.
+13
+===== PAGE 14 =====
+14
+4 FACTIBILIDAD
+4.1 Factibilidad técnica. 
+El desarrollo del sistema es viable ya que se tiene uso de software libre y multiplataforma, lo 
+que reduce costos y garantiza la independencia tecnológica.
+El proyecto se construirá con los siguientes softwares:
+? Lenguaje y framework: Python para backend y JavaScript para frontend, haciendo 
+uso de vs code como IDE.
+? Base de datos: PostgreSQL, gestionada mediante Supabase con su plan gratuito.
+? Reconocimiento de patentes: con librería YOLOv8 para su detección, OpenCV para 
+preprocesamiento y corrección de imagen y PaddleOCR para leer los caracteres de la 
+placa patente, 
+Factibilidad de hardware para desarrollo
+Requisito Descripción
+Sistema Operativo Windows 11
+CPU AMD Ryzen 7 9800X3D
+GPU RTX 5070
+RAM 32 GB a 6400 MHz
+Almacenamiento 2 TB
+Cámara Webcam
+Tabla 1: Factibilidad técnica ? Hardware para Desarrollo
+Factibilidad de hardware y software para usuario
+Requisito Descripción
+Sistema Operativo Android, IOS, Linux, Windows
+Internet Acceso a internet
+Navegador web Chrome, Firefox, Safari
+RAM >2 GB
+Almacenamiento >200 Mb para cache"
+
+===== PAGE 16 =====
+16
+
+Tabla 2: Factibilidad técnica - Requisitos Usuario
+El procesamiento de imágenes y la ejecución del pipeline OCR (YOLOv8 + PaddleOCR) se 
+realizarán de manera local en un dispositivo de cómputo en el borde (Edge Computing) ubicado 
+en el mismo campus. De esta forma, el procesamiento del flujo de video de alta definición de la 
+cámara IP se realiza in-situ y no requiere transmitirse a la nube, reduciendo a cero el consumo 
+de ancho de banda por video streaming y garantizando la seguridad y privacidad de las imágenes. 
+El dispositivo de borde procesa el cuadro de video, extrae la patente en forma de texto plano 
+con su respectivo nivel de confianza, y envía únicamente estos datos estructurados (junto con la 
+imagen optimizada del recorte de la patente si corresponde) a la base de datos Supabase en la 
+nube a través de solicitudes HTTPS eficientes. Esto garantiza una operación ágil, de baja latencia 
+y con capacidad de tolerancia a fallos de red mediante almacenamiento local temporal.
+En cuanto a la estrategia de respaldo y mantenimiento, se implementar án las siguientes 
+medidas:
+? Copias de seguridad automáticas de la base de datos en Supabase.
+? Registro de logs de los eventos registrados y accesos.
+? Monitoreo periódico de la cámara para verificar la conectividad y funcionamiento.
+? Si  el  sistema  pierde  conexión  con  la  base  de  datos,  los  eventos  se  almacenan 
+temporalmente en una cola local y se sincronizan una vez restablecida la conexión.
+? Mantenimiento preventivo anual de la cámara y del software.
+4.2 Factibilidad operativa. 
+Desde el punto de vista operativo, el sistema propuesto mejora los procesos actuales de  
+gestión  vehicular  en  el  estacionamiento  del  Aula  Magna  del  Campus  Fernando  May. 
+Actualmente, el control no se registra digital ni física de las entradas y salidas de vehículos, lo 
+que  genera, principalmente en  eventos  una  congestión  y  falta  de información  sobre  la 
+disponibilidad de espacios, por eso lo que se propone con el nuevo sistema es permitir:
+? Registro de forma automática mediante las placa patente con una cámara instalada.
+? Visualizar en tiempo real la ocupación del estacionamiento.
+? Generar reportes y analíticas sobre uso de espacios.
+? Facilitar la toma de decisiones al personal encargado y de usuarios.
+El cambio si bien no implica grandes alteraciones en la estructura organizativa, ya que se 
+integrará en las funciones actuales del personal administrativo, además en el software se  
+tomará en cuenta el tener una interfaz intuitiva, diseñada para todo tipo de usuarios. 
+Esto también ayudará en la trazabilidad y resolución de incidentes ya que se generar án 
+
+===== PAGE 17 =====
+17
+
+registros históricos, por ejemplo de la patente del vehículo.
+Rol/ Actor Función principal dentro del sistema
+Guardia Supervisa el acceso vehicular, monitorea la 
+ocupación en tiempo real y reporta 
+incidencias.
+Encargado Administra el sistema, revisa reportes, 
+genera estadísticas y aprueba solicitudes o 
+incidencias.
+Administrador TI Configura el sistema, mantiene la cámara, 
+usuarios y base de datos.
+Usuario visitante Accede al estacionamiento y puede visualizar 
+el estado de disponibilidad mediante interfaz 
+pública.
+Tabla 3: Factibilidad operativa - Roles de los actores
+15
+===== PAGE 16 =====
+16
+4.3 Factibilidad económica. 
+La  evaluación  de  la  factibilidad  económica  del  proyecto  es  crucial  para  determinar  la 
+viabilidad financiera y la capacidad de generar beneficios a largo plazo. En este apartado, se 
+presenta la propuesta del proyecto como se observa en la tabla, también se muestra el Valor 
+Actual Neto (VAN). 
+Se tiene como principal beneficiario a Don Gustavo Córdova ya que él es el encargado de los 
+estacionamientos dentro del campus,. Este proyecto principalmente le ahorraría 7,5 horas a 
+la semana en cuando a la gestión. Se tomó que su sueldo bruto mensual en promedio es de 
+$950.000, con un valor por hora de $5.398, tomando en cuenta unas 7,5 horas a la semana en 
+el que le dedica su tiempo a los reportes, incidentes y gestiones correspondientes con el  
+software se tendría un ahorro de $1.983.665 al año.
+Beneficios
+Promedio sueldo bruto mensual $950.000
+Valor por hora $5.398
+
+===== PAGE 18 =====
+18
+
+Costo de tiempo por año $1.983.665
+Tabla 4: Factibilidad económica - Beneficios del Proyecto
+Además de los beneficios financieros cuantificables, el proyecto presenta una serie de  
+beneficios intangibles que fortalecen su justificación:
+? Ahorro de tiempo operativo: Se reducen las tareas manuales de control y reporte 
+del encargado en aproximadamente 7,5 horas semanales.
+? Satisfacción de los usuarios: Los conductores acceden a información clara sobre 
+la disponibilidad, evitando pérdidas de tiempo y frustración.
+? Mejora  en  la  gestión  interna: Los  reportes  automáticos  permiten  tomar 
+decisiones más informadas sobre horarios punta, mantenimiento y asignación de 
+espacios, etc.
+? Mayor trazabilidad y transparencia: Los registros históricos permiten auditar 
+accesos y resolver reclamos con evidencia.
+Costos de inversión
+? Costo de equipos: El costo de la cámara es de $115.310 más los costos de la instalación 
+correspondiente se suman $30.000 en costos como cables, entre otros.
+? Costo  de  desarrollador: La  remuneración  del  informático  durante  3  meses  que 
+implementa  el  sistema  con  un  coste  de  $1.000.000,  esto  en  base  a  la  web 
+?https://www.itworkers.cl/guia-salarial-tech-chile-2026.html?  tomando  en  cuenta  el 
+sueldo para un junior Full Stack Developer.
+Costos Inversión
+Costo de equipos $145.310
+Costo de desarrollador $3.000.000
+Total $3.145.310
+Tabla 5: Factibilidad económica - Costo de la Inversión
+16
+===== PAGE 17 =====
+17
+Costos de operación
+En la tabla se muestra un resumen de los costos de operación que se necesitará cumplir en cada 
+año
+
+===== PAGE 19 =====
+19
+
+? Técnico en informática: Para mantener tanto el sitio web y la cámara se requiere de un 
+técnico, en este caso uno externo el costo por hora en promedio es de $60.000, se requiere 
+de unas 2 horas y 4 visitas al año lo que nos da un costo de $480.000 y unos $30.000 para 
+los materiales requeridos para el mantenimiento de la cámara.
+? Domino: Se debe considerar el costo de un dominio Web para la aplicación, este tiene un 
+valor aproximado de $9.900 en NIC Chile.
+? Hosting: Un plan básico de hosting varía entre $40.000 y $61.000 anuales, por lo que en 
+promedio el servidor tiene un valor de $50.500 anuales.
+Gastos de operación
+Mantenimiento $510.000
+Dominio $9.900
+Hosting $50.500
+Total $570.400
+Tabla 6: Factibilidad económica - Costo de Mantenimiento del Sistema
+Año 0 Año 1 Año 2 Año 3 Año 4 Año 5
+Beneficio
+s
+$1.983.665 $1.983.665 $1.983.665 $1.983.665 $1.983.665
+Costos de 
+desarroll
+o
+$3. 145.310 0 0 0 0 0
+Gastos de 
+operación
+$570.400 $570.400 $570.400 $570.400 $570.400
+Total -$3. 145.310 -$1.732.045 -$318.780 $1.094.485 $2.507.750 $3.921.015
+Tabla 7: Factibilidad económica - Flujo de caja del Proyecto
+17
+===== PAGE 18 =====
+18
+
+===== PAGE 20 =====
+20
+
+4.4 Conclusión de la factibilidad
+Desde la perspectiva operativa, la solución propuesta garantiza una integración fluida con las 
+funciones actuales del personal de seguridad y administración sin exigir cambios drásticos 
+en la estructura organizacional. La automatización del registro mediante reconocimiento de 
+placas patentes  proporciona una trazabilidad histórica para la institución. Esto no solo  
+optimiza la labor de Ronald Lagos Ruiz y del personal de vigilancia al reducir la carga de  
+tareas mecánicas, sino que otorga al campus de una herramienta de gestión basada en datos 
+reales para la resolución ágil de incidencias. 
+En el ámbito económico, la inversión inicial de $4.645.310 se justifica plenamente mediante 
+los  ahorros  operativos  proyectados.  Con  un  flujo  de  beneficios  anuales  de  $1.983.665 
+derivados de la optimización del tiempo del personal encargado, el proyecto alcanza una 
+VAN de $713.379 en un horizonte de 5 años. Este indicador financiero positivo, sumado a la 
+recuperación de la inversión a partir del cuarto año, confirma que el sistema es una inversión 
+rentable y eficiente para los recursos de la Universidad del Bío-Bío.
+Más allá de los indicadores financieros, el proyecto genera beneficios intangibles críticos:
+Experiencia del Usuario y Bienestar: La reducción drástica de los tiempos de búsqueda y 
+la eliminación de la incertidumbre sobre la disponibilidad de cupos disminuyen el estrés de 
+conductores y la congestión vehicular interna. Esto se traduce en una mayor puntualidad y 
+una mejor percepción de la calidad de vida dentro del campus. 
+Seguridad y Trazabilidad: La existencia de registros digitales y trazables de cada vehículo 
+agiliza la gestión administrativa, sino que actúa como una herramienta de apoyo para la  
+seguridad integral del recinto. 
+En conclusión, los sólidos indicadores económicos, la facilidad de integración operativa y el 
+alto valor estratégico de los beneficios intangibles presentados, respaldan la implementación 
+inmediata de este sistema como la solución óptima para los desafíos de movilidad en el  
+Campus Fernando May. 
+18
+===== PAGE 19 =====
+19
+5 ANÁLISIS
+5.1 Requisitos funcionales
+
+===== PAGE 21 =====
+21
+
+Los requerimientos funcionales de un sistema deben definir las acciones y capacidades  
+específicas que el software debe resolver.  A continuación, en la tabla 8, se presentan los  
+requisitos funciones en los que se basaran cada una de las historias de usuario, 
+ID Nombre Descripción
+RF_01 Ver ocupación en tiempo real Permitir visualizar la 
+ocupación actual y los últimos 
+eventos en el dashboard.
+RF_02 Ver ocupación en tiempo real 
+como usuario externo
+Permitir al usuario externo  
+ver la capacidad actual del 
+estacionamiento claramente.
+RF_03 Generar reportes y estadísticas Permitir generar reportes de 
+demanda, ocupación e 
+incidencias, con opción de 
+exportar.
+RF_04 Registrar y resolver 
+incidencias
+Permitir crear incidencias, 
+actualizarlas y cerrarlas, 
+calculando tiempo de 
+resolución.
+RF_05 Administrar usuarios y roles Permitir la gestión de usuarios 
+y la asignación de roles.
+RF_06 Exportar datos Permitir la exportación de 
+datos en un rango 
+seleccionado.
+RF_07 Tolerancia a fallos por pérdida 
+de conectividad
+El sistema local debe registrar 
+patentes y guardar imágenes 
+de forma local si se pierde la 
+conexión con Supabase, y 
+
+===== PAGE 22 =====
+22
+
+sincronizarlas 
+automáticamente al recuperar 
+la conexión.
+RF_08 Panel ejecutivo El sistema debe calcular y 
+mostrar en tiempo real  clave 
+de rendimiento diarios: 
+ocupación máxima, hora peak, 
+tiempo de estadia promedio e 
+incidencias activas.
+RF_09 Registro de entradas y salidas Tener informacion clara de 
+cuando ingresó o salió cada 
+vehiculo 
+RF_10 Gráfico de Demanda Horaria El sistema debe generar 
+dinámicamente un gráfico de 
+líneas que muestre la curva de 
+19
+===== PAGE 20 =====
+20
+ocupación vehicular en 
+intervalos por hora del día en 
+curso.
+RF_11 Registro de Vehículos 
+Institucionales
+Permitir al encargado 
+registrar, editar y listar 
+vehículos frecuentes, 
+asociando patente, propietario, 
+tipo de vehículo, estatus de 
+funcionario y observaciones.
+Tabla 8: Requisitos Funcionales
+20
+
+===== PAGE 23 =====
+23
+
+===== PAGE 21 =====
+21
+5.2 Historias de usuarios
+5.2 Historias de usuarios
+Bajo el marco de la metodología, los requisitos funcionales se transforman en historias de 
+usuario, esto para detallar el comportamiento del sistema frente a la perspectiva de cada 
+usuario. Estas descripciones garantizan que el desarrollo se centre en aportar valor real, que 
+validan la correcta implementación de funciones.
+
+• Historia de usuario - Ver Ocupación en Tiempo Real (Versión Inicial)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Ver Ocupación en Tiempo Real (Versión Inicial)      |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU01          | ID Requisito:   RF_01                        |
+  | Nombre:      Ver Ocupación en Tiempo Real                                 |
+  | Descripción: Como guardia, quiero visualizar la ocupación actual del      |
+  |              estacionamiento y los últimos movimientos, para decidir      |
+  |              el acceso y prevenir congestión.                             |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Carga correcta del  | El guardia abre el      | El sistema muestra   |
+  |    | tablero             | tablero.                | ocupación actual y   |
+  |    |                     |                         | últimos ingresos.    |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Actualización por   | Se registra una nueva   | El tablero se        |
+  |    | evento              | entrada y salida.       | actualiza            |
+  |    |                     |                         | automáticamente y    |
+  |    |                     |                         | refleja el nuevo     |
+  |    |                     |                         | conteo.              |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 9: Historia de usuario 1 - Ver Ocupación en Tiempo Real (Versión Inicial).
+
+• Historia de usuario - Generar Reportes y Estadísticas (Versión Inicial)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Generar Reportes y Estadísticas (Versión Inicial)   |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU02          | ID Requisito:   RF_02                        |
+  | Nombre:      Generar Reportes y Estadísticas                              |
+  | Descripción: Como encargado, quiero generar reportes de ocupación,        |
+  |              picos, rotación y permanencia, para planificar señalética    |
+  |              y apoyo en eventos.                                          |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Reporte estándar    | El encargado selecciona | El sistema calcula   |
+  |    |                     | rango de fechas.        | KPIs y muestra       |
+  |    |                     |                         | gráficos/tabla.      |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Exportación         | El encargado solicita   | Se descarga CSV/PDF  |
+  |    |                     | exportar.               | y se registra        |
+  |    |                     |                         | auditoría de         |
+  |    |                     |                         | descarga.            |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 10: Historia de usuario 2 - Generar Reportes y Estadísticas (Versión Inicial).
+
+• Historia de usuario - Registrar y Resolver Incidencias (Versión Inicial)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Registrar y Resolver Incidencias (Versión Inicial)  |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU03          | ID Requisito:   RF_03                        |
+  | Nombre:      Registrar y Resolver Incidencias                             |
+  | Descripción: Como encargado, quiero registrar incidencias asociadas a     |
+  |              una patente o evento, para dar seguimiento y cerrar con      |
+  |              evidencia.                                                   |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Levantamiento de    | El actor crea la        | El sistema registra  |
+  |    | incidencia          | incidencia,             | la incidencia con    |
+  |    |                     | registrando placa o     | fecha exacta         |
+  |    |                     | evento.                 | automáticamente.     |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Actualización       | Se añade actualización  | La bitácora se       |
+  |    |                     | del estado.             | actualiza y          |
+  |    |                     |                         | conserva un          |
+  |    |                     |                         | historial.           |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 11: Historia de usuario 3 - Registrar y Resolver Incidencias (Versión Inicial).
+
+• Historia de usuario - Administrar Usuarios y Roles (Versión Inicial)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Administrar Usuarios y Roles (Versión Inicial)      |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU04          | ID Requisito:   RF_04                        |
+  | Nombre:      Administrar Usuarios y Roles                                 |
+  | Descripción: Como administrador, quiero crear usuarios y asignar roles    |
+  |              para asegurar accesos según funciones.                       |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Levantamiento de    | El administrador        | Usuario creado;      |
+  |    | usuario             | ingresa datos y rol     | recibe credenciales; |
+  |    |                     | válido.                 | queda auditado.      |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Cambio de rol       | Se modifica rol de un   | Permisos aplicados   |
+  |    |                     | usuario activo.         | de inmediato; se     |
+  |    |                     |                         | registra auditoría.  |
+  +----+---------------------+-------------------------+----------------------+
+  | 3  | Baja de usuario     | Se desactiva un         | No puede acceder;    |
+  |    |                     | usuario.                | su historial se      |
+  |    |                     |                         | conserva.            |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 12: Historia de usuario 4 - Administrar Usuarios y Roles (Versión Inicial).
+
+• Historia de usuario - Exportar Datos (Versión Inicial)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Exportar Datos (Versión Inicial)                    |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU05          | ID Requisito:   RF_05                        |
+  | Nombre:      Exportar Datos                                               |
+  | Descripción: Como encargado, quiero exportar eventos e indicadores para   |
+  |              uso en informes institucionales.                             |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Exportación CSV     | Se selecciona rango de  | Descarga CSV válida  |
+  |    |                     | fechas e información a  | y registro en        |
+  |    |                     | exportar.               | auditoría.           |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Exportación Power BI| Se solicita versión en  | Se obtienen          |
+  |    |                     | Power BI para mejor     | gráficos, KPIs y     |
+  |    |                     | representación visual.  | otras analíticas.    |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 13: Historia de usuario 5 - Exportar Datos (Versión Inicial).
+
+• Historia de usuario - Visualizar estado de estacionamiento (Mapa de calor) (Versión Inicial)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Visualizar estado de estacionamiento (Mapa de calor)|
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU06          | ID Requisito:   RF_06                        |
+  | Nombre:      Visualizar estado de estacionamiento                         |
+  | Descripción: Como usuario externo, quiero ver el estado del               |
+  |              estacionamiento para orientarme al ingresar.                 |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Espacios            | El usuario revisa la    | Se muestra si quedan |
+  |    | disponibles         | web para ver si aún     | cupos dentro del     |
+  |    |                     | quedan espacios.        | estacionamiento.     |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Sin espacios        | El estacionamiento se   | El usuario se retira |
+  |    |                     | encuentra en su         | rápidamente, evita   |
+  |    |                     | máxima capacidad.       | frustración y        |
+  |    |                     |                         | ahorra tiempo.       |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 14: Historia de usuario 6 - Visualizar estado de estacionamiento (Mapa de calor) (Versión Inicial).
+
+• Historia de usuario - Panel de KPIs (Panel ejecutivo) (Versión Inicial)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Panel de KPIs (Panel ejecutivo)                     |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU07          | ID Requisito:   RF_07                        |
+  | Nombre:      Panel ejecutivo                                              |
+  | Descripción: Como encargado, quiero un panel con KPIs que contengan       |
+  |              ocupación máxima, promedio por día, incidencias, para        |
+  |              evaluar la gestión.                                          |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Visualizar KPIs     | El encargado ingresa    | Ve KPIs del periodo  |
+  |    |                     | al panel.               | con tendencias.      |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Cambiar periodo     | Selecciona algún otro   | Se recalculan KPIs   |
+  |    |                     | rango.                  | y gráficos.          |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 15: Historia de usuario 7 - Panel de KPIs (Panel ejecutivo) (Versión Inicial).
+
+• Historia de usuario - Iniciar Sesión (Versión Detallada)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Iniciar Sesión (Versión Detallada)                  |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU08          | ID Requisito:   RF_01                        |
+  | Nombre:      Iniciar Sesión                                               |
+  | Descripción: Como usuario del sistema (guardia, encargado o               |
+  |              administrador), quiero iniciar sesión con mis credenciales,   |
+  |              para acceder al dashboard correspondiente a mi rol.          |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Autenticación       | El usuario ingresa      | El sistema valida    |
+  |    | exitosa             | email y contraseña      | las credenciales vía |
+  |    |                     | válidos.                | Supabase Auth y      |
+  |    |                     |                         | redirecciona al      |
+  |    |                     |                         | dashboard del rol.   |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Credenciales        | El usuario ingresa      | El sistema muestra   |
+  |    | inválidas           | credenciales            | "Credenciales        |
+  |    |                     | incorrectas.            | inválidas" y recarga |
+  |    |                     |                         | el formulario.       |
+  +----+---------------------+-------------------------+----------------------+
+  | 3  | Redirección por     | El usuario se           | El sistema redirige  |
+  |    | rol                 | autentica               | al guardia a         |
+  |    |                     | exitosamente.           | GuardDashboard, al   |
+  |    |                     |                         | encargado a          |
+  |    |                     |                         | ManagerDashboard y   |
+  |    |                     |                         | al administrador a   |
+  |    |                     |                         | AdminSettings.       |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 16: Historia de usuario 8 - Iniciar Sesión (Versión Detallada).
+
+• Historia de usuario - Ver Ocupación en Tiempo Real (Versión Detallada)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Ver Ocupación en Tiempo Real (Versión Detallada)    |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU09          | ID Requisito:   RF_02                        |
+  | Nombre:      Ver Ocupación en Tiempo Real                                 |
+  | Descripción: Como guardia o encargado, quiero visualizar la ocupación     |
+  |              actual del estacionamiento y los vehículos presentes, para    |
+  |              supervisar el flujo vehicular sin depender de controles      |
+  |              manuales.                                                    |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Visualización       | El usuario accede al    | El sistema consulta  |
+  |    | inicial             | dashboard autenticado.  | las vistas           |
+  |    |                     |                         | 'resumen_ocupacion'  |
+  |    |                     |                         | y despliega          |
+  |    |                     |                         | porcentaje, spots    |
+  |    |                     |                         | libres y tabla de    |
+  |    |                     |                         | vehículos activos.   |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Actualización       | El pipeline de borde    | El dashboard recibe  |
+  |    | en tiempo real      | detecta un nuevo        | la actualización vía |
+  |    |                     | ingreso o salida.       | WebSockets y         |
+  |    |                     |                         | refresca el contador |
+  |    |                     |                         | y la tabla sin       |
+  |    |                     |                         | recargar la página.  |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 17: Historia de usuario 9 - Ver Ocupación en Tiempo Real (Versión Detallada).
+
+• Historia de usuario - Generar Reportes y Estadísticas (Versión Detallada)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Generar Reportes y Estadísticas (Versión Detallada) |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU10          | ID Requisito:   RF_03                        |
+  | Nombre:      Generar Reportes y Estadísticas                              |
+  | Descripción: Como encargado, quiero generar estadísticas de ocupación     |
+  |              filtradas por rango de fechas, para tomar decisiones          |
+  |              operativas basadas en datos históricos.                       |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Generación de       | El encargado selecciona | El sistema calcula   |
+  |    | reporte             | un rango de fechas y    | KPIs (ocupación      |
+  |    |                     | presiona "Generar       | máxima, hora pico,   |
+  |    |                     | Reporte".               | tiempo promedio de   |
+  |    |                     |                         | estadía) y genera    |
+  |    |                     |                         | los gráficos.        |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Sin registros       | El rango de fechas      | El sistema muestra   |
+  |    |                     | seleccionado no posee   | "No se encontraron   |
+  |    |                     | registros de acceso.    | registros" y         |
+  |    |                     |                         | mantiene la pantalla |
+  |    |                     |                         | limpia.              |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 18: Historia de usuario 10 - Generar Reportes y Estadísticas (Versión Detallada).
+
+• Historia de usuario - Registrar y Resolver Incidencias (Versión Detallada)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Registrar y Resolver Incidencias (Versión Detallada)|
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU11          | ID Requisito:   RF_04                        |
+  | Nombre:      Registrar y Resolver Incidencias                             |
+  | Descripción: Como guardia o encargado, quiero registrar incidencias       |
+  |              asociadas a una patente o evento, para dar seguimiento y     |
+  |              cerrar con evidencia.                                        |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Levantamiento de    | El actor crea la        | El sistema registra  |
+  |    | incidencia          | incidencia,             | la incidencia con    |
+  |    |                     | registrando placa o     | fecha exacta         |
+  |    |                     | automáticamente y    | estado 'abierta'.    |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Actualización       | Se añade actualización  | La bitácora se       |
+  |    |                     | del estado              | actualiza y conserva |
+  |    |                     | ('en_revision' o        | un historial con     |
+  |    |                     | 'cerrada').             | fecha de cierre.     |
+  +----+---------------------+-------------------------+----------------------+
+  | 3  | Validación de       | El usuario ingresa una  | El sistema resalta   |
+  |    | patente             | patente con formato     | el error y solicita  |
+  |    |                     | inválido.               | corrección antes de  |
+  |    |                     |                         | guardar.             |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 19: Historia de usuario 11 - Registrar y Resolver Incidencias (Versión Detallada).
+
+• Historia de usuario - Administrar Usuarios y Roles (Versión Detallada)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Administrar Usuarios y Roles (Versión Detallada)    |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU12          | ID Requisito:   RF_05                        |
+  | Nombre:      Administrar Usuarios y Roles                                 |
+  | Descripción: Como administrador, quiero crear, modificar o desactivar     |
+  |              cuentas de usuarios y asignar roles, para controlar los      |
+  |              privilegios de acceso a la plataforma.                       |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Creación de         | El administrador        | El sistema registra  |
+  |    | usuario             | ingresa nombre, email   | el usuario en la     |
+  |    |                     | y selecciona rol.       | tabla 'usuarios' y   |
+  |    |                     |                         | notifica la          |
+  |    |                     |                         | creación exitosa.    |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Email duplicado     | El email ingresado ya   | El sistema cancela   |
+  |    |                     | existe en el sistema.   | el registro y        |
+  |    |                     |                         | muestra "El correo   |
+  |    |                     |                         | ya se encuentra      |
+  |    |                     |                         | registrado".         |
+  +----+---------------------+-------------------------+----------------------+
+  | 3  | Desactivación       | El administrador        | El usuario queda     |
+  |    |                     | desactiva una cuenta    | con estado inactivo  |
+  |    |                     | existente.              | y no puede iniciar   |
+  |    |                     |                         | sesión.              |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 20: Historia de usuario 12 - Administrar Usuarios y Roles (Versión Detallada).
+
+• Historia de usuario - Exportar Datos de Estacionamiento (Versión Detallada)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Exportar Datos de Estacionamiento (Versión Deta...) |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU13          | ID Requisito:   RF_06                        |
+  | Nombre:      Exportar Datos de Estacionamiento                            |
+  | Descripción: Como encargado, quiero descargar el historial de accesos     |
+  |              filtrado en formato Excel, para generar informes              |
+  |              institucionales y respaldos físicos.                         |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Exportación         | El encargado aplica     | El sistema genera y  |
+  |    | exitosa             | filtros y presiona      | descarga             |
+  |    |                     | "Exportar a Excel".     | automáticamente un   |
+  |    |                     |                         | archivo CSV con BOM  |
+  |    |                     |                         | UTF-8 al computador. |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Sin datos           | El conjunto de datos    | El sistema           |
+  |    |                     | a exportar está vacío.  | deshabilita el botón |
+  |    |                     |                         | de exportación y     |
+  |    |                     |                         | muestra un mensaje   |
+  |    |                     |                         | informativo.         |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 21: Historia de usuario 13 - Exportar Datos de Estacionamiento (Versión Detallada).
+
+• Historia de usuario - Visualizar Ocupación desde Interfaz Pública (Versión Detallada)
+
+  +---------------------------------------------------------------------------+
+  | Historia de usuario - Visualizar Ocupación desde Interfaz Pública         |
+  +---------------------------------------------------------------------------+
+  | ID HU:       HU14          | ID Requisito:   RF_07                        |
+  | Nombre:      Visualizar Ocupación desde Interfaz Pública                  |
+  | Descripción: Como conductor o visitante, quiero consultar la              |
+  |              disponibilidad del estacionamiento en tiempo real desde mi   |
+  |              dispositivo móvil, para decidir si ingresar al campus antes  |
+  |              de llegar.                                                   |
+  +---------------------------------------------------------------------------+
+  | Criterios de aceptación:                                                  |
+  +----+---------------------+-------------------------+----------------------+
+  | N° | Nombre              | Contexto                | Resultado            |
+  +----+---------------------+-------------------------+----------------------+
+  | 1  | Consulta pública    | El conductor accede al  | El sistema despliega |
+  |    |                     | sitio web público sin   | disponibilidad con   |
+  |    |                     | autenticación.          | semáforo visual:     |
+  |    |                     |                         | verde (disponible),  |
+  |    |                     |                         | amarillo (cerca del  |
+  |    |                     |                         | límite), rojo        |
+  |    |                     |                         | (completo).          |
+  +----+---------------------+-------------------------+----------------------+
+  | 2  | Sin conexión a      | La base de datos no     | El sistema muestra   |
+  |    | base de datos       | responde.               | un indicador de      |
+  |    |                     |                         | estado sin conexión  |
+  |    |                     |                         | y aconseja consultar |
+  |    |                     |                         | con el personal.     |
+  +----+---------------------+-------------------------+----------------------+
+  Tabla 22: Historia de usuario 14 - Visualizar Ocupación desde Interfaz Pública (Versión Detallada).
+
+5.3 Modelamiento de datos
+Para garantizar la persistencia, integridad y disponibilidad de la información gestionada por 
+el sistema, se ha diseñado un Modelo Entidad-Relación que representa la estructura de la 
+base de datos. El modelo utiliza una visión conceptual abstracta, donde las relaciones entre 
+entidades  definen  los  vínculos  lógicos  sin  saturar  el  diagrama  con  atributos  de 
+implementación  t écnica,  como  las  llaves  foráneas.
+El modelo contempla siete entidades principales interrelacionadas:
+- Roles: Define los perfiles de acceso al sistema (administrador, guardia, encargado), estableciendo la base
+del control de privilegios.
+- Usuarios: Representa a los funcionarios que operan la plataforma, cada uno vinculado a un rol específico
+que delimita sus permisos y vistas disponibles.
+- Zonas: Modela las áreas físicas del estacionamiento (actualmente 'Aula Magna'), registrando su capacidad
+máxima para el cálculo de ocupación.
+- Cámaras: Registra los dispositivos de captura instalados en los portales de acceso, asociando cada
+cámara a una zona y un tipo de evento predeterminado (entrada o salida).
+- Vehículos: Almacena las placas patentes normalizadas junto con los datos del propietario, tipo de vehículo
+y su condición de funcionario institucional.
+- Accesos: Entidad central del modelo que registra cada evento de ingreso y salida vehicular, vinculando la
+patente del vehículo con la zona, cámara, instante de tiempo, nivel de confianza del OCR y la URL de la
+imagen capturada.
+- Incidencias: Gestiona los eventos anómalos (patente ilegible, vehículo mal estacionado, obstrucciones) con
+un ciclo de vida de estados (abierta, en revisión, cerrada) y vínculos opcionales a accesos y vehículos.
+La entidad 'accesos' constituye el eje del modelo, pues concentra la información operativa que alimenta los
+dashboards de ocupación en tiempo real, los reportes históricos y la exportación de datos. Su relación con
+'vehículos' permite la trazabilidad completa de cada automóvil, mientras que su vínculo con 'cámaras' y
+'zonas' posibilita la gestión independiente de múltiples puntos de acceso.
+
+===== PAGE 29 =====
+29
+
+Ilustración 3 Modelo Entidad Relación
+24
+===== PAGE 25 =====
+25
+5.4 Proceso de Negocio Futuro
+Con la implementación del nuevo sistema web de reconocimiento de patentes, el proceso de negocio se
+automatiza considerablemente. El ingreso y salida de vehículos ya no depende del control visual manual de
+los guardias de seguridad ni de la búsqueda improvisada de los conductores. El flujo operativo se define de
+la siguiente manera:
+1. El vehículo se aproxima al acceso del estacionamiento del Aula Magna.
+2. La cámara IP fija captura el flujo de video y el sistema de borde (YOLOv8 + PaddleOCR) detecta y
+reconoce la placa patente del automóvil en menos de medio segundo.
+3. El sistema valida la patente contra la base de datos de vehículos institucionales en Supabase. Si el
+vehículo está registrado, se asocia su perfil. Si no lo está, se registra como vehículo visitante.
+4. Se crea automáticamente un registro de acceso en la tabla 'accesos' con la fecha de entrada, la confianza
+del OCR y la URL de la imagen del frame capturado (almacenada en Supabase Storage).
+5. La ocupación de la zona se actualiza instantáneamente en los paneles de control mediante WebSockets y
+en la vista pública de disponibilidad.
+6. Al salir del recinto, la cámara del portal de salida detecta nuevamente la patente, actualizando el registro
+de acceso correspondiente con la fecha de salida y liberando el cupo del estacionamiento.
+7. Ante cualquier anomalía (patente ilegible, vehículo mal estacionado, etc.), el guardia o encargado puede
+registrar una incidencia vinculada al acceso o al vehículo, realizando un seguimiento digital hasta su
+resolución.
+25
+===== PAGE 26 =====
+26
+5.5 Especificación de los Casos de Uso
+5.5 Especificación de los Casos de Uso
+5.5.1 Actores del Sistema
+Antes de detallar los casos de uso, se identifican formalmente los actores que interactúan con el sistema:
+- Guardia de Seguridad: Funcionario encargado del monitoreo en terreno. Visualiza la ocupación en tiempo real, supervisa el flujo de vehículos detectados por la cámara y registra incidencias operativas.
+- Encargado de Estacionamiento: Responsable administrativo que genera reportes estadísticos de ocupación, gestiona el registro de vehículos institucionales frecuentes, administra las incidencias y exporta datos históricos en formato Excel para informes institucionales.
+- Administrador de TI: Perfil técnico con privilegios completos sobre la configuración del sistema: gestión de usuarios y roles, alta de cámaras y asociación con zonas del campus.
+- Conductor / Visitante: Actor externo que consulta la disponibilidad del estacionamiento en tiempo real a través de la interfaz pública, sin requerir autenticación.
+- Sistema de Visión Artificial (Edge): Actor no humano que ejecuta el pipeline de detección y reconocimiento de patentes de forma autónoma, generando los eventos de acceso que alimentan toda la plataforma.
+
+5.5.2 Descripción de los Casos de Uso
+A continuación, se detalla la especificación de los casos de uso principales del sistema, los cuales describen las interacciones entre los actores y los módulos de la aplicación web de gestión de estacionamiento.
+
+• Caso de uso: Iniciar sesión (CU_01)
+
+Nombre          Iniciar Sesión
+ID              CU_01
+Descripción     Permite el acceso de los usuarios autenticados (guardia, encargado, administrador) mediante credenciales únicas.
+Actor Principal Guardia, Encargado, Administrador.
+Actor Secund.   No hay.
+Pre-Condición   El usuario no debe estar autenticado en el sistema.
+Flujo Principal 1. El usuario accede a la URL de administración del sistema.
+                2. El sistema despliega la interfaz de inicio de sesión.
+                3. El usuario ingresa su correo electrónico y contraseña.
+                4. El sistema realiza la validación de credenciales mediante Supabase Auth.
+                5. El sistema identifica el rol asignado al usuario (administrador, guardia, encargado).
+                6. El sistema redirecciona al usuario al dashboard correspondiente a su rol.
+                7. Finaliza el caso de uso.
+Post-Condición  El usuario se encuentra autenticado con los permisos correspondientes a su perfil.
+Flujo Alterno   3a. El sistema valida las credenciales y determina que son incorrectas. Muestra el mensaje "Credenciales inválidas" y recarga la interfaz de inicio de sesión.
+Tabla 23: Descripción caso de uso: iniciar sesión (CU_01).
+
+• Caso de uso: Ver Ocupación en Tiempo Real (CU_02)
+
+Nombre          Ver Ocupación en Tiempo Real
+ID              CU_02
+Descripción     Permite al guardia de seguridad visualizar la ocupación actual del estacionamiento y los últimos eventos registrados.
+Actor Principal Guardia, Encargado.
+Actor Secund.   Sistema de visión artificial (Edge).
+Pre-Condición   El usuario debe estar autenticado en el sistema.
+Flujo Principal 1. El usuario accede al dashboard principal.
+                2. El sistema consulta las vistas 'resumen_ocupacion_total' y 'accesos_abiertos'.
+                3. El sistema despliega el porcentaje de ocupación, spots libres y la lista de vehículos activos.
+                4. El sistema de visión artificial detecta un nuevo ingreso/salida y actualiza la base de datos Supabase.
+                5. El dashboard recibe la actualización en tiempo real por WebSockets y refresca el contador y la tabla.
+Post-Condición  El usuario mantiene visualización en tiempo real de los datos del recinto.
+Flujo Alterno   No hay.
+Tabla 24: Descripción caso de uso: ver ocupación en tiempo real (CU_02).
+
+• Caso de uso: Generar Reportes y Estadísticas (CU_03)
+
+Nombre          Generar Reportes y Estadísticas
+ID              CU_03
+Descripción     Permite al encargado generar estadísticas de ocupación por rango de fechas para la toma de decisiones operativas.
+Actor Principal Encargado.
+Actor Secund.   No hay.
+Pre-Condición   El usuario debe estar autenticado y poseer rol de encargado.
+Flujo Principal 1. El encargado accede a la sección de reportes del sistema.
+                2. El sistema despliega filtros de búsqueda por rango de fechas (usando el calendario interactivo).
+                3. El encargado selecciona las fechas y oprime "Generar Reporte".
+                4. El sistema realiza el cálculo de KPIs (ocupación máxima, hora pico, tiempo promedio de estadía) y genera los gráficos correspondientes.
+                5. El encargado visualiza los gráficos y la tabla con los datos consolidados.
+Post-Condición  El reporte es generado y visualizado en la pantalla.
+Flujo Alterno   3a. El rango de fechas seleccionado no posee registros de acceso. El sistema muestra la advertencia "No se encontraron registros para el período seleccionado" y mantiene la pantalla limpia.
+Tabla 25: Descripción caso de uso: generar reportes y estadísticas (CU_03).
+
+• Caso de uso: Registrar y Resolver Incidencias (CU_04)
+
+Nombre          Registrar y Resolver Incidencias
+ID              CU_04
+Descripción     Permite registrar eventos anómalos vinculados a patentes o áreas del estacionamiento y realizar el seguimiento de su resolución.
+Actor Principal Guardia, Encargado.
+Actor Secund.   No hay.
+Pre-Condición   El usuario debe estar autenticado.
+Flujo Principal 1. El usuario presiona el botón "Registrar Incidencia" en el dashboard.
+                2. El sistema despliega un formulario solicitando tipo de incidencia (patente ilegible, vehículo mal estacionado, obstrucción, etc.), descripción, patente del vehículo (opcional) y zona (opcional).
+                3. El usuario completa los campos y envía el formulario.
+                4. El sistema registra la incidencia con estado 'abierta' y fecha de creación.
+                5. El encargado visualiza la incidencia en su panel, pudiendo cambiar el estado a 'en_revision' o 'cerrada', registrando la fecha de cierre.
+Post-Condición  La incidencia queda registrada y actualizada en la base de datos.
+Flujo Alterno   3a. El usuario intenta ingresar un formato de patente inválido en la incidencia. El sistema resalta el error y solicita corrección antes de guardar.
+Tabla 26: Descripción caso de uso: registrar y resolver incidencias (CU_04).
+
+• Caso de uso: Administrar Usuarios y Roles (CU_05)
+
+Nombre          Administrar Usuarios y Roles
+ID              CU_05
+Descripción     Permite al administrador crear, modificar o desactivar cuentas de usuarios y definir sus privilegios en el sistema.
+Actor Principal Administrador.
+Actor Secund.   No hay.
+Pre-Condición   El administrador debe estar autenticado con rol de administrador.
+Flujo Principal 1. El administrador accede al módulo de configuración de usuarios.
+                2. El sistema despliega la lista completa de usuarios registrados.
+                3. El administrador oprime "Crear Usuario" e ingresa nombre, email, selecciona el rol (administrador, guardia, encargado) y establece el estado inicial.
+                4. El sistema registra el nuevo usuario en la tabla 'usuarios' y le asigna el rol correspondiente.
+                5. El sistema notifica la creación.
+Post-Condición  Usuario registrado con privilegios asignados.
+Flujo Alterno   3a. El email del nuevo usuario ya existe en el sistema. El sistema cancela el registro y muestra el mensaje "El correo ingresado ya se encuentra registrado".
+Tabla 27: Descripción caso de uso: administrar usuarios y roles (CU_05).
+
+• Caso de uso: Exportar Datos de Estacionamiento (CU_06)
+
+Nombre          Exportar Datos de Estacionamiento
+ID              CU_06
+Descripción     Permite descargar la información de accesos e incidencias filtrada en formato compatible con hojas de cálculo (CSV/Excel).
+Actor Principal Encargado.
+Actor Secund.   No hay.
+Pre-Condición   El usuario debe estar autenticado con rol de encargado.
+Flujo Principal 1. El encargado aplica filtros de búsqueda sobre el historial de accesos.
+                2. El encargado presiona el botón "Exportar a Excel" (o CSV).
+                3. El sistema compila los registros coincidentes de la base de datos.
+                4. El sistema genera y descarga automáticamente el archivo al computador del usuario.
+Post-Condición  El encargado obtiene un archivo local con los datos de acceso.
+Flujo Alterno   3a. El conjunto de datos a exportar está vacío. El sistema deshabilita el botón de exportación y muestra un mensaje informativo.
+Tabla 28: Descripción caso de uso: exportar datos de estacionamiento (CU_06).
+
+• Caso de uso: Visualizar Ocupación desde Interfaz Pública (CU_07)
+
+Nombre          Visualizar Ocupación desde Interfaz Pública
+ID              CU_07
+Descripción     Permite a conductores externos y visitantes consultar la disponibilidad del estacionamiento en tiempo real desde sus dispositivos móviles antes de ingresar.
+Actor Principal Usuario Visitante / Conductor.
+Actor Secund.   No hay.
+Pre-Condición   Ninguna. La interfaz es pública.
+Flujo Principal 1. El conductor ingresa al sitio web público del estacionamiento.
+                2. El sistema consulta la vista 'resumen_ocupacion_total'.
+                3. El sistema despliega una interfaz simplificada indicando si existen cupos disponibles (verde), si está cerca del límite (amarillo) o si está completo (rojo).
+                4. El conductor planifica su llegada o decide estacionar fuera del recinto según la información.
+                5. Finaliza el caso de uso.
+Post-Condición  El conductor obtiene información veraz sobre el estacionamiento en tiempo real.
+Flujo Alterno   3a. La base de datos no responde. El sistema muestra un indicador de estado sin conexión y aconseja consultar con el personal de acceso.
+Tabla 29: Descripción caso de uso: visualizar ocupación pública (CU_07).
+
+El diagrama de casos de uso refleja la interacción de los cuatro roles en la plataforma. El Guardia de seguridad interactúa directamente con el tablero de ocupación en tiempo real y registra incidencias. El Encargado monitorea las estadísticas de ocupación, gestiona el listado de vehículos registrados e incidencias y exporta reportes en formato compatible con Excel. El Administrador de TI tiene privilegios completos sobre usuarios, configuración de cámaras y asignación de roles. Finalmente, el Conductor o Visitante accede a una pantalla pública simplificada que indica la disponibilidad de cupos en tiempo real para optimizar la toma de decisiones al ingresar al campus.
+
+6 DISEÑO DEL SISTEMA
+6.1 Diseño Físico de la Base de Datos
+El diseño físico de la base de datos se implementó en PostgreSQL a través del servicio gestionado de
+Supabase. A continuación se detallan las tablas y tipos de datos que componen el esquema relacional:
+1. Tabla roles
+- id (bigserial, clave primaria): Identificador correlativo del rol.
+- nombre (varchar(50), único, no nulo): Nombre único del rol ('administrador', 'guardia', 'encargado').
+- descripcion (text): Descripción detallada del rol.
+- created_at (timestamptz, default now()): Fecha de registro.
+2. Tabla usuarios
+- id (uuid, clave primaria, default gen_random_uuid()): Identificador único.
+- nombre (varchar(120), no nulo): Nombre completo del funcionario.
+- email (varchar(120), único, no nulo): Correo electrónico para acceso.
+- rol_id (bigint, FK a roles): Rol asignado.
+- estado (boolean, default true): Estado activo o inactivo.
+
+===== PAGE 36 =====
+36
+
+- created_at (timestamptz, default now()): Fecha de creación.
+3. Tabla zonas
+- id (bigserial, clave primaria): Identificador de la zona.
+- nombre (varchar(100), único, no nulo): Nombre de la zona ('Aula Magna').
+- descripcion (text): Detalles del área.
+- capacidad (integer, check >= 0): Capacidad máxima de vehículos.
+- estado (boolean, default true): Disponibilidad de la zona.
+- created_at (timestamptz, default now()): Fecha de registro.
+4. Tabla camaras
+- id (bigserial, clave primaria): Identificador de la cámara.
+- camera_id (varchar(100), único, no nulo): Código lógico para el pipeline OCR.
+- nombre (varchar(120)): Nombre del portal físico.
+- zona_id (bigint, FK a zonas): Zona a la que supervisa.
+- tipo_evento_default (varchar(20), check in ('entrada', 'salida')): Acción por defecto.
+- estado (boolean, default true): Estado operativo.
+- created_at (timestamptz, default now()): Fecha de creación.
+5. Tabla vehiculos
+- patente (varchar(10), clave primaria): Placa patente normalizada del vehículo.
+- tipo (varchar(50)): Tipo de vehículo (automóvil, camioneta, furgón).
+- funcionario (boolean, default false): Indica si pertenece a personal UBB.
+- propietario_nombre (varchar(120)): Nombre del dueño del vehículo.
+- observaciones (text): Comentarios adicionales.
+- created_at (timestamptz, default now()): Fecha de registro.
+30
+===== PAGE 31 =====
+31
+6. Tabla accesos
+- id (bigserial, clave primaria): Registro histórico del acceso.
+
+===== PAGE 37 =====
+37
+
+- vehiculo_patente (varchar(10), FK a vehiculos, no nulo): Patente asociada.
+- zona_id (bigint, FK a zonas): Zona asociada al acceso.
+- camera_id (varchar(100), no nulo): Identificador de cámara de entrada.
+- fecha_entrada (timestamptz): Fecha y hora exacta de entrada.
+- confianza_ocr (double precision): Porcentaje de confianza del motor OCR en la entrada.
+- imagen_origen (text): URL de la imagen del frame de entrada en Supabase Storage.
+- fecha_salida (timestamptz): Fecha y hora exacta de salida.
+- camera_salida_id (varchar(100)): Identificador de cámara de salida.
+- confianza_ocr_salida (double precision): Confianza del OCR en la salida.
+- imagen_origen_salida (text): URL de la imagen del frame de salida.
+- creado_por (uuid, FK a usuarios): Usuario que supervisó el registro.
+- created_at (timestamptz, default now()): Fecha de creación.
+7. Tabla incidencias
+- id (bigserial, clave primaria): Identificador correlativo.
+- acceso_id (bigint, FK a accesos, nullable): Enlace opcional al acceso activo.
+- vehiculo_patente (varchar(10), FK a vehiculos, nullable): Patente asociada.
+- zona_id (bigint, FK a zonas, nullable): Zona asociada.
+- usuario_id (uuid, FK a usuarios, nullable): Usuario que reporta.
+- tipo (varchar(80), no nulo): Tipo de incidencia (ej. 'patente no reconocida').
+- descripcion (text, no nulo): Descripción detallada.
+- estado (varchar(30), check in ('abierta', 'en_revision', 'cerrada')): Estado.
+- fecha_creacion (timestamptz, default now()): Fecha del reporte.
+- fecha_cierre (timestamptz): Fecha de resolución.
+Índices y Optimización
+Para garantizar consultas veloces y un rendimiento óptimo de los dashboards, se crearon los siguientes
+índices específicos:
+- idx_accesos_patente: Acelera las búsquedas por patente.
+- idx_accesos_fecha_entrada y idx_accesos_fecha_salida: Optimizan los reportes históricos por fechas.
+- idx_accesos_abiertos (Filtro parcial 'where fecha_salida is null'): Indexa de forma extremadamente eficiente
+los vehículos que están dentro del recinto, acelerando la renderización de la ocupación en tiempo real.
+
+===== PAGE 38 =====
+38
+
+Trade-Offs de Normalización (Tercera Forma Normal - 3NF)
+La inclusión de las columnas 'zona_id' y 'vehiculo_patente' en la tabla 'incidencias' constituye técnicamente
+una redundancia de datos (desnormalización de 3NF) debido a que ambos valores podrían deducirse
+mediante un JOIN con la tabla 'accesos' si 'acceso_id' estuviera siempre definido. Sin embargo, se optó por
+un diseño flexible para permitir la creación de incidencias generales independientes (por ejemplo, fallos en la
+barrera física de una zona o un vehículo mal estacionado reportado por un guardia sin que haya cruzado la
+cámara).
+31
+===== PAGE 32 =====
+32
+6.2 Diseño de Interfaz y Navegación
+6.2.1 Diseño de Interfaz
+El diseño de interfaces web se estructuró de forma modular y responsiva para garantizar una correcta
+visualización en cualquier dispositivo (computador, tablet y smartphone). Se definieron tres interfaces de
+control y una pública:
+1. Interfaz del Dashboard del Guardia (GuardDashboard.jsx):
+El panel del guardia está diseñado para operaciones rápidas en terreno. Cuenta con una barra lateral
+izquierda de navegación (sidebar) y tres secciones principales:
+- Panel superior de ocupación: Muestra mediante un widget circular el porcentaje actual de ocupación (ej.
+84%) y una barra de progreso que cambia de color de verde a rojo a medida que se agotan los cupos,
+indicando con claridad las plazas ocupadas y las disponibles.
+- Monitor de video: Despliega el frame de la cámara IP y un recuadro dinámico con la última patente
+detectada, incluyendo la hora y el nivel de confianza del OCR.
+- Tabla de vehículos estacionados: Muestra una lista interactiva de patentes activas dentro del recinto, con
+fecha y hora de entrada. Cuenta con un botón de acceso rápido para crear incidencias o forzar salida
+manual en caso de que un vehículo no haya sido registrado en la salida.
+2. Interfaz del Dashboard del Encargado (ManagerDashboard.jsx):
+Destinado a la gestión administrativa, este panel ofrece una visualización integral y herramientas avanzadas
+de analítica:
+
+===== PAGE 39 =====
+39
+
+- Fichas de indicadores clave (KPIs): Tarjetas que resumen el total de vehículos frecuentes registrados,
+eventos de acceso acumulados, vehículos actualmente en el campus e incidencias activas sin resolver.
+- Gráficos analíticos: Un gráfico de líneas dinámico que representa la curva de ocupación por horas del día
+en curso (detectando horas peak) y un gráfico de barras que compara la rotación diaria de vehículos durante
+la semana.
+- Buscador histórico: Una grilla interactiva con paginación que permite realizar búsquedas por patente, filtrar
+por fechas empleando un calendario personalizado con etiquetas flotantes y exportar los resultados a Excel.
+- Gestión de vehículos e incidencias: Listados dedicados que facilitan añadir patentes frecuentes del
+personal UBB o cambiar el estado de incidencias.
+32
+===== PAGE 33 =====
+33
+3. Interfaz del Panel de Configuración del Administrador (AdminSettings.jsx):
+Permite administrar la infraestructura de hardware y software del sistema. El administrador puede dar de alta
+nuevos usuarios (guardias o encargados), asignar roles, activar o desactivar credenciales y registrar nuevas
+cámaras asociadas a zonas específicas del campus.
+4. Interfaz Pública de Disponibilidad (PublicStatus.jsx):
+Es una vista simplificada sin necesidad de inicio de sesión, optimizada para smartphones. Presenta un
+diseño limpio basado en colores de semáforo (verde, amarillo, rojo) que indica el estado del estacionamiento
+al instante, permitiendo a los conductores externos anticipar la disponibilidad de plazas antes de ingresar a
+la universidad.
+6.2.2 Diseño de Navegación
+El mapa de navegación del sistema define los flujos que un usuario autenticado puede seguir al interactuar
+con la aplicación. Cada perfil tiene un flujo de navegación restringido de acuerdo con sus permisos:
+- Perfil Guardia:
+Inicio de Sesión -> Dashboard de Guardia -> [Modal Registrar Incidencia] | [Forzar Salida]
+                                      -> Cerrar Sesión
+
+===== PAGE 40 =====
+40
+
+- Perfil Encargado:
+Inicio de Sesión -> Dashboard del Encargado -> Vista de Reportes y Gráficos
+                                           -> Registro de Vehículos Institucionales
+                                           -> Historial de Accesos (Filtros y exportación a Excel)
+                                           -> Panel de Gestión de Incidencias
+                                           -> Cerrar Sesión
+- Perfil Administrador:
+Inicio de Sesión -> Panel de Administración -> Gestión de Usuarios y Roles
+                                           -> Configuración de Cámaras y Zonas
+                                           -> Cerrar Sesión
+- Conductor Externo:
+URL Pública -> Pantalla de Disponibilidad en Tiempo Real (Sin autenticación)
+Las transiciones de navegación se realizan instantáneamente mediante React Router, asegurando una
+experiencia fluida y sin recargas de página completas.
+33
+===== PAGE 34 =====
+34
+7 IMPLEMENTACIÓN Y ARQUITECTURA TÉCNICA DEL PIPELINE DE VISIÓN Y OCR
+7.1 Optimización de la Detección y Lectura de Patentes
+Para la implementación del reconocimiento de patentes, se diseñó un pipeline de tres etapas desacopladas.
+La primera etapa emplea el modelo detector YOLOv8n, el cual localiza con precisión la región de interés
+(ROI) de la placa patente dentro del frame capturado. La segunda etapa toma este recorte y lo procesa
+mediante el motor PaddleOCR 3.5.0 para extraer la cadena alfanumérica. La tercera etapa, de
+postprocesamiento, aplica heurísticas de corrección y validación de formato chileno para transformar la
+lectura cruda del OCR en una patente válida.
+Durante las pruebas con imágenes reales en el Campus Fernando May, se detectó un cuello de botella
+debido a los preprocesadores integrados de PaddleX (como la de-ondulación de páginas UVDoc o
+
+===== PAGE 41 =====
+41
+
+clasificadores de orientación). Al procesar recortes pequeños de patentes, estos algoritmos deformaban los
+caracteres y disminuían la legibilidad, forzando al sistema a activar un fallback sobre la imagen completa (lo
+que aumentaba el tiempo de ejecución a ~9.5 segundos por vehículo).
+Al desactivar de forma explícita estos preprocesadores redundantes (módulo UVDoc, doc_ori y textline_ori),
+el OCR recibe el recorte directo limpio de YOLOv8n y realiza un redimensionamiento bicúbico en BGR
+(Smart Resize), manteniendo los tres canales de color originales. Esto redujo el tiempo de inferencia del
+OCR sobre los recortes a solo 0.39 segundos promedio.
+La etapa de postprocesamiento constituye un aporte significativo del proyecto. El módulo implementa las
+siguientes técnicas:
+- Validación estricta de formato chileno: Se definen dos expresiones regulares que cubren el formato de
+patente nueva (cuatro consonantes autorizadas + dos dígitos, ej. BCDF12) y el formato antiguo (dos letras +
+cuatro dígitos, ej. AB1234). Solo las 18 consonantes legales del sistema chileno son admitidas en el formato
+nuevo.
+- Mapas de corrección por confusión geométrica: El OCR frecuentemente confunde caracteres visualmente
+similares (por ejemplo, '0' con 'D', '1' con 'L', 'B' con '8'). El sistema mantiene tablas de sustitución por
+posición, generando variantes corregidas y puntuándolas según su afinidad con el formato oficial.
+- Detección de inversión de texto: Para imágenes donde el OCR lee los caracteres de derecha a izquierda, el
+sistema evalúa la versión invertida de cada candidato y la retiene si coincide con un patrón estricto.
+- Preprocesamiento adaptativo de contraste: Si el recorte de la patente presenta fondo oscuro con texto claro
+(patentes diplomáticas o de zona franca), el sistema invierte automáticamente los colores antes de enviar el
+recorte al OCR.
+7.2 Arquitectura en el Borde y Sincronización en Tiempo Real
+El sistema se estructuró bajo una arquitectura híbrida Edge-Cloud para optimizar el rendimiento y el
+consumo de ancho de banda en terreno. El procesamiento de visión artificial (YOLOv8 + PaddleOCR) se
+realiza de forma local en la máquina de captura (computador del estacionamiento). Esto evita transmitir
+video continuo en alta definición por la red móvil o universitaria, eliminando problemas de lag o caídas por
+inestabilidad de la señal.
+El script principal de operación (continuous_inference.py) implementa una arquitectura multihilo con tres
+hilos concurrentes:
+
+===== PAGE 42 =====
+42
+
+- Hilo Productor (Grabber): Captura frames de la cámara (webcam USB o cámara IP) de forma continua,
+alimentando un buffer compartido. Garantiza una tasa de visualización fluida de ~30 FPS independiente del
+tiempo de inferencia del OCR.
+- Hilo Consumidor (Worker): Procesa cada frame disponible ejecutando primero el detector YOLOv8 (~7ms
+en GPU) para obtener el bounding box, y luego el OCR según un intervalo configurable de 0.5 segundos.
+Esto permite que la detección visual sea instantánea mientras el reconocimiento de caracteres se ejecuta sin
+congelar la interfaz. Incorpora un mecanismo de cooldown (5 segundos por defecto) para evitar registros
+duplicados de la misma patente.
+- Hilo de Sincronización Offline: Ejecuta la cola de sincronización cada 20 segundos (detallado en la sección
+7.3).
+Cuando una patente es reconocida y validada contra los patrones estrictos chilenos, el sistema de borde
+comprime el frame anotado en formato JPG (pesando aproximadamente 150 KB) y realiza una petición
+REST segura al servicio de almacenamiento (Supabase Storage) y base de datos relacional (Supabase
+Database). El flujo de persistencia es el siguiente:
+1. El hilo consumidor detecta una patente válida y llama al método persist_results del pipeline.
+2. El método anota el frame con el bounding box y la patente leída, lo comprime en JPG y lo sube al bucket
+'access-images' de Supabase Storage.
+3. Se crea un registro en la tabla 'vehiculos' (si la patente no existía previamente) y se registra el acceso en
+la tabla 'accesos' con la confianza del OCR, la URL pública de la imagen y la marca de tiempo. El tipo de
+evento puede ser 'entrada', 'salida' o 'auto' (el sistema determina automáticamente si es entrada o salida
+consultando si existe un acceso abierto para esa patente).
+4. El Frontend (React + Vite) en el computador del encargado recibe los datos en tiempo real mediante una
+conexión activa de WebSockets proporcionada por el canal Realtime de Supabase.
+34
+===== PAGE 35 =====
+35
+7.3 Resistencia a Fallos y Sincronización Offline
+Un aspecto crítico en la factibilidad operativa es el comportamiento del sistema cuando ocurre una
+interrupción del suministro eléctrico o caídas del servicio de red móvil o universitaria. Para garantizar que
+ningún vehículo pase desapercibido, el pipeline de borde incluye un mecanismo local de tolerancia a fallos
+
+===== PAGE 43 =====
+43
+
+implementado en el módulo offline_queue.py, estructurado en tres componentes:
+1. Buffer Local de Eventos (Cola JSON Persistente)
+Cuando el método persist_results del pipeline detecta que la API de Supabase responde con un error de red
+(excepción HTTP, código de estado no exitoso o timeout), el sistema no detiene la cámara. En su lugar, el
+registro de acceso (patente, tipo de evento, cámara, confianza del OCR y marca de tiempo en formato ISO
+8601) se serializa y almacena localmente en un archivo JSON persistente ubicado en la ruta
+data/offline/offline_queue.json del computador de borde. Asimismo, la imagen del frame correspondiente se
+guarda en formato JPG en la carpeta data/offline/images/ con un nombre generado a partir de la cámara, la
+fecha y la patente detectada.
+2. Hilo de Sincronización (Sync Thread)
+El script continuous_inference.py ejecuta un hilo de sincronización concurrente que opera de forma continua
+en segundo plano. Este hilo intenta sincronizar la cola local cada 20 segundos. Cuando detecta que la
+conectividad ha sido restablecida, inicia la sincronización secuencial de los eventos pendientes:
+- Lee los registros del archivo JSON de forma secuencial (FIFO), preservando el orden cronológico original.
+- Sube cada imagen guardada localmente al bucket 'access-images' de Supabase Storage mediante la API
+REST.
+- Inserta el registro de acceso en Supabase Database con su fecha de creación original (no la fecha de
+sincronización), asegurando la integridad temporal de los datos.
+- Elimina el registro del archivo JSON y borra el archivo de imagen temporal del disco local.
+- Si algún evento falla durante la sincronización, se mantiene en la cola para el siguiente intento,
+garantizando que ningún registro se pierda.
+3. Manejo de Conflictos de Estado
+Si el internet falla durante horas, es posible que el mismo vehículo haya ingresado y salido del recinto. El hilo
+de sincronización procesa los eventos en orden cronológico estricto, de modo que las entradas y salidas se
+enlazan correctamente en Supabase en el mismo orden en que ocurrieron, evitando inconsistencias en los
+tableros de control de ocupación.
+Adicionalmente, el script de inferencia continua incluye un módulo de mantenimiento automático que, cada
+24 horas, elimina las imágenes de accesos con más de 30 días de antigüedad del bucket de Supabase
+Storage, liberando espacio de almacenamiento en la nube de forma transparente para el operador.
+
+===== PAGE 44 =====
+44
+
+35
+===== PAGE 36 =====
+36
+8 PRUEBAS, BENCHMARK Y EVALUACIÓN DE RENDIMIENTO
+8.1 Resultados del Benchmark A/B sobre Imágenes Reales
+Se realizó un benchmark formal comparando el rendimiento del reconocimiento antes y después de la
+optimización de preprocesadores sobre un lote de 90 fotografías del estacionamiento Aula Magna:
+Tabla 30: Comparación de rendimiento del OCR (A/B Benchmark)
+-----------------------------------------------------------------------
+Métrica Evaluada              Método A (Con Preproc)  Método B (Optimizado)
+-----------------------------------------------------------------------
+Patentes Leídas Exitosas      27 / 90 (30.0%)         44 / 90 (48.8%)
+Confianza Promedio del OCR    90.4%                   89.9%
+Tiempo de Inferencia (s)      1.27 s                  0.39 s
+Speedup Computacional         1.0x                    3.3x
+-----------------------------------------------------------------------
+La optimización logró un aumento del 63% en la tasa de detección de patentes legibles debido a la
+eliminación de la deformación artificial del texto del recorte, reduciendo la latencia de procesamiento a una
+tercera parte de la original. En producción, esto garantiza que los vehículos sean registrados en menos de
+medio segundo tras detenerse frente a la cámara, permitiendo que la ocupación se mantenga fiel a la
+realidad.
+8.2 Elementos de Prueba
+Los módulos sometidos a pruebas fueron los siguientes:
+- Pipeline de Visión y OCR (vision_ocr_pipeline): Módulo de detección de placas con YOLOv8,
+reconocimiento de caracteres con PaddleOCR y postprocesamiento de patentes chilenas.
+- Cola Offline (offline_queue.py): Módulo de tolerancia a fallos con almacenamiento local y sincronización
+automática.
+- Frontend - Dashboard del Guardia (GuardDashboard.jsx): Panel de monitoreo en tiempo real con widget de
+
+===== PAGE 45 =====
+45
+
+ocupación, tabla de vehículos y registro de incidencias.
+- Frontend - Dashboard del Encargado (ManagerDashboard.jsx): Panel administrativo con KPIs, gráficos
+analíticos, exportación a Excel y gestión de vehículos e incidencias.
+- Frontend - Panel de Administración (AdminSettings.jsx): Módulo de gestión de usuarios, roles y
+configuración de cámaras.
+- Frontend - Vista Pública (PublicStatus.jsx): Interfaz simplificada de disponibilidad en tiempo real.
+- Autenticación y Autorización (Supabase Auth + RLS): Políticas de seguridad por filas y validación de tokens
+JWT.
+8.3 Especificación de las Pruebas de Software
+El proceso de aseguramiento de calidad contempló la definición y ejecución de pruebas del sistema, de
+seguridad y de usabilidad, orientadas a validar el comportamiento del software ante condiciones normales y
+límites.
+8.3.1 Pruebas de Sistema
+Prueba de sistema
+Característica a probar  Funcionalidad.
+Nivel de prueba          Sistema.
+Objetivo de la prueba    Asegurar que el pipeline de visión artificial y la base de datos interactúen
+correctamente para el registro automático y manual de accesos.
+Enfoque de diseño        Caja negra.
+Técnicas de prueba       Se utilizarán datos válidos e inválidos, para verificar que:
+                         - El 100% de los accesos válidos inserta el registro.
+                         - Los fallbacks manuales se activan si la confianza es baja.
+                         - Los datos exportados a Excel no pierden filas ni consistencia.
+Actividades de prueba    - Ejecución de continuous_inference.py con video en vivo.
+                         - Comprobar inserción automática y notificación por WebSockets.
+                         - Probar el ingreso de patentes con caracteres incorrectos en el formulario.
+Criterios cumplimiento   El resultado obtenido coincide con lo esperado y los errores se informan de
+inmediato en la interfaz.
+Tabla 31: Especificación pruebas de sistema.
+36
+
+===== PAGE 46 =====
+46
+
+===== PAGE 37 =====
+37
+8.3.2 Pruebas de Seguridad
+Prueba de seguridad
+Característica a probar  Seguridad y Control de Acceso.
+Nivel de prueba          Sistema.
+Objetivo de la prueba    Garantizar la protección de datos personales y restringir el acceso a usuarios no
+autorizados mediante políticas RLS (Row Level Security).
+Enfoque de diseño        Caja negra e inspección de código.
+Técnicas de prueba       Se utilizarán datos válidos e inválidos, para verificar que:
+                         - Se deniega acceso sin JWT válido.
+                         - Se restringe la escritura a perfiles autorizados (administrador).
+                         - Se validan los alcances de la clave anónima de Supabase.
+Actividades de prueba    - Intentar hacer peticiones SELECT/UPDATE a la tabla 'usuarios' sin token.
+                         - Acceder a la URL del encargado con una cuenta de guardia.
+                         - Evaluar la seguridad de la clave anónima del cliente Supabase.
+Criterios cumplimiento   Bloqueo inmediato de solicitudes no firmadas con error 401/403.
+Tabla 32: Especificación pruebas de seguridad.
+8.3.3 Pruebas de Usabilidad
+Prueba de usabilidad
+Característica a probar  Interfaz y Experiencia de Usuario.
+Nivel de prueba          Aceptación.
+Objetivo de la prueba    Determinar qué tan sencilla y rápida es de utilizar la plataforma web por parte de los
+guardias de seguridad y encargados.
+Enfoque de diseño        Caja negra.
+Técnicas de prueba       - Pruebas de usabilidad en dispositivos móviles y de escritorio.
+                         - Medición del tiempo de respuesta y uso de teclado.
+                         - Aplicación de encuestas de satisfacción.
+
+===== PAGE 47 =====
+47
+
+Actividades de prueba    - Solicitar al guardia registrar una incidencia y forzar una salida.
+                         - Usar la tecla ESC para cerrar modales y comprobar si responde.
+                         - Comprobar responsividad de los calendarios flotantes en pantallas táctiles.
+Criterios cumplimiento   Obtención de un nivel de aprobación superior al 80% en la encuesta.
+Tabla 33: Especificación pruebas de usabilidad.
+37
+===== PAGE 38 =====
+38
+9 CONCLUSIONES Y TRABAJO FUTURO
+La implementación de un sistema web basado en visión por computadora para la gestión de
+estacionamientos en el Campus Fernando May de la Universidad del Bío-Bío demuestra que es viable
+integrar herramientas tecnológicas avanzadas de bajo costo para optimizar recursos físicos tradicionales.
+Desde el punto de vista técnico, el uso de YOLOv8 para la detección de placas y PaddleOCR para el
+reconocimiento de caracteres proporciona una tasa de acierto robusta y tiempos de respuesta inferiores a
+medio segundo. Esto se logró gracias a la desactivación de preprocesadores redundantes del OCR, lo que
+posibilitó un speedup computacional de 3.3x, permitiendo ejecutar inferencia continua en hardware local
+modesto sin depender de costosos servidores en la nube.
+Desde el punto de vista financiero y operativo, el análisis de factibilidad arrojó un VAN positivo en un
+horizonte de 5 años con un ahorro neto de tiempo estimado en 7.5 horas semanales para el personal
+encargado, eliminando la necesidad de planillas de papel, registros manuales e improvisación en la
+resolución de incidencias. La resistencia a fallos local mediante una cola JSON persistente y un hilo de
+sincronización automática asegura la robustez del sistema frente a cortes de energía y caídas del servicio de
+internet.
+Como trabajo futuro, se plantean las siguientes líneas de desarrollo:
+1. Ampliación a múltiples zonas del campus: Integrar cámaras adicionales en otros estacionamientos del
+campus (como Facultad de Ingeniería o Ciencias) gestionando múltiples contadores de ocupación
+independientes desde una misma base de datos centralizada.
+2. Integración de Notificaciones en Tiempo Real: Implementar notificaciones automáticas vía correo
+
+===== PAGE 48 =====
+48
+
+electrónico o mensajería instantánea hacia los conductores registrados cuando su vehículo ingrese al
+campus o cuando posea incidencias activas pendientes.
+3. Automatización de Barreras de Acceso: Conectar el resultado del pipeline OCR con un controlador
+Arduino o Raspberry Pi para activar de forma automática la apertura y cierre de las barreras del
+estacionamiento a los funcionarios registrados, agilizando el flujo en horas punta.
+38
+===== PAGE 39 =====
+39
+10 REFERENCIAS BIBLIOGRÁFICAS
+[1] G. Jocher, A. Chaurasia, and J. Qiu, "YOLO by Ultralytics," Jan. 2023. [Online]. Available:
+https://github.com/ultralytics/ultralytics (Repositorio oficial de YOLOv8 para la detección y delimitación de
+placas vehiculares).
+[2] Y. Du et al., "PP-OCR: A practical ultra-lightweight OCR system," arXiv preprint arXiv:2009.09941, Sep.
+2020. [Online]. Available: https://github.com/PaddlePaddle/PaddleOCR (Documentación del motor de
+reconocimiento óptico de caracteres multilingüe y ultra liviano).
+[3] A. Paszke et al., "PyTorch: An imperative style, high-performance deep learning library," in Advances in
+Neural Information Processing Systems 32 (NeurIPS), 2019, pp. 8024-8035. [Online]. Available:
+https://pytorch.org (Biblioteca de desarrollo para modelos de aprendizaje profundo y aceleración en GPU
+CUDA).
+[4] G. Bradski, "The OpenCV Library," Dr. Dobb's Journal of Software Tools, vol. 25, no. 11, pp. 120-125,
+Nov. 2000. [Online]. Available: https://opencv.org (Biblioteca de visión por computadora para procesamiento
+digital de imágenes y redimensionamiento bicúbico).
+[5] Supabase Inc., "Supabase Open Source Firebase Alternative," 2020. [Online]. Available:
+https://supabase.com (Servicio de base de datos relacional PostgreSQL con soporte de WebSockets para
+actualizaciones de datos en tiempo real).
+[6] React Core Team, "React: A JavaScript library for building user interfaces," 2013. [Online]. Available:
+
+===== PAGE 49 =====
+49
+
+https://react.dev (Biblioteca de JavaScript para el diseño de componentes interactivos y SPA del frontend).
+[7] I. Sommerville, "Software Engineering," 9th ed., Addison-Wesley, 2011. [Online]. Available:
+http://artemisa.unicauca.edu.co/~cardila/Libro_Sommerville_9.pdf (Libro de referencia académica para
+procesos de desarrollo e ingeniería de software).
+[8] Supabase Team, "Row Level Security (RLS) in PostgreSQL," 2021. [Online]. Available:
+https://supabase.com/docs/guides/auth/row-level-security (Documentación sobre políticas de control de
+accesos directos de usuarios en bases de datos).
+39
+===== PAGE 40 =====
+40
+11 ANEXOS
+En esta sección se detallan las representaciones esquemáticas de las principales pantallas que componen la
+aplicación web del sistema de gestión de estacionamiento.
+11.1 Módulo del Guardia
+El dashboard del guardia de seguridad se centra en la supervisión de accesos en tiempo real.
+- Widget Circular de Ocupación: Muestra el estado del recinto (ej. '84% Completo') con indicadores visuales
+interactivos. Cambia de color dinámicamente según la disponibilidad.
+- Monitor de Cámara: Presenta un contenedor del flujo de video con capturas de la placa patente procesada
+en primer plano.
+- Tabla de Vehículos Estacionados: Grilla simple con columnas: Patente, Hora de Entrada, Cámara de
+Ingreso y Acciones. El guardia puede pulsar en 'Incidencia' para abrir un modal de registro o en 'Registrar
+Salida' para cerrar el acceso de forma manual.
+Ilustración 4: Estructura del Dashboard de Guardia y modal de incidencias.
+11.2 Módulo del Encargado
+El encargado dispone de una interfaz analítica con mayor densidad de información.
+- Tarjetas de KPIs: Cajas en la parte superior que indican total de autos estacionados hoy, incidencias
+
+===== PAGE 50 =====
+50
+
+activas e ingresos frecuentes.
+- Historial de Accesos y Filtros: Tabla paginada que incluye un campo de búsqueda por texto (patente) y un
+selector de fechas. Permite descargar la lista de accesos filtrados en formato Excel a través del botón
+'Exportar datos'.
+- Registro de Vehículos Frecuentes: Formulario interno para añadir la patente, tipo de auto y datos del
+propietario (funcionario UBB).
+Ilustración 5: Estructura del Dashboard del Encargado y grilla de reportes.
+11.3 Pantalla Pública
+Una interfaz optimizada para smartphones que no requiere login. Presenta una tarjeta con la ocupación total
+en formato semáforo: Verde ('Estacionamiento Libre'), Amarillo ('Estacionamiento Casi Lleno') y Rojo
+('Estacionamiento Completo').
+Ilustración 6: Estructura de la pantalla de visualización pública.
+40

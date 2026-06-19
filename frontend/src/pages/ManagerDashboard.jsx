@@ -749,6 +749,25 @@ export const ManagerDashboard = () => {
     }
   };
 
+  const exportVehiclesReport = () => {
+    let csvContent = '\uFEFF'; // UTF-8 BOM para soporte directo de Excel en español
+    csvContent += 'Patente,Propietario,Observaciones,Fecha Registro\n';
+    
+    vehicles.forEach(veh => {
+      const fRegistro = veh.created_at ? format(new Date(veh.created_at), 'yyyy-MM-dd HH:mm:ss') : '';
+      csvContent += `"${veh.patente}","${veh.propietario_nombre || ''}","${(veh.observaciones || '').replace(/"/g, '""')}","${fRegistro}"\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `reporte_patentes_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Pagination computations for Vehicles
   const filteredVehicles = vehicles.filter(veh => 
     veh.patente.toLowerCase().includes(searchVehicle.toLowerCase()) ||
@@ -908,6 +927,9 @@ export const ManagerDashboard = () => {
                 }}
               />
             </div>
+            <button className="btn btn-secondary" onClick={exportVehiclesReport} style={{ height: '38px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Download size={18} /> Exportar Patentes
+            </button>
             <button className="btn btn-primary" onClick={() => handleOpenVehicleModal(null)}>
               <Plus size={18} /> Vincular Vehículo
             </button>

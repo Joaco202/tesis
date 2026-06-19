@@ -1,355 +1,297 @@
 === PDF METADATA ===
-Number of pages: 91
+Number of pages: 83
 
-=== FIRST 20 PAGES ===
+=== FIRST 15 PAGES ===
 
 --- PAGE 1 ---
-F A C U L T A D D E C I E N C I A S E M P R E S A R I A L E S 
-E S C U E L A I N G E N I E R Í A C I V I L I N F O R M Á T I C A 
  
-U N I V E R S I D A D D E L B Í O - B Í O 
- 
+FACULTAD DE CIENCIAS EMPRESARIALES 
+ESCUELA INGENIERÍA CIVIL INFORMÁTICA 
  
  
  
  
-PROYECTO DE TÍTULO 
-“Análisis comparativo de 
-modelos de Deep Learning 
-basados en YOLO, para la tarea 
-de detección de lugares 
-disponibles, en estacionamientos 
-del campus Fernando May de la 
-Universidad del Bío-Bío” 
- 
-PARA  OBTENER  EL GRADO  ACADÉMICO  DE  
-INGENIERO CIVIL EN INFORMÁTICA 
-       
-AUTORES 
-Rodrigo Ignacio Carrasco Cofré 
-José Patricio Rivera Medina  
- 
-PROFESORA GUÍA 
-María Antonieta Soto Chico 
- 
-PROFESORA CO-GUÍA 
-Carola Andrea Figueroa Flores 
  
  
-C H I LL Á N, 15 D E ENERO D E 2 0 2 3 
+Implementación de un sistema Web para mejorar la 
+gestión de servicios del Laboratorio de Diseño Gráfico 
  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Nicholas Eliab Espinoza Hasler 
+Pilar Constanza González Cea 
+ 
+ 
+Profesor Guía 
+Fernando Santolaya Franco 
+ 
+ 
+ 
+ 
+Memoria para optar al título de Ingeniera Civil en Informática 
+ 
+ 
+ 
+30 de diciembre de 2020 
+Chillán - Chile 
+ 
+ 
+ 
+ 
+
 --- PAGE 2 ---
-2 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
-“Nunca debes rendirte a la desesperación. Si te permites ir por ese camino, te 
-rendirás a tus instintos más bajos. En tiempos oscuros, la esperanza es algo 
-que te das a ti mismo. Ese es el significado de la verdadera fuerza interior”  
-  
---- PAGE 3 ---
-3 
+2  
  
 Resumen 
+Este proyecto se presenta para dar conformidad a los requisitos exigidos por la Universidad de 
+Bío-Bío en el proceso de titulación para a la carrera de XXXX .  El proyecto titulado “XXX” …. 
  
-El proyecto titulado “Análisis comparativo de modelos de Deep Learning basados en YOLO, 
-para la tarea de detección de lugares disponibles, en estacionamientos del campus 
-Fernando May de la Universidad del Bío -Bío” se entrega para cumplir con los 
-requerimientos deman dados por la Universidad del Bío -Bío para la obtención del título 
-universitario de la carrera Ingeniería Civil en Informática. 
+A continuación se detalla la empresa/área en la cual se enmarca el proyecto de desarrollo de  
+software, la o las problemáticas que resuelve, las principales características funcionales y 
+técnicas del sistema y la forma como fue desarrollado.  
+Como último párrafo se plantean los beneficios o ventajas alcanzados con el proyecto. 
+El resumen debe contener un máximo de 300 palabras. 
  
-La gestión de estacionamientos se ha vuelto un problema creciente debido a que las áreas 
-urbanas se encuentran en constante crecimiento, cada vez hay más vehículos circulando, 
-por lo tanto, la cantidad de estacionamientos disponible s no satisface la demand a. En 
-consecuencia, los conductores pasan una gran cantidad de tiempo buscando alg ún lugar 
-disponible. Esto genera una serie de problemas dentro de l os que destacan el  estrés, la 
-contaminación, la pérdida de tiempo y la pérdida de combustible. 
- 
-La presente  investigación, tiene como propósito evaluar y contrastar distintos tipos de 
-modelos pertenecientes a la arquitectura de red neuronal convolucional YOLO. El objetivo 
-principal es identificar mejoras potenciales en la gestión actual de los estacionamientos de 
-la Universidad del Bío-Bío por medio del uso de inteligencia artificial . Con este fin, se llevó 
-a cabo una comparación entre diversas variantes de los modelos YOLOv5 y YOLOv8. Donde 
-cada uno de estos modelos , fue sometido a entrenamiento utilizando dos conjuntos de 
-datos diferenciados. Donde, e l primer conjunto denominado "VehículosUBB", se centra 
-específicamente en la detección de vehículos, mientras que el segundo, denominado 
-"EspaciosUBB", se orienta hacia la i dentificación del estado de los  espacios de 
-estacionamiento, ya sea disponibles u ocupados. 
- 
-Los resultados obtenidos revelan una disparidad significativa entre los modelos entrenados 
-con el conjunto de datos "EspaciosUBB" en comparación con aquellos entre nados con el 
-conjunto "VehículosUBB". Las métricas utilizadas reflejan un rendimiento sustancialmente 
-superior en el caso de la detección de espacios de estacionamiento en contraste con la 
-detección de vehículos. Este hallazgo sugiere una mayor eficacia y precisión en la capacidad 
-predictiva de los modelos cuando se centran en la identificación de espacios disponibles u 
-ocupados. 
- 
-Adicionalmente, se presenta en este estudio la creación de un  software destinado a 
-destacar la aplicación práctica de las predicciones generadas por el modelo. Este software, 
-ha sido concebid o con una estructura sólida que otorga a los usuarios la capacidad de 
-interactuar de manera efectiva con los datos predichos. Este enfoque prácti co no solo 
-resalta la utilidad de los modelos en el contexto específico de la Universidad del Bío -Bío, 
-sino que también establece un precedente valioso para la implementación de soluciones 
-similares en otros entornos. 
- 
- 
---- PAGE 4 ---
-4 
- 
-La relevancia de estos resultados trasciende la mera eficiencia técnica, ya que tienen el 
-potencial de impactar positivamente en la gestión y la calidad de vida dentro del campus 
-universitario. La capacidad de optimizar la utilización de los espacios de estacionamiento 
-puede tener benefici os tangibles en términos de flujo de tráfico, eficiencia logística y 
-comodidad para la comunidad universitaria, contribuyendo así a una mejora sustancial en 
-la experiencia cotidiana en el campus.  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
---- PAGE 5 ---
-5 
+  
+--- PAGE 3 ---
+3  
  
 Abstract 
+Ídem al resumen, en Inglés. 
  
-This project titled "Comparative Analysis of Deep Learning Models Based on YOLO for the 
-Task of Detecting Available Spaces in Parking Lots of the Fernando May Campus at 
-Universidad del Bío -Bío" is submitted to fulfill the requirements demanded by the 
-Universidad del Bío-Bío for obtaining the university degree in Civil Engineering in Computer 
-Science. 
+--- PAGE 4 ---
+4  
  
-Parking management has become an increasing problem as urban areas continue to grow, 
-and more vehicles are on the roads. Consequently, the available parking spaces do not 
-satisfy the demand. As a result, drivers spend a significant amount of time searching for 
-available spots. This leads to several issues, including stress, pollution, time loss, and fuel 
-wastage. 
+Índice General 
+1 INTRODUCCIÓN .............................................................................................................................. 9 
+2 DEFINICIÓN DE LA INSTITUCIÓN ................................................................................................... 10 
+2.1 DESCRIPCIÓN DE LA EMPRESA ........................................................................................................... 10 
+2.1.1 ANTECEDENTES GENERALES DE LA EMPRESA ............................................................................................... 10 
+2.1.2 VISIÓN ................................................................................................................................................... 10 
+2.1.3 MISIÓN .................................................................................................................................................. 10 
+2.1.4 ESTRUCTURA ORGANIZATIVA .................................................................................................................... 11 
+2.2 DESCRIPCIÓN DE LA PROBLEMÁTICA ................................................................................................... 12 
+3 DEFINICIÓN PROYECTO ................................................................................................................ 15 
+3.1 OBJETIVOS DEL PROYECTO ............................................................................................................... 15 
+3.1.1 GENERAL ................................................................................................................................................ 15 
+3.1.2 ESPECÍFICOS............................................................................................................................................ 15 
+3.2 AMBIENTE DE INGENIERÍA DE SOFTWARE ............................................................................................ 15 
+3.2.1 METODOLOGÍA DE DESARROLLO ............................................................................................................... 15 
+3.2.2 ARQUITECTURA DE SOFTWARE .................................................................................................................. 16 
+3.2.3 TECNOLOGÍAS ......................................................................................................................................... 17 
+3.2.4 HERRAMIENTAS DE APOYO ....................................................................................................................... 18 
+3.2.5 TÉCNICAS Y NOTACIONES .......................................................................................................................... 18 
+3.3 DEFINICIONES, SIGLAS Y ABREVIACIONES ............................................................................................ 19 
+4 ESPECIFICACIÓN DE REQUERIMIENTOS DE SOFTWARE ................................................................ 20 
+4.1 ALCANCES .................................................................................................................................... 20 
+4.2 LIMITACIONES ............................................................................................................................... 20 
+4.3 OBJETIVO DEL SOFTWARE ................................................................................................................ 21 
+4.3.1 OBJETIVOS ESPECÍFICOS ............................................................................................................................ 21 
+4.4 DESCRIPCIÓN GLOBAL DEL PRODUCTO ............................................................................................... 21 
+4.4.1 INTERFAZ DE USUARIO .............................................................................................................................. 21 
+4.4.2 INTERFAZ DE HARDWARE ......................................................................................................................... 21 
+4.4.3 INTERFAZ DE SOFTWARE ........................................................................................................................... 21 
+4.5 REQUERIMIENTOS ESPECÍFICOS ......................................................................................................... 22 
+4.5.1 REQUERIMIENTOS FUNCIONALES DEL SISTEMA ............................................................................................ 22 
+4.5.2 ATRIBUTOS DEL PRODUCTO ...................................................................................................................... 25 
+5 FACTIBILIDAD ............................................................................................................................... 26 
+5.1 FACTIBILIDAD TÉCNICA. ................................................................................................................... 26 
+5.1.1 FACTIBILIDAD PARA DESARROLLAR EL SISTEMA ............................................................................................ 26 
+5.1.2 FACTIBILIDAD PARA EJECUTAR EL SISTEMA .................................................................................................. 26 
+5.2 FACTIBILIDAD OPERATIVA. ............................................................................................................... 27 
+5.3 FACTIBILIDAD ECONÓMICA ............................................................................................................... 27 
+5.3.1 COSTOS .................................................................................................................................................. 27 
+5.3.2 BENEFICIOS............................................................................................................................................. 28 
+5.3.3 INVERSIÓN .............................................................................................................................................. 29 
+5.4 CONCLUSIÓN DE LA FACTIBILIDAD ...................................................................................................... 30 
+6 ANÁLISIS ...................................................................................................................................... 31 
+--- PAGE 5 ---
+5  
  
-The present research aims to evaluate and contrast different types of models belonging to 
-the YOLO convolutional neural network architecture. The primary objective is to identify 
-potential improvements in the current management of the Universidad del Bío -Bío's 
-parking facilities using artificial intelligence. For t his purpose, a comparison between 
-various variants of the YOLOv5 and YOLOv8 models was conducted. Each model was trained 
-using two distinct datasets. The first dataset, named "VehículosUBB," focuses specifically 
-on vehicle detection, while the second, "EspaciosUBB," aims to identify the status of parking 
-spaces, whether available or occupied. 
+6.1 PROCESO DE NEGOCIOS FUTUROS ..................................................................................................... 31 
+6.1.1 DESCRIPCIÓN DEL PROCESO DE NEGOCIOS FUTUROS .................................................................................... 33 
+6.2 DIAGRAMA DE CASOS DE USO ........................................................................................................... 33 
+6.2.1 ACTORES ................................................................................................................................................ 33 
+6.2.2 CASOS DE USO Y DESCRIPCIÓN .................................................................................................................. 34 
+6.2.3 ESPECIFICACIÓN DE LOS CASOS DE USO ...................................................................................................... 36 
+6.3 MODELAMIENTO DE DATOS ............................................................................................................. 57 
+7 DISEÑO ......................................................................................................................................... 58 
+7.1 DISEÑO FÍSICO DE LA BASE DE DATOS ................................................................................................. 58 
+7.2 DISEÑO DE INTERFAZ Y NAVEGACIÓN .................................................................................................. 59 
+7.2.1 DISEÑO DE INTERFAZ ................................................................................................................................ 59 
+7.2.2 DISEÑO DE NAVEGACIÓN .......................................................................................................................... 68 
+8 PRUEBAS ...................................................................................................................................... 71 
+8.1 ELEMENTOS DE PRUEBA................................................................................................................... 71 
+8.2 ESPECIFICACIÓN DE LAS PRUEBAS ....................................................................................................... 71 
+8.2.1 PRUEBAS DE SISTEMA ............................................................................................................................... 72 
+8.2.2 PRUEBAS DE SEGURIDAD .......................................................................................................................... 73 
+8.2.3 PRUEBAS DE USABILIDAD .......................................................................................................................... 74 
+9 BIBLIOGRAFÍA .............................................................................................................................. 75 
+10 ANEXOS ...................................................................................................................................... 76 
+10.1 ANEXO A ................................................................................................................................... 76 
+10.1.1 MÓDULO DEL PERFIL ENCARGADO ........................................................................................................... 76 
+10.1.2 MÓDULO DEL PERFIL ALUMNO ................................................................................................................ 82 
+10.1.3 MÓDULO INICIO DE SESIÓN..................................................................................................................... 83 
  
-The results obtained reveal a significant disparity between the models trained with the 
-"EspaciosUBB" dataset compared to those trained with the "VehículosUBB" datase t. The 
-metrics used reflect a substantially superior performance in detecting parking spaces as 
-opposed to vehicle detection. This finding suggests greater effectiveness and precision in 
-the predictive capability of the models when focused on identifying a vailable or occupied 
-spaces. 
  
-Additionally, this study presents the creation of a mobile software aimed at highlighting the 
-practical application of the model's predictions. This mobile software has been designed 
-with a robust structure that enables users to interact effectively with the predicted data. 
-This practical approach not only highlights the utility of the models in the specific context 
-of the Universidad del Bío -Bío but also sets a valuable precedent for implementing similar 
-solutions in other settings. 
  
-The relevance of these results transcends mere technical efficiency, as they have the 
-potential to positively impact management and quality of life within the university campus. 
-The ability to optimize the use of parking spaces can have tangible benefits in terms of traffic 
-flow, logistical efficiency, and convenience for the university community, thus contributing 
-to a substantial improvement in the daily campus experience. 
-  
+ 
 --- PAGE 6 ---
-6 
+6  
  
-Agradecimientos y Dedicatorias 
+Índice Tablas 
  
-Nos gustaría expresar nuestra más profunda gratitud y reconocimiento a todas aquellas 
-personas que nos han apoyado y guiado a lo largo de este camino universitario, el cual ha 
-estado lleno de desafíos y aprendizaje, definiéndonos como las personas que somos 
-actualmente. 
-En primer lugar, qu eremos agradecer a nuestros profesores, cuya sabiduría, paciencia y 
-dedicación han sido fundamentales en nuestro desarrollo académico y personal. Sus 
-enseñanzas no solo nos han proporcionado el conocimiento profesional necesario, sino que 
-también han fomentado en nosotros un espíritu crítico, y una pasión por el aprendizaje que 
-perdurará más allá de nuestra vida universitaria. Su guía constante y consejos alentadores 
-han sido un faro de luz en momentos de incertidumbre y desafío. 
-Pero en especial queremos agradecer a nuestros padres, a quienes les extendemos nuestro 
-más sincero agradecimiento. Han sido nuestra fuente de amor, apoyo y fortaleza 
-incondicional. Su fe inquebrantable en nuestras capacidades y su sacrificio constante han 
-sido la base que nos ha pe rmitido cumplir nuestros anhelados sueños. Su ejemplo de 
-perseverancia y dedicación es algo que llevaremos siempre con nosotros y que nos ha 
-enseñado el verdadero valor del esfuerzo y la constancia. 
-Además, agradecer a nuestros compañeros y amigos de carre ra, quienes han compartido 
-con nosotros esta aventura, brindándonos su apoyo y amistad. Han sido una parte esencial 
-de esta experiencia universitaria, y los recuerdos compartidos serán atesorados por 
-siempre. 
-Y finalmente, extendemos nuestro agradecimiento  a todos aquellos que, de una forma u 
-otra, han contribuido en nuestra vida para llegar a este momento. Cada palabra de ánimo, 
-cada gesto de apoyo ha sido un valioso aporte en este camino. 
- 
-Agradecidos de estos hechos: 
-Rodrigo Ignacio Carrasco Cofré y José Patricio Rivera Medina 
- 
- 
- 
- 
- 
+Tabla 1: Requisitos funcionales de Perfil Encargado. ................................................................................................. 23 
+Tabla 2: Requisitos funcionales de Perfil Alumno. ....................................................................................................... 24 
+Tabla 3: Especificaciones de hardware mínimo requerido ..................................................................................... 26 
+Tabla 4: Especificaciones de software mínimo requerido........................................................................................ 26 
+Tabla 5: Costo de desarrollo del sistema ........................................................................................................................... 27 
+Tabla 6: Costo de mantención del sistema ........................................................................................................................ 28 
+Tabla 7: Detalle ahorro de material ...................................................................................................................................... 28 
+Tabla 8: Detalle de ahorro de tiempo laboral .................................................................................................................. 29 
+Tabla 9: Flujo de caja .................................................................................................................................................................... 30 
+Tabla 10: Descripción caso de uso: iniciar sesión. ........................................................................................................ 36 
+Tabla 11: Descripción caso de uso: cerrar sesión. ........................................................................................................ 36 
+Tabla 12: Descripción caso de uso: visualización perfil de usuario. .................................................................... 37 
+Tabla 13: Descripción caso de uso: solicitud equipo. .................................................................................................. 38 
+Tabla 14: Descripción caso de uso: visualización catálogo equipo. ..................................................................... 39 
+Tabla 15: Descripción caso de uso: revisar estado solicitud de equipo. ........................................................... 39 
+Tabla 16: Descripción caso de uso: revisar estado sanción. .................................................................................... 40 
+Tabla 17: Descripción caso de uso: visualización reglamento. .............................................................................. 40 
+Tabla 18: Descripción caso de uso: visualización horario laboratorio. ............................................................. 40 
+Tabla 19: Descripción caso de uso: visualización actividades externas. ........................................................... 41 
+Tabla 20: Descripción caso de uso: aprobar solicitud de equipo. ......................................................................... 41 
+Tabla 21: Descripción caso de uso: rechazar solicitud de equipo. ....................................................................... 42 
+Tabla 22: Descripción caso de uso: cancelar solicitud de equipo. ........................................................................ 42 
+Tabla 23: Descripción caso de uso: crear solicitud de equipo. ............................................................................... 43 
+Tabla 24: Descripción caso de uso: generar préstamo de solicitud de equipo. ............................................. 44 
+Tabla 25: Descripción caso de uso: finalizar solicitud de equipo.......................................................................... 44 
+Tabla 26: Descripción de caso de uso: listar solicitudes. ........................................................................................... 45 
+Tabla 27: Descripción de caso de uso: consultar solicitud. ...................................................................................... 45 
+Tabla 28: Descripción caso de uso: agregar sanción. .................................................................................................. 46 
+Tabla 29: Descripción caso de uso: ver detalle sanción. ............................................................................................ 46 
+Tabla 30: Descripción caso de uso: listar sanciones. ................................................................................................... 47 
+Tabla 31: Descripción caso de uso: registrar equipo................................................................................................... 47 
+Tabla 32: Descripción caso de uso: ver detalle equipo. .............................................................................................. 48 
+Tabla 33: Descripción caso de uso: eliminar equipo. .................................................................................................. 48 
+Tabla 34: Descripción caso de uso: modificar equipo. ................................................................................................ 49 
+Tabla 35: Descripción caso de uso: listar equipos. ....................................................................................................... 49 
+Tabla 36: Descripción caso de uso: registrar existencia. ........................................................................................... 50 
+Tabla 37: Descripción caso de uso: ver detalle existencia. ....................................................................................... 50 
+Tabla 38: Descripción caso de uso: eliminar existencia. ............................................................................................ 51 
+Tabla 39: Descripción caso de uso: modificar existencia. ......................................................................................... 51 
+Tabla 40: Descripción caso de uso: listar existencias. ................................................................................................. 52 
+Tabla 41: Descripción caso de uso: agregar sala. .......................................................................................................... 52 
+Tabla 42: Descripción caso de uso: ver detalle sala. .................................................................................................... 53 
+Tabla 43: Descripción caso de uso: eliminar sala. ......................................................................................................... 53 
+Tabla 44: Descripción caso de uso: modificar sala. ...................................................................................................... 54 
+Tabla 45: Descripción caso de uso: modificar sala. ...................................................................................................... 54 
+Tabla 46: Descripción caso de uso: agregar evento. .................................................................................................... 55 
+Tabla 47: Descripción caso de uso: ver detalle evento. .............................................................................................. 55 
 --- PAGE 7 ---
-7 
+7  
  
-Índice de contenido 
+Tabla 48: Descripción caso de uso: modificar evento. ................................................................................................ 56 
+Tabla 49: Descripción caso de uso: listar eventos......................................................................................................... 56 
+Tabla 50: Especificación pruebas de sistema. ................................................................................................................. 72 
+Tabla 51: Especificación pruebas de seguridad. ............................................................................................................ 73 
+Tabla 52: Especificación pruebas de usabilidad. ........................................................................................................... 74 
  
-1. Introducción .............................................................................................................................. 13 
-1.1 Justificación ....................................................................................................................... 13 
-1.2 Propósito ........................................................................................................................... 14 
-1.3 Resumen de capítulos ....................................................................................................... 15 
-2. Problemática ............................................................................................................................. 16 
-2.1 Objetivo General ............................................................................................................... 17 
-2.2 Objetivos Específicos ......................................................................................................... 17 
-2.3 Hipótesis ............................................................................................................................ 17 
-3. Estado del Arte .......................................................................................................................... 18 
-3.1 Preguntas de investigación ............................................................................................... 18 
-3.2 Palabras Clave ................................................................................................................... 19 
-3.3 Criterios ............................................................................................................................. 19 
-3.3.1 Inclusión .................................................................................................................... 19 
-3.3.2 Exclusión .................................................................................................................... 19 
-3.4 Búsqueda y resultados ...................................................................................................... 20 
-3.5 Conclusiones...................................................................................................................... 24 
-4. Marco Teórico ........................................................................................................................... 25 
-4.1 Inteligencia artificial .......................................................................................................... 25 
-4.2 Machine Learning .............................................................................................................. 25 
-4.3 Deep Learning ................................................................................................................... 25 
-4.4 Visión artificial por computadora ...................................................................................... 26 
-4.5 Redes Neuronales Artificiales............................................................................................ 26 
-4.6 Redes Neuronales Convolucionales .................................................................................. 27 
-4.6.1 Capa de Convolución ................................................................................................. 28 
-4.6.2 Capa de Activación .................................................................................................... 28 
-4.6.3 Capa de Reducción (Pooling) ..................................................................................... 32 
-4.6.4 Capa Totalmente Conectada (Fully Connected) ........................................................ 32 
-4.7 YOLO (You Only Look Once) .............................................................................................. 33 
-5. Métricas de evaluación ............................................................................................................. 34 
-5.1 Precision ............................................................................................................................ 35 
-5.2 Recall ................................................................................................................................. 35 
 --- PAGE 8 ---
-8 
+8  
  
-5.3 F1-Score ............................................................................................................................. 35 
-5.4 IoU ..................................................................................................................................... 36 
-5.5 mAP ................................................................................................................................... 36 
-6. Herramientas ............................................................................................................................. 37 
-6.1 Lenguajes de Programación .............................................................................................. 37 
-6.1.1 Python ....................................................................................................................... 37 
-6.1.2 Dart ............................................................................................................................ 37 
-6.2 Bibliotecas ......................................................................................................................... 38 
-6.2.1 OpenCV ...................................................................................................................... 38 
-6.2.2 Pytorch ...................................................................................................................... 38 
-6.2.3 Matplotlib .................................................................................................................. 38 
-6.2.4 Ultralytics .................................................................................................................. 39 
-6.2.5 NumPy ....................................................................................................................... 39 
-6.2.6 pandas ....................................................................................................................... 39 
-6.3 Base de Datos .................................................................................................................... 40 
-6.3.1 MySQL ....................................................................................................................... 40 
-6.4 Etiquetado ......................................................................................................................... 40 
-6.4.1 LabelImg .................................................................................................................... 40 
-6.5 Entornos de Desarrollo...................................................................................................... 41 
-6.5.1 Visual Studio Code ..................................................................................................... 41 
-6.5.2 Google Colaboraty ..................................................................................................... 41 
-6.5.3 Flutter ........................................................................................................................ 41 
-6.6 Hardware ........................................................................................................................... 42 
-6.6.1 Cámara ...................................................................................................................... 42 
-7. Metodología de Desarrollo ....................................................................................................... 43 
-7.1 Aspectos Generales ........................................................................................................... 43 
-7.2 Etapa 1 y 2 “Entendimiento del negocio y los datos” ....................................................... 43 
-7.3 Etapa 3 “Obtención y preparación de los datos” .............................................................. 44 
-7.4 Etapa 4 Modelado ............................................................................................................. 50 
-7.5 Evaluación ......................................................................................................................... 57 
-7.5.1 Caso 1: Resultados de Dataset “EspaciosUBB” ......................................................... 57 
-7.6 Implementación ................................................................................................................ 79 
-8. Conclusiones.............................................................................................................................. 85 
+Índice Figuras 
+Figura 1: Organigrama DST ...................................................................................................................................................... 11 
+Figura 2: Modelo de negocio actual del Laboratorio de Diseño Gráfico ............................................................ 14 
+Figura 3:Modelo de negocio actual del Laboratorio de Diseño Gráfico (continuación) ........................... 14 
+Figura 4: Arquitectura MVC de Laravel. ............................................................................................................................. 17 
+Figura 5: Modelo de negocio futuro...................................................................................................................................... 32 
+Figura 6: Modelo de negocio futuro (continuación). ................................................................................................... 32 
+Figura 7: Diagrama de casos de uso del actor estudiante. ........................................................................................ 34 
+Figura 8: Diagrama de casos de uso de actor encargado........................................................................................... 35 
+Figura 9: Modelo de Entidad Relación. ............................................................................................................................... 57 
+Figura 10: Diseño físico de la Base de datos..................................................................................................................... 58 
+Figura 11: Diseño físico de la Base de datos (continuación). .................................................................................. 59 
+Figura 12: Interfaz módulo de solicitudes con estado pendiente. ........................................................................ 60 
+Figura 13: Interfaz de módulo de solicitudes con estado aprobada. .................................................................. 60 
+Figura 14: Interfaz de módulo de solicitudes con estado en curso. ..................................................................... 61 
+Figura 15: Interfaz de módulo de solicitud en curso con acción de sanción. .................................................. 61 
+Figura 16: Interfaz de módulo generar préstamo. ........................................................................................................ 62 
+Figura 17:Interfaz módulo control de equipos, vista principal .............................................................................. 62 
+Figura 18: Interfaz módulo de existencias, vista principal ....................................................................................... 63 
+Figura 19: Interfaz módulo de control de sanciones. .................................................................................................. 63 
+Figura 20: Interfaz módulo de salas, vista principal .................................................................................................... 64 
+Figura 21: Interfaz módulo inicio de página. ................................................................................................................... 65 
+Figura 22: Interfaz módulo catálogo, vista cámaras fotográficas. ........................................................................ 65 
+Figura 23: Módulo solicitud de equipo. .............................................................................................................................. 66 
+Figura 24: Interfaz módulo horarios. ................................................................................................................................... 67 
+Figura 25: Interfaz módulo mis solicitudes. ..................................................................................................................... 67 
+Figura 26: Interfaz módulo mis sanciones. ....................................................................................................................... 68 
+Figura 27: Mapa de navegación perfil encargado. ........................................................................................................ 69 
+Figura 28: Mapa de navegación perfil encargado (continuación). ....................................................................... 69 
+Figura 29: Mapa de navegación perfil alumno................................................................................................................ 70 
+Figura 30: Mapa de navegación perfil alumno (continuación). ............................................................................. 70 
+Figura 31: Interfaz módulo inicio de página. ................................................................................................................... 76 
+Figura 32: Interfaz módulo: detalle solicitud. ................................................................................................................. 77 
+Figura 33: Interfaz módulo: solicitudes rechazadas. ................................................................................................... 77 
+Figura 34: Interfaz módulo: solicitudes canceladas. .................................................................................................... 78 
+Figura 35: Interfaz módulo: préstamos .............................................................................................................................. 78 
+Figura 36: Interfaz módulo: ver detalle equipo. ............................................................................................................. 79 
+Figura 37: Interfaz módulo: modificar equipo. ............................................................................................................... 79 
+Figura 38: Interfaz módulo: agregar equipo. ................................................................................................................... 80 
+Figura 39: Interfaz módulo: ver detalle existencia. ...................................................................................................... 80 
+Figura 40: Interfaz módulo: agregar existencia. ............................................................................................................ 81 
+Figura 41: Interfaz módulo catálogo. ................................................................................................................................... 82 
+Figura 42: Interfaz módulo: detalle solicitud. ................................................................................................................. 82 
+Figura 43: Interfaz módulo: inicio de sesión. ................................................................................................................... 83 
+ 
 --- PAGE 9 ---
-9 
+9  
  
-8.1 Limitaciones ...................................................................................................................... 86 
-9. Trabajos Futuros ........................................................................................................................ 87 
-10. Referencias ............................................................................................................................ 88 
-11. Anexo..................................................................................................................................... 91 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+1 INTRODUCCIÓN  
+Actualmente la tecnología es una herramienta que  cada vez está más inmersa en la vida 
+cotidiana; apoyando gran parte de las labores a realizar ya sea desde buscar información 
+hasta algo complejo como una transacción bancaria. Es por esto, que a medida que avanza 
+el tiempo las personas sienten la necesidad de utilizar  programas que faciliten el trabaj o 
+diario. Además, el uso de programas informáticos ayuda al medio ambiente en la reducción 
+de recursos físicos como el papel.   
+   
+Sin embargo, existen instituciones que aún no se han sumado a la utilización de medios 
+tecnológicos para gestión de informaci ón de los servicios que ofrecen y labores que 
+realizan; este es el caso del laboratorio de diseño gráfico de la Universidad del Bío-Bío, sede 
+Chillán. El laboratorio cuenta con un sistema de préstamo de equipos; parte de este sistema 
+es gestionado por medio de una plataforma Web que provee el Departamento de Servicios 
+Tecnológicos de la universidad; sin embargo, este sistema Web no proporciona todas las 
+funcionalidades para realizar préstamo y gestión de todos los equipos.  
+  
+Dicho lo anterior, el propósito  de este informe es describir y detallar el proyecto 
+denominado “Implementación de un sistema Web para mejorar la gestión de servicios del 
+Laboratorio de Diseño Gráfico”, el cual busca; como su nombre lo indica, mejorar el sistema 
+que actualmente posee el Laboratorio de Diseño Gráfico. Este proyecto contempla la 
+realización de una plataforma Web la cual permite gestionar las solicitudes de préstamo de 
+equipos técnicos, tales como cámara, tableta gráfica; entre otros equipos y servicios.  
+   
+Para describir e ste proyecto, el informe está compuesto por capítulos que detall an cada 
+aspecto del proyecto y del software, que se nombran a continuación:  
+• Capítulo 2:  Se describe la institución para la cual está  dirigida el proyecto y el 
+problema a resolver.   
+• Capítulo 3: Se define el proyecto, presentando el objetivo general y obj etivos 
+específicos; además el ambiente de ingeniería de software.   
+• Capítulo 4: Contiene la especificación del software; este incluye: el alcance y 
+limitaciones, y requerimientos funcionales y no funcionales.   
+• Capítulo 5: Detalla la viabilidad del proyecto, a través del estudio de factibilidad 
+técnica, operativa y económica.  
+• Capítulo 6: Contiene la etapa de análisis, el cual incluye y describe el proceso de 
+negocio, casos de uso y modelo de datos.  
+• Capítulo 7: Se presentan los diseños del sistema W eb realizados; este incluye: 
+diseño de interfaz y diseño de navegación.  
+• Capítulo 8: Se describen las pruebas realizadas al sistema Web.  
+• Capítulo 9: En este último capítulo, se presentan las conclusiones obtenidas.  
  
  
  
@@ -360,878 +302,683 @@ Rodrigo Ignacio Carrasco Cofré y José Patricio Rivera Medina
  
  
 --- PAGE 10 ---
-10 
+10  
  
-Índice de tablas 
+2 DEFINICIÓN DE LA INSTITUCIÓN  
+2.1 Descripción de la empresa  
+La organización corresponde al Departamento de Servicios Tecnológicos de la Universidad del 
+Bío-Bío. Este Departamento tiene como finalidad administrar los recursos de redes, datos, 
+software, hardware y telefónicos de la Sede Chil lán. Para cumplir con su misión debe 
+coordinarse con la Dirección de Informática, para prestar los servicios que demanden los 
+usuarios, velando por el cumplimiento de las políticas informáticas de la  Institución y 
+apoyando el accionar de ambas Vicerrectorías y las distintas unidades de nuestra Universidad. 
+2.1.1 Antecedentes generales de la Empresa 
+• Nombre: Universidad del Bío-Bío. 
+• Dirección: Avda. Andrés Bello 720, Casilla 447, Chillán. 
+• Rubro: Educación.  
+2.1.2 Visión 
+Ser una Universidad comprometida con su carácter estatal y birregional, innovadora, inclusiva 
+y compleja, con proyección nacional e internacional, que contribuye al progreso sostenible de 
+su territorio y sus habitantes, de excelencia en la formación de personas y con sentido de 
+equidad social y de género. 
+2.1.3 Misión 
+La Universidad del Bío-Bío, a partir de su naturaleza estatal y pública, tiene por misión: 
+Crear y transmitir el conocimiento mediante la docencia, la investigación, la innovación, la 
+creación artística y la interacción con el entorno social en las diversas áreas del conocimiento 
+y la cultura, basada en la responsabilidad social y en los principios de excelencia, pluralismo, 
+transparencia y equidad de género. 
+Contribuir a la formación de ciudadanos con espíritu crítico, reflexivo y tolerante, así como a 
+la movilidad e integración social y al desarrollo sostenible, promoviendo la identidad cultural 
+y la interculturalidad de las regiones del Biobío y Ñuble, y vinculada con los requerimientos y 
+desafíos de su territorio y del país. 
  
-Tabla 1: Resultados de búsqueda primaria en bases de datos ......................................................... 20 
-Tabla 2: Artículo seleccionado N°1.................................................................................................... 21 
-Tabla 3: Artículo seleccionado N°2.................................................................................................... 21 
-Tabla 4: Artículo seleccionado N°3.................................................................................................... 22 
-Tabla 5: Artículo seleccionado N°4.................................................................................................... 22 
-Tabla 6: Artículo seleccionado N°5.................................................................................................... 23 
-Tabla 7: Artículo seleccionado N°6.................................................................................................... 23 
-Tabla 8: Comparativa entre los modelos de YOLO para el dataset EspaciosUBB ............................. 67 
-Tabla 9: Comparativa de los modelos de YOLO para el dataset VehículosUBB ................................ 77 
-  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 --- PAGE 11 ---
-11 
+11  
  
-Índice de figuras 
+2.1.4 Estructura Organizativa 
+A continuación, en la Figura 1, se presenta el organigrama del Departamento de Servicios 
+Tecnológicos. 
  
-Figura 25: Caro Gutiérrez. (2005). Representación de la adaptación de la metodología Kitchenham 
-https://www.researchgate.net/publication/251671565_Analisis_y_revision_de_la_literatura_en_e
-l_contexto_de_proyectos_de_fin_de_carrera_Una_propuesta ...................................................... 18 
-Figura 1: Diferencias entre IA, Machine Learning y Deep Learning .................................................. 26 
-Figura 2: Funcionamiento de visión artificial .................................................................................... 26 
-Figura 3: Estructura de Redes Neuronales Artificiales ...................................................................... 27 
-Figura 4: Extracción de características en la convolución ................................................................. 28 
-Figura 5: Gráfico de la función ReLu ................................................................................................. 29 
-Figura 6: Gráfico de la función Sigmoid ............................................................................................ 30 
-Figura 7: Gráfico de la función Leaky ReLu ....................................................................................... 31 
-Figura 8: Matriz de reducción de características .............................................................................. 32 
-Figura 9:  Autor desconocido. (n.d). Funcionamiento de arquitectura YOLO Aprende Machine 
-Learning https://www.aprendemachinelearning.com/modelos-de-deteccion-de-objetos/ ........... 33 
-Figura 10: Funcionamiento de matriz de confusión ......................................................................... 34 
-Figura 11: Logotipo de Python .......................................................................................................... 37 
-Figura 12: Logotipo de Dart ............................................................................................................... 37 
-Figura 13: Logotipo de OpenCV ........................................................................................................ 38 
-Figura 14: Logotipo de Pytorch ......................................................................................................... 38 
-Figura 15: Logotipo de MatplotLib .................................................................................................... 38 
-Figura 16: Logotipo de Ultralytics ..................................................................................................... 39 
-Figura 17: Logotipo de NumPy .......................................................................................................... 39 
-Figura 18: Logotipo de Pandas .......................................................................................................... 39 
-Figura 19: Logotipo de MySQL .......................................................................................................... 40 
-Figura 20: Logotipo de LabelImg ....................................................................................................... 40 
-Figura 21: Logotipo de Visual Studio Code ........................................................................................ 41 
-Figura 22: Logotipo de Google Colab ................................................................................................ 41 
-Figura 23: Logotipo de Flutter ........................................................................................................... 41 
-Figura 24: Cámara de seguridad Hikivision ....................................................................................... 42 
-Figura 26: Autor desconocido (s.f). Esquema del ciclo CRISP-DM estándar 
-https://rpubs.com/mavaleriacc/1075094 ........................................................................................ 43 
-Figura 27: Clases del dataset COCO .................................................................................................. 45 
-Figura 28: Posición y ángulo de la cámara al estacionamiento ........................................................ 46 
-Figura 29: Selección de primera imagen perfecta y eliminación de segunda imagen por ruido ...... 46 
-Figura 30: Similitud de imágenes, con selección de la primera y eliminación de la segunda ........... 47 
-Figura 31: Clase para el modelo de detección de vehículos ............................................................. 47 
-Figura 32: Clases para el modelo de detección de espacios ............................................................. 48 
-Figura 33: Etiquetado de imágenes para el dataset VehiculosUBB .................................................. 48 
-Figura 34: Etiquetado para el dataset de EspaciosUBB .................................................................... 49 
-Figura 35: Ruta y clases para la importación de YOLO ...................................................................... 51 
-Figura 36: Ultralytics. (n.d). Resultados promedios de las versiones de arquitecturas de YOLOv5 
-https://docs.ultralytics.com/models/yolov5/#key-features ............................................................ 51 
-Figura 37: Ultralytics. (n.d). Resultados promedios de las versiones de arquitecturas de YOLOv8 
-https://docs.ultralytics.com/models/yolov5/#key-features ............................................................ 52 
-Figura 38: Ultralytics. (n.d). Comparativa general de precisión entre las versiones de YOLO 
+ 
+ 
+Figura 1: Organigrama DST 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
 --- PAGE 12 ---
-12 
+12  
  
-https://docs.ultralytics.com/models/yolov8/ ................................................................................... 52 
-Figura 39: Entrenamiento de un modelo de 100 épocas .................................................................. 54 
-Figura 40: Ajuste de hiperparámetros .............................................................................................. 54 
-Figura 41:  Cantidad de capas de las versiones de Yolov8 ................................................................ 56 
-Figura 42: Cantidad de capas de las versiones de Yolov5 ................................................................. 56 
-Figura 43: Comparación de mAP de versiones de YOLOv5 con dataset de Espacios........................ 58 
-Figura 44: Métricas de validación para entrenamiento de versiones de YOLOv5 con dataset de 
-Espacios ............................................................................................................................................. 59 
-Figura 45: Matriz de confusión normalizada de YOLOv5m ............................................................... 59 
-Figura 46: Matriz de confusión normalizada de YOLOv5n ................................................................ 59 
-Figura 47: Matriz de confusión normalizada de YOLOv5s ................................................................ 60 
-Figura 48: Métricas de F1-Score y Recall de Yolov5 con dataset "EspaciosUBB" ............................. 61 
-Figura 49: Comparación de mAP de versiones de YOLOv8 con dataset de Espacios........................ 62 
-Figura 50: Métricas de validación para entrenamiento de versiones de YOLOv8 con dataset de 
-Espacios ............................................................................................................................................. 63 
-Figura 51:Matriz de normalización de YOLOv8s ............................................................................... 63 
-Figura 52: Matriz de normalización de YOLOv8m ............................................................................. 63 
-Figura 53:Matriz de normalización de YOLOv8n ............................................................................... 64 
-Figura 54: Métricas de F1-Score y Recall de YOLOv8 con dataset "EspaciosUBB" ........................... 65 
-Figura 55: Gráfico comparativo entre YOLOv5m y YOLOv8m ........................................................... 66 
-Figura 56: Comparativa entre métricas de evaluación entre YOLOv5m y YOLOv8m ....................... 67 
-Figura 57: Comparación de mAP de versiones de YOLOv5 con dataset de Vehículos ...................... 68 
-Figura 58: Métricas de validación para entrenamiento de versiones de YOLOv5 con dataset de 
-Vehículos ........................................................................................................................................... 69 
-Figura 59: Matriz de confusión normalizada de YOLOv5m ............................................................... 69 
-Figura 60: Matriz de confusión normalizada de YOLOv5m ............................................................... 69 
-Figura 61: Matriz de confusión normalizada de YOLOv5n ................................................................ 70 
-Figura 62: Métricas de F1-Score y Recall de YOLOv5 con dataset "VehículosUBB" ......................... 71 
-Figura 63: Comparación de mAP de versiones de YOLOv8 con dataset de Vehículos ...................... 72 
-Figura 64: Métricas de validación para entrenamiento de versiones de YOLOv8 con dataset de 
-Vehículos ........................................................................................................................................... 73 
-Figura 65: Matriz de Normalización de YOLOv8m ............................................................................ 73 
-Figura 66: Matriz de Normalización de YOLOv8s .............................................................................. 73 
-Figura 67: Matriz de Normalización de YOLOv8n ............................................................................. 74 
-Figura 68: Métricas de F1-Score y Recall de YOLOv8 con dataset "VehículosUBB" ......................... 75 
-Figura 69: Comparativa del mAP entre YOLOv5s y YOLOv8m .......................................................... 76 
-Figura 70: Comparativa de métricas de evaluación entre los modelos YOLOv5s y YOLOv8m ......... 77 
-Figura 71: Esquema del funcionamiento del proyecto ..................................................................... 79 
-Figura 72: Coordenadas detectadas por el modelo .......................................................................... 80 
-Figura 73: Coordenadas de ROI en el estacionamiento .................................................................... 80 
-Figura 74: Base de datos en MySQL del estacionamiento ................................................................ 81 
-Figura 75: Creación de endpoints para manipular los espacios ........................................................ 81 
-Figura 76: Registro Base de Datos ..................................................................................................... 82 
-Figura 77: Interfaz de la aplicación para detectar estacionamientos ............................................... 83 
-Figura 78: Comparación de la detección de la cámara con la aplicación .......................................... 84 
+2.2 Descripción de la problemática  
+Actualmente el Laboratorio de Diseño Gráfico realiza préstamos de equipos técnicos a los 
+alumnos de la carrera, con el fin de proporcionar las herramientas necesarias para cursar la 
+carrera sin problemas de esta índole. Los equipos con los que cuenta el laboratorio son: 
+notebook, cámaras fotográficas, cámaras de video, trípodes, tabletas gráficas y lectores de CD 
+externos.  
+ 
+Si un alumno necesita utilizar un not ebook su préstamo es gestionado a través d e una 
+plataforma que provee el DST de la Universidad. En cambio, si la solicitud corresponde a los 
+otros equipos no se gestiona en la plataforma, ya que tiene un proces o distinto para la 
+aprobación del préstamo.  
+ 
+El proceso de solicitud de cámaras fotográficas, cámaras de video, trípodes, tabletas gráficas y 
+lectores de CD externos; ahora en adelante equipos técnicos, consta de las siguientes etapas:   
+ 
+• El alumno debe acercarse al laboratorio y mediante un formulario impreso indicar el 
+equipo, motivo de solicitud y rango de fechas a utilizar el equipo.  
+• El encargado debe revisar todos los formularios acumulados durante el día o semana; 
+los cuales se guardan en una carpeta, para aprobar o rechazar la solicitud, ya que se 
+realizan préstamos sólo por motivo académico.  
+• El alumno debe acercase nuevamente al laboratorio para saber si su solicitud fue 
+aceptada o no. En caso de ser aceptada el alumno debe retirar el equipo en la fecha 
+indicada.  
+• Si un alumno devuelve un equipo en mal estado o fuera de plazo, puede perder el 
+beneficio de utilizar equipos técnicos. Si ocurre esta situación el encargado del 
+laboratorio le comunica tal decisión a alumno indicando el tiempo en el cual no puede 
+solicitar equipos, pero sin dejar registro de dicha sanción.  
+ 
+Además, del servicio de préstamo de equipos el laboratorio cuenta con la reserva de las salas 
+de computación para eventos extracurriculares, entre las actividades que se realizan están: 
+capacitaciones, talleres, charlas, entre otras. Hay veces que sólo el encargado del laboratorio, 
+administrativos y los participantes conocen el horario y sala en la cual se realizan las 
+actividades. Si las salas están desocupadas; es decir, no está en curso una clase o actividad 
+extraprogramática, éstas son habilitadas para el uso de los a lumnos ya sea para estudiar, 
+realizar alguna actividad de carácter académico o personal.  
+ 
+Con lo descrito anteriormente se puede concluir que se generan inconvenientes tanto para el 
+encargado y alumnos.   
+ 
+En el caso del encargado se producen las siguiente situaciones:  
+ 
+• En caso que se necesite buscar el documento del préstamo de un equipo técnico para 
+conocer la fecha de retiro y devolución u otro dato, se deben revisar todas las carpetas 
+y solicitudes, ocupando tiempo que puede ser invertido en otras actividades.   
+• No existe un registro digital que indique la cantidad de equipos móviles disponibles o 
+deshabilitados (en caso de no estar apto para préstamo), por ende, el funcionario debe 
+revisar todas los equipos y solicitudes, para saber la información relacionada a los 
+equipos.  
+--- PAGE 13 ---
+13  
+ 
+• Puede olvidar si ha sancionado o no un alumno, lo cual puede desenvolver un 
+problema.  
+   
+Para el alumno se producen los siguiente inconvenientes:  
+   
+• No tiene conocimiento de los equipos que están actualmente disponibles para 
+préstamo, ocasionando una gran cantidad de solicitudes que no pueden ser aceptadas.   
+• El estudiante no sabe si está sancionado o no para realizar préstamos, porque esta 
+información se le indica verbalmente al devolver un equipo por atraso o equipo 
+dañado, por tanto, es olvidado con el paso del tiempo.   
+• Debe realizar la solicitud de equipo, conocer el estado de su solicitud presencialmente, 
+lo que puede ser un problema ya que el alumno deberá viajar en caso de vivir lejos de 
+la universidad por un trámite que no demora más allá de 5 minutos.  
+• Si un alumno desea utilizar un equipo de las salas de computación y no tiene 
+conocimiento de una actividad extracurricular en curso puede haber realizado un 
+viaje a la universidad en vano.  
+ 
+ 
+En la Figura 2 y Figura 3, se observa el proceso de negocio actual del Sistema del Laboratorio 
+de Diseño Gráfico. 
+ 
+Para realizar una solicitud, el estudiante debe consultar al encargado la disponibilidad del 
+equipo a solicitar, si está disponible, le solicita los datos personales al estudiante y evalúa su 
+situación como solicitante, si no posee sanción, se procede a generar un formulario de registro 
+sobre este equipo, en cualquier otro caso, se deniega su registro.  
+ 
+Luego, el estudiante debe firmar el formulario emitido por el encargado, para que este le 
+proporcione el equipo acordado.   
+ 
+Finalmente, el estudiante devuelve el equipo al laboratorio, el encargado evalúa el estado del 
+equipo, hora y fecha de devolución. Si la hora y fecha de devolución de equipo no coincide con 
+la estipulada en la hoja de solicitud, o si el equipo consta con golpes o presenta alguna 
+manipulación física, o si el equipo no enciende, o presenta problemas en su manejo normal, se 
+sanciona al estudiante por incumplimiento de contrato.  
+ 
+De lo contrario, si no se presenta ningún inconveniente, se da por finalizado el préstamo. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 14 ---
+14  
+ 
+ 
+Figura 2: Modelo de negocio actual del Laboratorio de Diseño Gráfico 
+ 
+ 
+ 
+Figura 3:Modelo de negocio actual del Laboratorio de Diseño Gráfico (continuación)
+
+--- PAGE 15 ---
+3 DEFIN ICIÓN PROYECTO  
+3.1 Objetivos del proyecto 
+3.1.1 General 
+Actualizar el sistema de préstamo actual del Laboratorio de Diseño Gráfico, a través de una 
+plataforma Web, para facilitar la gestión de solicitudes y préstamos de equipos técnicos del 
+Laboratorio de Diseño Gráfico. Además, de entregar accesibilidad a los alumnos de la carrera 
+sobre horario de uso de salas del laboratorio. 
+3.1.2 Específicos 
+• Llevar un control del registro de los equipos técnicos del Laboratorio.   
+• Digitalizar el proceso de solicitud de préstamo de equipos técnicos.   
+• Notificar a los alumnos en tiempo real el estado de las solicitudes realizadas.  
+• Informar a los alumnos el horario de actividades extracurriculares que se desarrollan 
+en el laboratorio. 
+• Entregar información detallada de las solicitudes que realiza el alumno.  
+• Mostrar y especificar las sanciones que posee el alumno.  
+• Gestionar la reserva de equipos técnicos.  
+ 
+ 
+3.2 Ambiente de Ingeniería de Software 
+3.2.1 Metodología de Desarrollo 
+Este proyecto se basa en la metodología Iterativa e Incremental, ya que el producto se 
+desarrolla por incrementos en el que cada iteración obtiene una versión funcional de este. Así, 
+el sistema se implementa poco a poco obten iendo una retroalimentación continua y el 
+producto final será la acumulación de funcionalidades construidas en las iteraciones. 
+Considerando un total de cuatro incrementos. 
+• Primer incremento: Se crea y aborda el desarrollo de inicio de sesión, gestión de 
+catálogo de equipos, gestión de equipos, realizando el trabajo de Back-End y Front-
+End, para obtener un primer entregable funcional. 
+• Segundo incremento:  Modificación o mejora de la primera iteración. 
+Se crea y aborda el desarrollo de gestión de solicitud; realizando el trabajo de Back-
+End y Front-End; además de agregar archivos descargables en el módulo de normas y 
+reglamento, para obtener el segundo entregable funcional. 
+• Tercer incremento: Modificación o mejora de la segunda iteración. 
+Se crea y aborda el desarrollo de gestión de sanciones, notificación vía correo 
+electrónico e información del horario de salas; realizando el trabajo de Back-End y 
+Front-End, para obtener el tercer entregable funcional. 
+• Cuarto incremento: Modificación o mejora de la tercera iteración. 
+Se aborda el desarrollo de pruebas finales en el sistema, para obtener el cuarto y 
+último entregable funcional. 
+ 
+ 
+ 
+ 
+
+=== LAST 15 PAGES ===
+
+--- PAGE 69 ---
+69  
+ 
+ 
+Figura 27: Mapa de navegación perfil encargado. 
+ 
+ 
+ 
+Figura 28: Mapa de navegación perfil encargado (continuación). 
+ 
+ 
+ 
+ 
+ 
+
+--- PAGE 70 ---
+70  
+ 
+7.2.2.2 Mapa de navegación del perfil alumno 
+En la Figura 30 y Figura 31, se observa el mapa de navegación de los módulos correspondiente 
+al perfil alumno. 
+ 
+ 
+Figura 29: Mapa de navegación perfil alumno. 
+ 
+ 
+ 
+Figura 30: Mapa de navegación perfil alumno (continuación). 
+ 
+ 
+ 
+ 
+ 
+ 
+
+--- PAGE 71 ---
+71  
+ 
+8 PRUEBAS  
+La prueba de software es el proceso de evaluar y verificar que un producto o aplicación de 
+software hace lo que se supone que debe hacer. Los beneficios de las pruebas incluyen la 
+prevención de errores, la reducción de los costos de desarrollo y la mejora del rendimiento.   
+ 
+En este capítulo, se describen los aspectos relevantes de proceso de pruebas l os cuales 
+corresponden a elementos, especificación, responsables, calendario, detalle y conclusión de 
+pruebas. 
+ 
+8.1 Elementos de prueba 
+Para revisar el correcto f uncionamiento del sistema Web, se realizaron pruebas a las 
+funcionalidades y módulos más relevantes del sistema de gestión de préstamo.    
+ 
+Los módulos que se consideraron importante; según el perfil de usuario, a probar son:  
+ 
+• Perfil encargado:   
+o Aprobar solicitud.   
+o Rechazar solicitud.   
+o Crear equipo.   
+o Crear existencia.   
+o Finalizar préstamo.   
+o Sancionar alumno.   
+ 
+• Perfil encargado:   
+o Solicitud de equipo. 
+ 
+8.2 Especificación de las pruebas 
+En esta sección se presentan y detallan las pruebas definidas para el sistema divididas en 
+funcionalidad y seguridad. Además, se realizarán pruebas de usabilidad.    
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 72 ---
+72  
+ 
+8.2.1 Pruebas de sistema 
+ 
+En la Tabla 50, se presenta la especificación correspondiente a pruebas de sistema.  
+ 
+Prueba de sistema 
+Característica a probar  Funcionalidad.  
+Nivel de prueba  Sistema.  
+Objetivo de la prueba  Permite asegurar que el software realiza 
+correctamente todas las funciones que se han 
+detallado en las especificaciones.  
+Enfoque para la definición de casos 
+de prueba  
+Caja negra.  
+Técnicas para la definición de casos 
+de prueba  
+Se utilizarán datos válidos e inválidos, para verificar 
+que:  
+• Al ingresar datos válidos, el sistema 
+responda de forma esperada.  
+• Al ingresar datos inválidos, el sistema 
+redirija o muestre los mensajes 
+correspondientes.  
+  
+Actividades de prueba  • Utilización del sistema Web a través de un 
+computador.  
+• Definir l os casos de prueba considerando 
+principalmente datos inválidos.  
+• Ejecutar el sistema con los casos de prueba 
+definidos.  
+• Registrar y analizar los resultados  
+• Realizar corrección de errores.  
+  
+Criterios de cumplimiento  • Se han realizado todos los casos definidos.  
+• El resultado obtenido coincide con lo 
+esperado.  
+• Los errores han sido controlados.  
+Tabla 50: Especificación pruebas de sistema. 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 73 ---
+73  
+ 
+8.2.2 Pruebas de seguridad 
+ 
+En la Tabla 51, se presenta la especificación correspondiente a pruebas de seguridad.  
+ 
+Prueba de seguridad  
+Característica a probar  Seguridad.  
+Nivel de prueba  Sistema.  
+Objetivo de la prueba  Asegurar y verifica r que el sistema cumple 
+con las restricciones de acceso para personal 
+no autorizado, mediante los roles de usuario.  
+Enfoque para la definición de casos de 
+prueba  
+Caja negra.  
+Técnicas para la definición de casos de 
+prueba  
+Se utilizarán datos válidos e  inválidos, para 
+verificar que:  
+• Al ingresar al sistema con datos 
+inválidos muestre los men sajes 
+correspondientes.  
+• Autenticación y redirección correcta 
+al in gresar datos válidos de distintos 
+perfiles.  
+• Probar el ingreso a URL que no 
+corresponden al perfil autenticado.  
+  
+Actividades de prueba  • Utilización del sistema Web a través 
+de un computador.  
+• Ingreso al sistema con usuarios de 
+perfiles distintos.  
+• Modificación de URL para ingresar a 
+funcionalidades que no corresponden 
+al perfil autenticado.  
+• Registrar y analizar los resultados  
+• Realizar corrección de errores.  
+  
+Criterios de cumplimiento  • Restricción de ingreso a usuarios no 
+autorizados.  
+• Ingreso correc to según el perfil de 
+usuario.  
+• Los errores han sido controlados.  
+Tabla 51: Especificación pruebas de seguridad. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 74 ---
+74  
+ 
+8.2.3 Pruebas de usabilidad 
+ 
+En la Tabla 52, se presenta la especificación correspondiente a pruebas de usabilidad.  
+ 
+Prueba de usabilidad  
+Característica a probar  Interfaz y navegación.  
+Nivel de prueba  Aceptación.  
+Objetivo de la prueba  Determinar qué tan sencilla es de utilizar la 
+plataforma.  
+Enfoque para la definición de casos de 
+prueba  
+Caja negra.  
+Técnicas para la definición de casos de 
+prueba  
+• Se solicitará a un grupo de personas 
+utilizar el sistema.  
+• Aplicar una encuesta de satisfacción.  
+Actividades de prueba  • Utilización de l siste ma Web a través 
+de un computador,  tablet o 
+smartphone.  
+• Según el pe rfil asignado al usuario, 
+navegar y utilizar el sistema.  
+• Aplicación de encuesta para medir el 
+nivel de entendimiento del sistema 
+Web.  
+• Registrar y analizar los resultados.  
+  
+Criterios de cumplimiento  Obtención de resultados positivos con una 
+aprobación igual o superior al 70%  
+Tabla 52: Especificación pruebas de usabilidad. 
+  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+--- PAGE 75 ---
+75  
+ 
+9 BIBLIOGRAFÍA  
+Balsamiq Wireframes. (s.f.). Obtenido de https://balsamiq.com/wireframes/ 
+Bizagi. (s.f.). Obtenido de https://www.bizagi.com/es/modelamiento-con-bizagi-process-modeler-
+por-demanda 
+Castillo, L. (2012). Conociendo GitHub . Obtenido de ¿Qué es GitHub?: 
+https://conociendogithub.readthedocs.io/en/latest/data/introduccion/#:~:text=GitHub%
+20es%20una%20plataforma%20de,de%20control%20de%20versiones%20Git.&text=El
+%20c%C3%B3digo%20se%20almacena%20de,creando%20una%20cuenta%20de%20p
+ago. 
+Condor tinoco, E. E., & Soria Solís, I. (2014). Programación Web con CSS, JavaScript, PHP y AJAX.  
+Condor Tinoco, E. E., & Soria Solís, I. (2014). Programación Web con CSS, JavaScript, PHP y AJAX.  
+Documentación PHP . (s.f.). Recuperado el 29 de  Octubre de 2020, de ¿Qué es PHP?: 
+https://www.php.net/manual/es/intro-whatis.php 
+Documentación Visual Studio Code . (s.f.). Obtenido de Getting Star ted: 
+https://books.google.es/books?hl=es&lr=&id=QRG-
+CQAAQBAJ&oi=fnd&pg=PA1&dq=css+que+es&ots=VqTUiTTjXE&sig=bL3JuxBRyvesVT3Z
+NDpZywNR2Ro#v=onepage&q=css%20que%20es&f=false 
+Equipo Vértice. (2009). Diseño Básico de Páginas Web en HTML.  
+Guía Vue.js . (s.f.). R ecuperado el 29 de Octubre de 2020, de ¿What is Vue.js?: 
+https://vuejs.org/v2/guide/ 
+Heroku Dev Center . (9 d e Junio de 2020). Obtenido de How Heroku Works: 
+https://devcenter.heroku.com/articles/how-heroku-works 
+Shukla, S. (17 de Mayo de 2019). Top 5 Benefits of Choosing Laravel Framework for Your Next Project. 
+Obtenido de NetSolutions: https://www.netsolutions.c om/insights/laravel-framework-
+benefits/ 
+Sommervile. (2011). Ingeniería de Software.  Obtenido de 
+http://artemisa.unicauca.edu.co/~cardila/Libro_Sommerville_9.pdf 
+yworks. (s.f.). Obtenido de yED Graph Editor: https://www.yworks.com/products/yed 
+ 
+ 
+ 
+ 
  
   
---- PAGE 13 ---
-13 
- 
-1. Introducción    
- 
-Es de conocimiento general que los conductores que transitan por las ciudades enfrentan 
-diversos desafíos, siendo uno de los más significativos la búsqueda de estacionamiento. Esta 
-situación se intensifica en sitios con alta afluencia de personas, como colegios, 
-universidades, hospitales, centros comerciales y supermercados. En la gran mayoría de 
-estos lugares, la gestión del estacionamiento se realiza de manera manual e independiente, 
-lo que obliga a los conductores a buscar un espacio disponible por su cuenta, sin saber 
-dónde estacionarse directamente. Este escenario provoca una serie de inconvenientes, 
-destacando la pérdida de tiempo y el aumento del estrés. 
- 
-Este proyecto se centra en mejorar la gestión de estacionamiento en las dependencias de 
-la Universidad del Bío -Bío, específicamente en el campus Fernando May, sede Chillán. La 
-problemática va más allá de la falta de  organización de estacionamientos, ya que también 
-implica la ausencia de sistemas que faciliten a los conductores la localización de un lugar 
-disponible para estacionar de forma cómoda. La mayoría de los sitios que poseen 
-aparcamientos carecen de herramien tas tecnológicas para monitorear y controlar el flujo 
-vehicular de manera efectiva. Por lo tanto, este proyecto busca implementar soluciones que 
-no solo mejoren la experiencia de estacionamiento en el campus, sino que también 
-contribuyan a la disminución d el estrés y el uso eficiente del tiempo por parte de la 
-comunidad universitaria. 
- 
-1.1 Justificación 
- 
-El parque automotriz de Chile ha presentado un constante crecimiento, donde cada año se 
-elevan las cifras de personas que tienen acceso a un vehículo. Usach (s.f.) indica que desde 
-el año 2010, la cantidad de estos medios de transporte ha crecido más del doble , con un 
-57%, lo cual consecuentemente, provoca una mayor demanda de espacios para estacionar. 
  
-En el aspecto psicológico, diversos estudios afirman que, buscar aparcamiento en 
-estacionamientos puede generar considerables índices de estrés e incomodidad. Según un 
-estudio publicado por la compañía Bosh, cerca del 52% de los españoles sufre de estrés y 
-ansiedad al perder tiempo buscando estacionamientos (Autocasión, 2013) . Así mismo la 
-aplicación EasyPark, destaca que uno de cada cinco conductores se estresa a la hora de 
-buscar aparcamiento (Zamoranews, s.f-a). Y finalmente, la página PsicoCode estima que la 
-irritabilidad, agresividad e ira, además de los niveles de cortisol que generan el estrés, 
-aumentan en situaciones donde conductores se enfrentan a buscar aparcamiento  
-(PsicoCode, s.f.). 
  
-En el aspecto económico diversos estudios afirman que se puede llegar a malgastar grandes 
-cantidades de combustible con este rudimentario sistema mencionado, ya que los vehículos 
-al estar esperando y conduciendo lentamente en una demorosa búsqueda de lugar, llegan 
-a consumir considerables cantidades de estos fluidos necesarios para alimentar los. Según 
---- PAGE 14 ---
-14 
+  
+--- PAGE 76 ---
+76  
  
-un estudio elaborado por la aplicación WazyPark se estima que la población española tiene 
-un gasto anual de 3.900 millones de euros al año en combustible (Sara, 2020).  
+10  ANEXOS  
+10.1 Anexo A 
+En esta sección entre la Figura 31 y Figura 43, se presenta el diseño de interfaz extras del sistema. 
  
-En el aspecto ambiental, se destaca la existencia de estudios que explican que los vehículos 
-en búsqueda de estacionamientos pueden llegar a producir considerables cifras de 
-compuestos nocivos que impactan en el medioambiente. Según la revista digital MoviliBlog, 
-sólo en la ciudad de Chicago, producto de la búsqueda de estacionamiento, se estima una 
-producción de 129.000 toneladas de CO2 al año (Viñuela, 2015).  
+10.1.1 Módulo del perfil encargado 
+• Módulo Inicio de página: En este módulo el encargado podrá visualizar las acciones 
+más relevantes del sistema. 
  
-Por último, se debe destacar que la ciudad de Chillán , donde se encuentra la Universidad 
-bajo estudio, se ha convertido en capital regional de la región de Ñuble , creada en el año 
-2017, por lo cual últimamente, se ha notado un aumento en la densidad poblacional , así 
-como en el uso de automóviles . Análisis estadísticos muestran un aumento del 23% en el 
-flujo vehicular. Otro acontecimiento importante para destacar es el may or acceso a 
-vehículos, producto de mayor capacidad adquisitiva por parte de las personas, gracias a 
-hechos como los masivos retiros de fondos de previsión social, entre otros (SoyChile, 2023). 
+En la Figura 31, se observan la página de inicio. 
  
-1.2 Propósito  
  
-Se llevó a cabo una investigación aplicada con el fin de dar solución a la problemática 
-anteriormente planteada. En principio, se estudiaron variadas formas de resolver esta 
-necesidad, donde se obtuvo que uno de los métodos más instaurados, es el uso de sensores 
-que detectan vehículos instalados en los es pacios de estacionamiento, los cuales resultan 
-ser sumamente costosos y poco prácticos, puesto que cada lugar debe poseer su respectivo 
-sensor. Por lo tanto, la mejor solución es aprovechar el potencial de la inteligencia artificial 
-por una serie de razone s, entre, las que destacan, el aspecto económico mencionado 
-anteriormente respecto a los sensores, la confiabilidad y precisión que presentan los 
-modelos inteligentes y la escalabilidad al poder detectar una gran variedad de objetos 
-(personas, patentes, rostros, etc.) en tiempo real. Se plantea como solución la selección de 
-un modelo de visión artificial, que logre detectar los espacios de estacionamiento y 
-clasificarlos según su estado (vacante u ocupado), esperando índices que superen el 95% 
-de precisión, ya que generalmente se considera desde el 90% como un modelo que entrega 
-información confiable, lo que aumenta así la satisfacción del usuario y la utilidad práctica 
-del modelo. 
+Figura 31: Interfaz módulo inicio de página. 
  
-Lo anterior se pude lograr mediante la captura de imágenes en tiempo real , obtenidas de 
-una cámara ubicada en un sitio estratégico, desde el cual se pueda tener una visibilidad de 
-calidad del estacionamiento en cuestión. 
  
  
  
  
---- PAGE 15 ---
-15 
  
-1.3 Resumen de capítulos 
  
-El desarrollo del informe se divide en diez capítulos, siendo el primero el de introducción 
-abordado anteriormente, donde se expone el problema de manera general. El segundo 
-capítulo describe el problema a resolver de manera detallada, además de definir el objetivo 
-general, los objetivos específicos y la hipótesis. En el capítulo tres se presenta el marco 
-teórico donde se definen los conceptos relevantes a considerar para comprender el 
-proyecto, como técnicas y arquitecturas de programación que se usarán posteriormente. 
-En el cuarto capítulo se definen  las métricas de evaluación y conceptos relacionados para 
-comprender los resultados. Ya en el quinto capítulo se nombran las herramientas que se 
-ocuparán para desarrollar el proyecto, como lenguajes  de programación , bibliotecas, 
-entornos de desarrollo, etc. En el sexto capítulo se presenta la revisión sistemática de la 
-literatura realizada en base al tema de la investigación, donde , se estudia el estado actual 
-de la literatura en casos similares  al abordado . En el séptimo capítulo se presenta la 
-metodología de desarrollo , la cual muestra la obtención y procesamiento de los datos , 
-siguiendo con el modelado de las arquitecturas y sus respectivas funcionalidades. Luego se 
-presenta la etapa de evaluación, donde se pone a prueba mediante métricas el rendimiento 
-de los modelos, y se selecciona el que demuestre mejor rendimiento .  El séptimo capítulo 
-consta de la implementación del modelo en una aplicación que logre entregar al usuario la 
-solución que el modelo plantea de forma comprensible y cómoda. El capítulo número ocho 
-presenta las conclusiones obtenidas de la investigación. Finalmente, el capítulo número 
-nueve indica los trabajos futuros a realizar donde se plantea ideas para escalar el proyecto. 
  
  
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
---- PAGE 16 ---
-16 
- 
-2. Problemática 
- 
-Este proyecto busca mejorar la gestión de estacionamiento en las dependencias de la 
-Universidad del Bío-Bío en la sede Chillán, campus Fernando May. Actualmente, esta sede 
-de la  Universidad cuenta con  un aproximado de 4200 estudiantes y 184 funcionarios 
-(Hermosilla, 2023) , los cuales son potenciales usuarios de los estacionamientos  
-diariamente. Además, es necesario mencionar el hecho del aumento de la oferta académica 
-que registra la Universidad actualmente, con la recién implementada carrera de Química y  
-Farmacia en 2023 y la apertura de la carrera de Medicina en 2024. Con ello se espera una 
-considerable repercusión  en la cantidad de personas que necesiten ocupar 
-estacionamientos. 
- 
-La universidad cuenta con 7 sectores de estacionamiento en el campus Fernando May, que, 
-en promedio , suman alrededor de 300 plazas de estacionamiento disponibles . D onde 
-algunos de estos sectores suelen estar prácticamente repletos en las horas peak.  
- 
-Actualmente, no existe  un sistema que gestione de alguna forma la disposición del 
-estacionamiento, por lo cual se plantea desarroll ar una comparativa  de modelos basados 
-en inteligencia artificial, que, mediante el uso de cámaras que capturen datos visuales, los 
-cuales serán sometidos a  procesos y técnicas buscando mejorar su calidad , finalmente 
-logren determinar la cantidad de espacios libres en los estacionamientos seleccionados, 
-dando información al usuario para que pueda tomar decisiones. 
- 
-Se opta por el uso de inteligencia artificial , puesto que esta propone imitar el 
-comportamiento humano  de manera que se puedan mejorar procesos cotidianos, 
-supliendo necesidades presentes en el diario vivir. Además, hay que destacar que el uso de 
-cámaras es un método eficiente y factible, superando incluso el ya conocido método con 
-sensores.  
- 
-Este estudio se centrará en un estacionamiento específico, ubicado en las dependencias del 
-Campus Fernando May de  la Universidad, el cual se encuentra al costado d el Edificio de 
-Laboratorios Centrales. La razón que justifica la selección de dicho sector de 
-estacionamiento es su ubicación, que se halla a la entrada, pero no está a la vista de forma 
-inmediata y además presenta un tamaño ideal, donde se dispone de 39 plazas. 
- 
-Hay que destacar que este estudio, se presenta como un precursor para la adaptación en 
-otros estacionamientos de la Universidad. La cual tiene en marcha planes de seguridad y 
-televigilancia, por lo que a futuro se efectuará la instalación de una gran cantidad de 
-cámaras a lo largo  del campus  y las zonas de estacionamiento , las cuales pueden ser 
-aprovechadas para estas tareas de gestión vehicular en los estacionamientos  mediante 
-modelos de inteligencia artificial.  
- 
- 
---- PAGE 17 ---
-17 
- 
-2.1 Objetivo General 
- 
-Investigar y comparar modelos de inteligencia artificial basados en Deep Learning, con el 
-propósito de utilizar cámaras para mejorar la eficiencia del estacionamiento en la 
-Universidad del Bío-Bío. 
- 
- 
-2.2 Objetivos Específicos  
- 
-A continuación, se establecen los objetivos específicos que permitirán enfocarse en 
-alcanzar el objetivo general. 
- 
- 
-• Obtener imágenes del estacionamiento, etiquetarlas y crear dos conjuntos de 
-datos con diferentes enfoques y clases para la detección. 
-• Investigar, comparar y aplicar modelos  de Deep Learning, junto a un conjunto 
-de datos que permita detectar los estados (libre u ocupado) de disponibilidad 
-en el estacionamiento de la universidad mediante cámaras en tiempo real.  
-• Evaluar la eficiencia de los modelos  a utilizar para detectar y r egistrar los 
-espacios libres en el estacionamiento de la universidad.  
-• Diseñar un a aplicación sencilla  para que los usuarios tengan la capacidad de 
-consultar sobre la disponibilidad de espacios. 
-• Integrar el modelo seleccionado con la aplicación para que los usuarios puedan 
-consultar la disponibilidad de espacios de estacionamiento en tiempo real.  
- 
- 
-2.3 Hipótesis de Trabajo 
- 
-La aplicación de un modelo basado en inteligencia artificial, a través del empleo de cámaras 
-para la detección de espacios disponibles en estacionamientos dentro de la Universidad del 
-Bío-Bío, permitirá agilizar el proceso de encontrar aparcamiento mediante una aplicación 
-móvil, resultando en la reducción significativa de sus tiempos de búsqueda. 
- 
- 
- 
- 
- 
- 
---- PAGE 18 ---
-18 
- 
-3. Estado del Arte 
- 
-Se realizó una revisión sistemática de la literatura (RSL), con el objetivo de comprender de 
-mejor manera el campo abordado por este proyecto, contextualizar sobre investigaciones 
-actuales del tema, e identificar ideas que pudieran ser útiles para enfrentar el proyecto. Se 
-inicia con la definición de preguntas de  investigación precisas, que guían la elección de 
-artículos. Se emplean palabras clave específicas para filtrar la búsqueda. Los artículos se 
-seleccionan mediante criterios de inclusión y exclusión claros. Finalmente, se publican 
-resultados que destacan la importancia de cada artículo en la investigación. 
- 
-Para llevar a cabo esta RSL, se utilizó una versión adaptada de la conocida metodología de 
-Kitchenham. La adaptación utilizada comprende las etapas y actividades que se presentan 
-en la  Figura 1 (Caro Gutiérrez et al. 2005). 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
-3.1 Preguntas de la RSL 
- 
-A continuación, se definen dos preguntas con la intención de orientar a la selección de los 
-artículos relevantes. 
- 
- 
-1. ¿Cuáles son los factores a considerar para la selección de una arquitectura de 
-inteligencia artificial, que permita la detección de espacios de estacionamiento en 
-tiempo real?  
- 
-2. ¿De qué manera influye la preparació n y el procesamiento de los datos para el 
-desarrollo de una arquitectura de inteligencia artificial? 
-Figura 1: Caro Gutiérrez. (2005). Representación de la adaptación de la metodología Kitchenham 
-https://www.researchgate.net/publication/251671565_Analisis_y_revision_de_la_literatura_en_el_con
-texto_de_proyectos_de_fin_de_carrera_Una_propuesta 
-
---- PAGE 19 ---
-19 
- 
-3.2 Palabras Clave 
- 
-Se presentan los términos clave para realizar la búsqueda y selección de artículos, además 
-de sus posibles combinaciones. 
- 
-1. “Deep Learning (AND) Cameras” 
-2. “Deep Learning (AND) Car detection”  
-3. “Deep Learning (AND) Car detection (AND) Parking”  
-4. “Deep Learning (AND) Cameras (AND) Car detection”  
-5. “Deep Learning (AND) Cameras (AND) Car detection (AND) CNN” 
-6. “Deep Learning (AND) Cameras (AND) Car detection (AND) CNN (AND) Parking” 
- 
- 
-3.3  Criterios  
- 
-Para la selección de fuentes de información, se definieron ciertos estándares o criterios que 
-considerar al revisar en revistas, artículos, páginas web, libros, entre otros. Donde se espera 
-rescatar informa ción sobre el Deep Learning, redes neuronales, técnicas, e 
-implementaciones realizadas.  
- 
-3.3.1 Inclusión 
- 
-• Los artículos deben estar directamente relacionados con Redes Neuronales 
-Convolucionales (CNN) o sus aplicaciones 
-• Los artículos deben ser recientes y actualizados, solo tomando en cuenta 
-aquellos publicados desde el año 2016 
-• Se prefieren aquellos artículos académicos revisados por pares, como 
-revistas y actas de conferencias 
- 
-3.3.2 Exclusión 
- 
-• Los artículos que no tengan relación directa con las Redes Neuronal es 
-Convolucionales o que no sean aporte al tema serán excluidos 
-• Los artículos obsoletos o desactualizados serán excluidos por no contribuir al 
-estado actual de la investigación 
-• Los artículos en idiomas diferentes al inglés o español serán excluidos 
- 
- 
- 
- 
- 
- 
- 
---- PAGE 20 ---
-20 
- 
-3.4  Búsqueda y resultados  
- 
-En esta etapa se realiza la búsqueda de artículos en las bases de datos a las que se tiene 
-acceso, en donde se definen las diferentes combinaciones con los términos claves y se 
-obtienen los siguientes resultados de búsqueda primari a como muestra la Tabla 1, donde 
-queda seleccionar artículos basándose en criterios de inclusión y exclusión. 
- 
- 
-Términos/Base de Datos Dialnet Web of 
-Science 
-IEEEXplore Resultados 
-(Deep Learning) AND 
-(Cameras) 
-48 5564 7434 13046 
-(Deep Learning) AND (Car 
-Detection) 
-20 499 932 1451 
-(Deep Learning) AND (Car 
-Detection) AND (Cameras) 
-6 106 268 380 
-(Deep Learning) AND (Car 
-Detection) AND (Cameras) 
-AND (CNN) 
-2 35 70 107 
- 
-Tabla 1: Resultados de búsqueda primaria en bases de datos 
- 
-De los resultados de la búsqueda primaria realizada anteriormente, se selecciona ron un 
-total de 35 artículos relacionados al problema en específico, de los cuales finalmente se 
-utilizaron que se consideran relevantes en sus aportes a la investigación.  Estos estudios 
-fueron escogidos bajo los siguientes criterios de selección: 
- 
-• Se incluyen aquellos artículos que tienen relación con el contexto del problema 
-planteado. 
-• Se incluyen aquellos artículos que muestran métodos efectivos y funcionales. 
-• Se excluyen aquellos artículos duplicados, o que expliquen la misma idea. 
- 
-A continuación, se presentan los 6 artículos, de diferentes autores y con variadas 
-perspectivas basadas en la problemática de la investigación. Se describe de manera  
-resumida la relevancia de cada artículo y su utilidad para esta investigación. 
  
  
  
  
 
-=== KEYWORD MATCHES (Page Numbers) ===
-patente: 1 matches on pages [14]...
-ocr: 0 matches on pages []...
-yolo: 45 matches on pages [1, 3, 5, 7, 10, 11, 12, 22, 24, 33, 39, 40, 44, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]...
-estacionamiento: 27 matches on pages [1, 3, 4, 11, 12, 13, 14, 16, 17, 18, 24, 34, 45, 46, 49, 57, 76, 78, 79, 80, 81, 82, 83, 85, 86, 87, 89]...
-carretera: 0 matches on pages []...
-peaje: 0 matches on pages []...
-conclusiones: 5 matches on pages [7, 8, 15, 24, 85]...
-conclusión: 1 matches on pages [78]...
-futuro: 5 matches on pages [9, 15, 16, 25, 87]...
-desarrollo: 14 matches on pages [6, 8, 15, 18, 25, 37, 38, 41, 42, 43, 44, 85, 86, 87]...
-propuesta: 3 matches on pages [11, 18, 88]...
-metodología: 6 matches on pages [8, 11, 15, 18, 43, 88]...
+--- PAGE 77 ---
+77  
+ 
+• Módulo Detalle solicitud: En este módulo el encargado podrá visualizar el detalle de 
+las solicitudes de préstamo del sistema. 
+ 
+En la Figura 32, se observan la estructura de la visualización de detalle de solicitudes. 
+ 
+ 
+Figura 32: Interfaz módulo: detalle solicitud. 
+ 
+• Módulo Solicitud. 
+ 
+En la Figura 33, se observan las solicitudes rechazadas, con s us correspondientes 
+acciones. 
+ 
+ 
+Figura 33: Interfaz módulo: solicitudes rechazadas. 
 
+--- PAGE 78 ---
+78  
+ 
+En la Figura 34, se observan las solicitudes canceladas, con s us correspondientes 
+acciones. 
+ 
+ 
+Figura 34: Interfaz módulo: solicitudes canceladas. 
+ 
+• Módulo Préstamos: En este módulo el encargado podrá visualizar los préstamos de 
+equipo generados. 
+ 
+En la Figura 35, se observan los préstamo, con sus correspondientes acciones. 
+ 
+ 
+Figura 35: Interfaz módulo: préstamos 
+ 
+ 
 
-=== LAST 10 PAGES ===
+--- PAGE 79 ---
+79  
+ 
+• Módulo Ver detalle equipo: En este módulo el encargado podrá visualizar el detalle de 
+los equipo ingresados en sistema. 
+ 
+En la Figura 36, se la distribución de esta interfaz, con sus correspondientes acciones. 
+ 
+ 
+Figura 36: Interfaz módulo: ver detalle equipo. 
+ 
+• Módulo Modificar equipo: En este módulo el encargado modificar las características 
+de un equipo. 
+ 
+En la Figura 37, se la distribución de esta interfaz, con sus correspondientes acciones. 
+ 
+ 
+Figura 37: Interfaz módulo: modificar equipo. 
+
+--- PAGE 80 ---
+80  
+ 
+• Módulo Agregar equipo: En este módulo el encargado agregar un equipo con sus 
+correspondientes características. 
+ 
+En la Figura 38, se la distribución de esta interfaz, con sus correspondientes acciones. 
+ 
+Figura 38: Interfaz módulo: agregar equipo. 
+• Módulo Ver detalle existencia: En este módulo el encargado podrá visualizar el detalle 
+de las existencia de equipo ingresados en sistema. 
+ 
+En la Figura 39, se la distribución de esta interfaz, con sus correspondientes acciones. 
+ 
+ 
+Figura 39: Interfaz módulo: ver detalle existencia. 
+
+--- PAGE 81 ---
+81  
+ 
+• Módulo Agregar existencia: En este módulo  el encargado puede agregar un a 
+existencia con sus correspondientes características. 
+ 
+En la Figura 40, se la distribución de esta interfaz, con sus correspondientes acciones. 
+ 
+ 
+Figura 40: Interfaz módulo: agregar existencia. 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 --- PAGE 82 ---
-82 
+82  
  
-Se definen las estructuras de datos que se enviarán a través de los endpoints creados. En el 
-caso de "SpaceData", esta estructura incluye la inicialización de un identificador (ID), un 
-estado y la cantidad de vehículos en el estacionamiento. Por otro lado, para "SpacesData", 
-la estructura consiste en una lista que contendrá todos los espacios, y estos dat os se 
-recibirán de "SpaceData". 
+10.1.2 Módulo del perfil alumno 
+• Módulo Catálogo: En este módulo el alumno podrá visualizar las categorías de los 
+equipos disponibles. 
  
-Los endpoints en cuestión son dos: 
- 
-1. update_spaces (POST): Este endpoint tiene la responsabilidad de insertar los datos 
-de los espacios de estacionamiento en la base de datos, siguiendo la estructura 
-mencionada anteriormente. Los datos se envían mediante una solicitud de tipo 
-POST. 
- 
-2. get_spaces (GET): Este endpoint  se encarga de proporcionar los datos a la interfaz 
-de usuario. En consecuencia, es de tipo GET. Es importante destacar que 
-"get_spaces" obtiene los datos relacionados con la cantidad de espacios de 
-estacionamiento totales, organizados por fecha y hora. Es to se debe a cómo se ha 
-estructurado la base de datos. En lugar de realizar UPDATES, la base de datos inserta 
-todos los espacios de estacionamiento con su estado actual cada vez que ocurre un 
-cambio. Por lo tanto, para garantizar el funcionamiento en tiemp o real y mantener 
-un historial de los datos, se ha optado por este enfoque. 
+En la Figura 41, se observa el catálogo dividido por categoría. 
  
  
-Lo mencionado anteriormente se puede apreciar en la Figura 76, donde se muestra la base 
-de datos con dos registros. El primero corresponde a la ocupación de los siete 
-estacionamientos en su totalidad, y el segundo indica que el estacionamiento número 6 
-está ocupado. Además, se puede observar que debido a que el vehículo  utilizó el 
-estacionamiento 6 realizó una inserción en el registro de los siete estacionamientos. 
+Figura 41: Interfaz módulo catálogo. 
+• Módulo Detalle solicitud: En este módulo el alumno podrá visualizar el detalle de las 
+solicitud realizada. 
+ 
+En la Figura 42, se la distribución de esta interfaz, con sus correspondientes acciones. 
  
  
-Figura 76: Registro Base de Datos 
- 
+Figura 42: Interfaz módulo: detalle solicitud. 
 
 --- PAGE 83 ---
-83 
+83  
  
-En la Figura 77 se puede apreciar la aplicación creada en Flutter y cómo esta visualiza y 
-monitorea los espacios de estacionamiento . En este caso se optó por utilizar una imagen 
-satelital de las dependencias  para representar de una manera más entendible los 
-estacionamientos y cómo estos se distribuyen. Cada vez que un vehículo ingresa o se 
-desplaza de un espacio , el modelo lo detecta y actualiza los datos, de esta forma la 
-aplicación rescata en tiempo real la cantidad de estacionamientos disponibles consultando 
-al endpoint “get_spaces” explicado anteriormente. Los espacios ocupados se marcan con 
-color rojo, mientras que los disponibles de color verde. 
+10.1.3 Módulo inicio de sesión 
  
+En este módulo los usuarios del sistema podrán ingresar sus credenciales para hacer uso de la 
+plataforma, siendo con la redirección correspondiente según el perfil. 
  
+En la Figura 43, se la distribución de esta interfaz, con sus correspondientes acciones. 
  
  
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
-Figura 77: Interfaz de la aplicación para detectar estacionamientos 
- 
- 
- 
- 
- 
- 
- 
- 
- 
-
---- PAGE 84 ---
-84 
- 
-Finalmente, en la Figura 78 se puede observar el resultado final con el servidor, el modelo 
-y la interfaz funcionando. En el lado izquierdo está el modelo con cada una de las regiones 
-de interés y al lado derecho la interfaz creada para el usuario con el espacio correctamente 
-marcado como ocupado. 
- 
- 
- 
-Figura 78: Comparación de la detección de la cámara con la aplicación 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
-
---- PAGE 85 ---
-85 
- 
-8.  Conclusiones 
- 
- 
-A partir del trabajo realizado a lo largo del informe se puede concluir que: 
- 
-Los objetivos propuestos en él capítulo 3 se llevaron a cabo de manera efectiva, con la 
-selección y comparación de diferentes modelos de visión artificial  en dos diferentes 
-conjuntos de datos, donde se seleccionó el de mejor rendimiento para ser utilizado junto a 
-una aplicación. Siendo esta  desarrollada exitosamente recogiendo de manera precisa los 
-datos del modelo a través de una base de datos. Permitiendo así la detección de 31 espacios 
-de estacionamiento de los laboratorios centrales en las dependencias de la Universidad del 
-Bío-Bío, Campus Fernando May, Chillán. 
- 
-Se destaca respecto a otros estudios el hecho de desarrollar una aplicación con una base de 
-datos, lo cual no se había realizado en trabajos anteriores encontrados en la revisión 
-sistemática de la literatura.  
- 
-Pero lo más destacabl e y en lo que se centra la investigación, es en la comparativa de 
-diferentes arquitecturas de la red neuronal convolucional YOLO, con un dataset propio. 
-Resultando así, en que el modelo con mejor rendimiento  resultó ser la versión YOLOv8m 
-junto al dataset de espacios vacíos y ocupados, mostrando una precisión del 99% en el caso 
-objetivo de la Universidad. Sin embargo, se menciona el hecho de abordar  una gran 
-limitante, como lo es el ángulo en que la cámara captura los datos, viéndose solo pequeñas 
-partes de los vehículos en ciertos casos y las líneas del suelo, no siempre se reconocían 
-fácilmente. Donde de los 39 estacionamientos totales, solo se lograron rescatar 31 de 
-manera correcta y quedando 8 espacios que no se pueden distinguir debido al ángulo de la 
-cámara, por ende, no se pudieron ni siquiera etiquetar, siendo esa la razón del 99% de 
-precisión.  
- 
-De igual manera, el modelo desarrollado, muestra muy buenos índices de efectividad, por 
-lo que se estima que en un entorno con la cám ara en una posición donde capture a lo 
-vehículos sin interceptarse a tal nivel, se obtendrían resultados perfectos de todo el 
-estacionamiento en su completitud. Siendo el mejor ángulo desde atrás o desde el frente 
-de los objetos. 
- 
-El desarrollo de este proyecto de investigación aplicada muestra resolver la problemática 
-con índices positivos como se había planteado, lo cual, si se implementa a nivel macro, 
-puede llegar a ser una gran ayuda para agilizar el proceso  de estacionar a los  usuarios, 
-además de resolver otros problemas indirectamente, como ambientales, económicos, y 
-psicológicos. 
- 
- 
- 
---- PAGE 86 ---
-86 
- 
-8.1 Limitaciones 
- 
-Aunque e l desarrollo del modelo  muestra resultados relativamente positivos, en ciertos 
-aspectos presenta limitaciones que impiden un resultado óptimo e ideal del modelo, siendo 
-los siguientes puntos: 
- 
-• La falta de visión de la totalidad del estacionamiento, producto de l limitado ángulo 
-que presenta la cámara respecto al espacio de estacionamiento, donde autos que 
-se encuentran más cercanos al dispositivo, obstruyen la visión de este para observar 
-los vehículos que se encuentren más alejados. Produciéndose así solapamiento de 
-unos vehículos a otros, lo que impide detectar lugares donde existen espacios en 
-que puede haber objetos. 
- 
-• La falta de cámaras en las otras zonas de estacionamiento de la Universidad, para 
-haber obtenido más datos para el dataset, y así diversificarlo aún más. Y tener la 
-oportunidad de probar el modelo en otros entornos. 
- 
-• La falta de acceso a la informa ción que captura la cámara en tiempo real, por la 
-forma en que está constituido el sistema de vigilancia, denegando la accesibilidad a 
-terceros. 
- 
-• La obtención de un dron que permita tomar fotografías aéreas de los 
-estacionamientos de la Universidad. Esto para que luego en la aplicación, se use de 
-fondo para referenciar el espacio real de donde se informa al usuario, y poder crear 
-una interfaz llamativa e intuitiva. 
- 
-• Y la falta de poder computacional, al contar con un notebook que, aunque presenta 
-características técnicas mayores a la media, no lograba ejecutar ciertas versiones de 
-la arquitectura por su gran complejidad y cantidad de parámetros, estando 
-restringido por su memoria. 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
---- PAGE 87 ---
-87 
- 
-9.  Trabajos Futuros 
- 
-Se proponen ciertos puntos para continuar con el desarrollo  de este proyecto, y para 
-mejorar el modelo obtenido, como: 
- 
-• A largo plazo, producto de la instauración del proyecto de seguridad y televigilancia 
-de la Universidad, se espera la implementación de más cámaras de seguridad en las 
-distintas zonas de estacionamiento, por lo cual se plantea expandir el proyecto a lo 
-largo de las diferentes zonas dentro de la Universidad. Donde se recomienda que la 
-instalación de las cámaras presente un ángulo adecuado hacia la captura de los 
-vehículos, donde no se solapen unos a otros. 
- 
-• Se propone la captura de imágenes de estacionamientos en las distintas épocas del 
-año, para aumentar así su diversidad, y mejorar su rendimiento en variadas 
-situaciones, al entrenarlo con estos datos. Especialmente enfocarse en el invierno 
-con las lluvias torrenciales y los días con neblina. 
- 
-• Un punto importante, es la mejora de la aplicación, que se encarga de transmitir los 
-datos detectados por el modelo , a los usuarios, que son quienes usan los 
-estacionamientos. Estas mejoras radican en el aspecto de visualización de los datos, 
-que sea una interfaz intuitiva que muestre a los usuarios, donde hay espacios 
-disponibles para aparcar de manera sencilla y rápida. 
- 
-• Se planteó desde un comienzo, la idea de tener una especie de pantalla en la entrada 
-de vehículos de la Universidad, donde se muestre la cantidad de espacios 
-disponibles y ocupados . Así el usuario sabrá de inmediato donde puede dejar su 
-vehículo y no perder tiempo en búsquedas. Además, esto es mucho más cómodo, 
-ya que no necesita que las personas descarguen una aplicación y vayan observando 
-el dispositivo móvil para obtener la información. 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
---- PAGE 88 ---
-88 
- 
-10. Referencias 
- 
-About. (2019, marzo 6). OpenCV. https://opencv.org/about/ 
-Autocasión. (2013, diciembre 17). Buscar aparcamiento, lo que más estresa a los 
-conductores. Autocasión. https://www.autocasion.com/actualidad/noticias/la -busqueda-
-de-aparcamiento-actividad-mas-estresante-para-los-conductores-espanoles 
-Dart programming language. (s/ f). Dart.dev. Recuperado el 14 de diciembre de 2023, de 
-https://dart.dev/ 
-Deep Learning o Aprendizaje profundo : ¿qué es? (2022, abril 19). Formation Data Science | 
-Datascientest.com. https://datascientest.com/es/deep-learning-definicion 
-Díaz, R. (2020, ma yo 8). Métricas de Clasificación. The Machine Learners. 
-https://www.themachinelearners.com/metricas-de-clasificacion/ 
-Duy-Linh Nguyen, Xuan -ThuyVo, Adri Priadana, Kang -Hyun Jo. (2023, agosto 1). 
-YOLO5PKLot: A Parking Lot Detection Network Based on Improved  YOLOv5 for Smart 
-Parking Management System - researchr publication authors. Researchr.org. 
-https://researchr.org/publication/NguyenVPJ23/authors 
-El tutorial de Python. (s/f). Python documentation. Recuperado el 14 de diciembre de 2023, 
-de https://docs.python.org/es/3/tutorial/ 
-FAQ. (s/f). Flutter.dev. Recuperado el 14 de diciembre de 2023, de 
-https://docs.flutter.dev/resources/faq 
-Fernandez Fernandez, J. M., & Florez Lopez, R. (2008). Las Redes Neuronales Artificiales. 
-Netbiblo. 
-Google colab. (s/f). Google .com. Recuperado el 14 de diciembre de 2023, de 
-https://research.google.com/colaboratory/faq.html 
-Gutiérrez, C. (2005). Researchgate.net. 
-https://www.researchgate.net/publication/251671565_Analisis_y_revision_de_la_literatu
-ra_en_el_contexto_de_proyectos_de_fin_de_carrera_Una_propuesta 
-Haya, P. (2021, noviembre 29). La metodología CRISP-DM en ciencia de datos - IIC. Instituto 
-de Ingeniería del Conocimiento. https://www.iic.uam.es/innovacion/metodologia-crisp-dm-
-ciencia-de-datos/ 
-Jay. (2023, mayo 6). Introduc ción a YOLO: detección de objetos en tiempo real. HashDork. 
-https://hashdork.com/es/yolo/ 
---- PAGE 89 ---
-89 
- 
-LabelImg. (s/f). PyPI. Recuperado el 14 de diciembre de 2023, de 
-https://pypi.org/project/labelImg/1.4.0/ 
-Machine Learning: definición, funcionamiento, usos. (2021, diciembre 13). Formation Data 
-Science | Datascientest.com. https://datascientest.com/es/machine -learning-definicion-
-funcionamiento-usos 
-Matplotlib — visualization with python. (s/f). Matplotlib.org. Recuperado el 14 de diciembre 
-de 2023, de https://matplotlib.org/ 
-Max pooling. (s/f). Paperswithcode.com. Recuperado el 14 de diciembre de 2023, de 
-https://paperswithcode.com/method/max-pooling 
-Nguyen, T., Tran, T., Mai, T., Le, H., Le, C., Pham, D., & Phung, K. -H. (2021). An adaptive 
-vision-based outdoor car par king lot monitoring system. 2020 IEEE Eighth International 
-Conference on Communications and Electronics (ICCE). 
-pandas - Python Data Analysis Library. (s/f). Pydata.org. Recuperado el 14 de diciembre de 
-2023, de https://pandas.pydata.org/about/ 
-Psicocode. (2022, junio 8). El tiempo en buscar aparcamiento afecta a la salud. Psicocode. 
-https://psicocode.com/miscelanea/tiempo-buscar-aparcamiento/ 
-¿Qué son las redes neuronales convolucionales? (s/f). Ibm.com. Recuperado el 14 de 
-diciembre de 2023, de https://www.ibm.com/es-es/topics/convolutional-neural-networks 
-Rahman, S., Ramli, M., Arnia, F., Sembiring, A., & Muharar, R. (2020). Convolutional neural 
-network customization for parking occupancy detection. 2020 International Conference on 
-Electrical Engineering and Informatics (ICELTICs). 
-Rusell, S., & Norvig, P. (2004). Inteligencia Artificial Un Enfoque Moderno segunda edición. 
-Sara, E. (2020, abril 13). La pesadilla de buscar estacionamiento, sobre la mesa. Moviliblog. 
-https://blogs.iadb.org/transporte/es/la-pesadilla-de-buscar-estacionamiento-sobre-la-
-mesa/ 
-SoyChile. (2023). Desde que Ñuble es región, el parque automotriz aumentó un 23%. 
-https://www.soychile.cl/Chillan/Sociedad/2023/03/22/804394/parque-automotriz-
-aumento-23-nuble.html 
-Thomas, T., & Bhatt, T. ( 2018). Smart car parking system using convolutional neural 
-network. 2018 International Conference on Inventive Research in Computing Applications 
-(ICIRCA). 
-Ultralytics. (s/f). Ultralytics.com. Recuperado el 14 de diciembre de 2023, de 
-https://www.ultralytics.com/es/ 
---- PAGE 90 ---
-90 
- 
-Usach, D. (s/f). Parque automotriz en Chile creció 10% desde la prepandemia y superó los 6 
-millones. Diario Usach. Recuperado el 14 de diciembre de 2023, de 
-https://www.diariousach.cl/parque-automotriz-en-chile-crecio-10-desde-la-prepandemia-
-y-supero-los-6 
-Viñuela, S. (2015, abril 16). Pierdes 216 euros al año por buscar aparcamiento. Auto Bild 
-España. https://www.autobild.es/noticias/los -espanoles-pierden-dinero-buscando-
-aparcamiento-251077 
-Weiling Chen, C. K. Y. (2019, agosto 1). Unauthorized Parking Detection using Deep 
-Networks at Real Time. ieeexplore.ieee.org. https://ieeexplore.ieee.org/document/8783992 
-What is Computer Vision? (s/f). Ibm.com. Recuperado  el 14 de diciembre de 2023, de 
-https://www.ibm.com/es-es/topics/computer-vision 
-What is NumPy? — NumPy v2.0.dev0 Manual. (s/f). Numpy.org. Recuperado el 14 de 
-diciembre de 2023, de https://numpy.org/devdocs/user/whatisnumpy.html 
-Zhang, W., Yan, J., & Yu, C. (2019). Smart parking system based on convolutional neural 
-network models. 2019 6th International Conference on Information Science and Control 
-Engineering (ICISCE). 
-(S/f-a). Zamoranews.com. Recuperado el 14 de diciembre de 2023, de 
-https://www.zamoranews.com/articulo/reportajes/buscar-aparcamiento-factor-estres-
-mitad-conductores/20210615114136167166.html 
-(S/f-b). Pytorch.org. Recuperado el 14 de diciembre de 2023, de https://pytorch.org/ 
-(S/f-c). Mysql.com. Recuperado el 14 de diciembre de 2023, de 
-https://www.mysql.com/about/ 
-(S/f-d). Visualstudio.com. Recuperado el 14 de diciembre de 2023, de 
-https://code.visualstudio.com/docs/editor/whyvscode 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
---- PAGE 91 ---
-91 
- 
-11. Anexo 
- 
-Repositorio 
- 
-Para acceder al código fuente y los archivos relacionados con este proyecto, consulte el 
-repositorio en línea en GitHub: 
- 
-Carrasco R, Rivera, J. (2023). “UBBSmartParking”. GitHub. https://github.com/ICI-
-UBB/UBBSmartParking. 
- 
- 
+Figura 43: Interfaz módulo: inicio de sesión. 
  
  

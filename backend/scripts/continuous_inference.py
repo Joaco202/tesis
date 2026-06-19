@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import numpy  # Evita OverflowError al inicializar float128 en Windows importándolo antes que OpenCV
 import cv2
+import queue
 
 # Agregar carpeta base al PATH
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -36,9 +37,13 @@ def grabber_thread_func(state: SharedState, is_video: bool, is_camera: bool, sou
     try:
         if is_camera or is_video:
             if is_camera:
-                # Usar CAP_DSHOW en Windows para inicio rápido de webcam
-                cap = cv2.VideoCapture(source_val, cv2.CAP_DSHOW)
-                if not cap.isOpened():
+                if isinstance(source_val, int):
+                    # Usar CAP_DSHOW en Windows para inicio rápido de webcam local
+                    cap = cv2.VideoCapture(source_val, cv2.CAP_DSHOW)
+                    if not cap.isOpened():
+                        cap = cv2.VideoCapture(source_val)
+                else:
+                    # Cámara IP (http, https, rtsp)
                     cap = cv2.VideoCapture(source_val)
             else:
                 cap = cv2.VideoCapture(str(source_val))
@@ -110,19 +115,140 @@ def grabber_thread_func(state: SharedState, is_video: bool, is_camera: bool, sou
             state.producer_done = True
 
 
-def worker_thread_func(pipeline: VisionOCRPipeline, state: SharedState, args, last_detections: dict[str, float]):
-    """Hilo Consumidor: Procesa frames usando el pipeline y escribe a Supabase.
+def ocr_subprocess_worker(config_path, input_queue, output_queue):
+    """Proceso independiente para ejecutar PaddleOCR sin bloquear el GIL del proceso principal."""
+    import sys
+    import time
+    from pathlib import Path
     
-    Estrategia de rendimiento:
-    - YOLO corre en CADA frame (~7ms, GPU, sin GIL significativo) → bbox fluido en display
-    - OCR corre cada OCR_INTERVAL segundos máximo → evita que PaddleOCR bloquee el GIL y congele el display
-    """
-    # Intervalo mínimo entre llamadas al OCR (segundos).
-    # Con 0.5s: el OCR puede correr hasta 2 veces/segundo, pero YOLO siempre corre.
+    # Asegurar que el PATH incluya el backend
+    backend_dir = Path(__file__).resolve().parents[1]
+    if str(backend_dir) not in sys.path:
+        sys.path.insert(0, str(backend_dir))
+        
+    import numpy as np
+    from src.vision_ocr_pipeline.config import load_config
+    from src.vision_ocr_pipeline.ocr_engine import PaddleOCREngine
+    from src.vision_ocr_pipeline.postprocess import preprocess_plate_crop, best_plate_from_ocr
+    
+    # Cargar configuración
+    cfg = load_config(config_path)
+    
+    # Forzar CPU en este proceso secundario para máxima estabilidad
+    ocr_engine = PaddleOCREngine(cfg.ocr, use_gpu=False)
+    
+    print("[OCR Process] Inicializado correctamente en CPU.")
+    
+    while True:
+        try:
+            item = input_queue.get()
+        except (KeyboardInterrupt, SystemExit, Exception):
+            break
+            
+        if item is None:
+            # Señal de apagado
+            break
+            
+        crop, det_info, frame, img_origin, now_t = item
+        try:
+            h, w = crop.shape[:2]
+            aspect_ratio = w / h if h > 0 else 0
+            
+            start_t = time.perf_counter()
+            if 0 < aspect_ratio < 2.0:
+                mid_y = h // 2
+                top_half = crop[0:mid_y, :]
+                bottom_half = crop[mid_y:h, :]
+                
+                top_prep = preprocess_plate_crop(top_half)
+                bottom_prep = preprocess_plate_crop(bottom_half)
+                
+                ocr_top = ocr_engine.read_text(top_prep)
+                ocr_bottom = ocr_engine.read_text(bottom_prep)
+                ocr_text = ocr_top + ocr_bottom
+            else:
+                ocr_input = preprocess_plate_crop(crop)
+                ocr_text = ocr_engine.read_text(ocr_input)
+                
+            plate_text, plate_conf = best_plate_from_ocr(ocr_text, cfg.ocr)
+            elapsed = time.perf_counter() - start_t
+            
+            output_queue.put((plate_text, plate_conf, ocr_text, det_info, frame, img_origin, elapsed, now_t))
+        except Exception as err:
+            print(f"[OCR Process] Error procesando crop: {err}")
+            output_queue.put((None, 0.0, [], det_info, frame, img_origin, 0.0, now_t))
+
+
+def worker_thread_func(pipeline: VisionOCRPipeline, state: SharedState, args, last_detections: dict[str, float], input_queue, output_queue):
+    """Hilo Consumidor: Procesa frames usando YOLO y delega el OCR al proceso secundario."""
     OCR_INTERVAL = 0.5
-    last_ocr_time = 0.0  # Timestamp de la última vez que se ejecutó el OCR
+    last_ocr_time = 0.0
+    ocr_in_progress = False
 
     while True:
+        # 1. Comprobar si el proceso OCR secundario tiene resultados
+        try:
+            while True:
+                res_ocr = output_queue.get_nowait()
+                ocr_in_progress = False
+                
+                plate_text, plate_conf, ocr_text, det_info, frame_stored, img_origin, elapsed, now_t = res_ocr
+                
+                if plate_text:
+                    plate = plate_text.strip().upper()
+                    
+                    # Validación de formato estricto chileno
+                    is_valid_format = bool(STRICT_NEW_PLATE.match(plate) or OLD_PLATE.match(plate))
+                    
+                    if not is_valid_format:
+                        print(f"[{datetime.now().strftime('%H:%M:%S')}] Lectura descartada (formato inválido): [ {plate} ]")
+                    else:
+                        last_time = last_detections.get(plate, 0.0)
+                        if now_t - last_time > args.cooldown:
+                            last_detections[plate] = now_t
+                            print(f"[{datetime.now().strftime('%H:%M:%S')}] DETECTADA: [ {plate} ] (OCR: {elapsed:.3f}s)")
+                            
+                            with state.lock:
+                                state.plate_overlay = (plate, plate_conf, elapsed)
+                            
+                            if pipeline.cfg.supabase.enabled:
+                                print(f"  Persistiendo patente {plate} en Supabase...")
+                                try:
+                                    from src.vision_ocr_pipeline.pipeline import DetectionResult
+                                    from src.vision_ocr_pipeline.detector import Detection
+                                    
+                                    d = Detection(
+                                        x1=det_info["x1"], y1=det_info["y1"],
+                                        x2=det_info["x2"], y2=det_info["y2"],
+                                        confidence=det_info["confidence"],
+                                        cls_id=det_info["cls_id"],
+                                        cls_name=det_info["cls_name"]
+                                    )
+                                    res_obj = DetectionResult(
+                                        detection=d,
+                                        ocr=ocr_text,
+                                        plate_text=plate_text,
+                                        plate_confidence=plate_conf
+                                    )
+                                    persist_summary = pipeline.persist_results(
+                                        results=[res_obj],
+                                        event_type=args.event_type,
+                                        camera_id=args.camera_id,
+                                        image_origin=img_origin,
+                                        image=frame_stored,
+                                    )
+                                    if persist_summary.saved_events:
+                                        print(f"  Guardado exitoso. Acceso ID: {persist_summary.saved_events[0].access_id}")
+                                    if persist_summary.errors:
+                                        print(f"  Error de persistencia: {persist_summary.errors[0]}")
+                                except Exception as err:
+                                    print(f"  Error inesperado persistiendo en Supabase: {err}")
+                else:
+                    print(f"[{datetime.now().strftime('%H:%M:%S')}] Sin patente detectada (OCR: {elapsed:.3f}s) - {img_origin}")
+        except queue.Empty:
+            pass
+
+        # 2. Obtener el siguiente frame para YOLO
         frame = None
         img_origin = "continuous_inference"
         
@@ -140,79 +266,40 @@ def worker_thread_func(pipeline: VisionOCRPipeline, state: SharedState, args, la
             time.sleep(0.02)
             continue
             
-        # ── Decidir si correr OCR en este frame ──
-        now_t = time.time()
-        run_ocr = (now_t - last_ocr_time) >= OCR_INTERVAL
-
-        # Inferencia (YOLO siempre; OCR según throttle; sin fallback pesado de escaneo completo por CPU)
-        start_time = time.perf_counter()
-        results = pipeline.process_frame(frame, run_ocr=run_ocr, run_fallback=False)
-        elapsed = time.perf_counter() - start_time
-
-        if run_ocr:
-            last_ocr_time = time.time()
-
-        plate_found = None
-        bbox_found = None
+        # 3. Inferencia de YOLO (GPU, muy rápida, no bloquea el display)
+        # run_ocr=False para no hacer OCR síncrono
+        results = pipeline.process_frame(frame, run_ocr=False, run_fallback=False)
         
+        bbox_found = None
         if results:
             res = results[0]
             d = res.detection
             bbox_found = (d.x1, d.y1, d.x2, d.y2)
-
-            if res.plate_text:
-                plate = res.plate_text.strip().upper()
-
-                # ── Validación de formato estricto (antes de persistir) ──
-                # Solo se guardan en DB placas que coincidan exactamente con
-                # los patrones oficiales chilenos: LLLL+DD (nuevo) o LL+DDDD (antiguo)
-                is_valid_format = bool(STRICT_NEW_PLATE.match(plate) or OLD_PLATE.match(plate))
-
-                if not is_valid_format:
-                    print(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠ Lectura descartada (formato inválido): [ {plate} ]")
-                else:
-                    plate_found = (plate, res.plate_confidence, elapsed)
-                    
-                    # Procesar persistencia si pasa el cooldown
-                    last_time = last_detections.get(plate, 0.0)
-                    if now_t - last_time > args.cooldown:
-                        last_detections[plate] = now_t
-                        print(f"[{datetime.now().strftime('%H:%M:%S')}] ✓ DETECTADA: [ {plate} ] (OCR: {elapsed:.3f}s)")
-                        
-                        if pipeline.cfg.supabase.enabled:
-                            print(f"  Persistiendo patente {plate} en Supabase...")
-                            try:
-                                persist_summary = pipeline.persist_results(
-                                    results=[res],
-                                    event_type=args.event_type,
-                                    camera_id=args.camera_id,
-                                    image_origin=img_origin,
-                                    image=frame,
-                                )
-                                if persist_summary.saved_events:
-                                    print(f"  ✅ Guardado exitoso. Acceso ID: {persist_summary.saved_events[0].access_id}")
-                                if persist_summary.errors:
-                                    print(f"  ❌ Error de persistencia: {persist_summary.errors[0]}")
-                            except Exception as err:
-                                print(f"  ❌ Error inesperado persistiendo en Supabase: {err}")
-
-            elif run_ocr:
-                # Solo loguear "sin patente" cuando realmente corrió el OCR
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] ✗ Sin patente detectada (OCR: {elapsed:.3f}s) - {img_origin}")
+            
+            with state.lock:
+                state.last_bbox = bbox_found
                 
-        with state.lock:
-            if plate_found:
-                state.plate_overlay = plate_found
-                state.last_bbox = bbox_found
-            elif bbox_found:
-                # Actualizar bbox aunque no haya patente (muestra el cuadro verde del YOLO)
-                state.last_bbox = bbox_found
-            else:
+            # Delegar OCR al proceso secundario si está libre y fuera de cooldown
+            now_t = time.time()
+            if not ocr_in_progress and (now_t - last_ocr_time >= OCR_INTERVAL):
+                crop = frame[max(d.y1, 0) : max(d.y2, 0), max(d.x1, 0) : max(d.x2, 0)]
+                if crop.size:
+                    ocr_in_progress = True
+                    last_ocr_time = now_t
+                    det_info = {
+                        "x1": d.x1, "y1": d.y1, "x2": d.x2, "y2": d.y2,
+                        "confidence": d.confidence, "cls_id": d.cls_id, "cls_name": d.cls_name
+                    }
+                    input_queue.put((crop, det_info, frame.copy(), img_origin, now_t))
+        else:
+            with state.lock:
                 state.last_bbox = None
 
 
-
 def main() -> None:
+    import multiprocessing
+    multiprocessing.freeze_support()
+
     parser = argparse.ArgumentParser(
         description="Simulador de inferencia continua asíncrona para detección de patentes en video o flujo de imágenes."
     )
@@ -265,7 +352,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Cargar configuración (ruta absoluta relativa al script para soportar cualquier cwd)
+    # Cargar configuración
     _cfg_path = Path(__file__).resolve().parents[1] / "config.yaml"
     cfg = load_config(str(_cfg_path))
     if args.no_persist:
@@ -274,12 +361,15 @@ def main() -> None:
     # Cargar pipeline
     pipeline = VisionOCRPipeline(cfg)
     
-    is_camera = args.source.isdigit()
+    is_ip_camera = args.source.startswith("http://") or args.source.startswith("https://") or args.source.startswith("rtsp://")
+    is_camera = args.source.isdigit() or is_ip_camera
     is_video = False
     source_val = None
     
-    if is_camera:
+    if args.source.isdigit():
         source_val = int(args.source)
+    elif is_ip_camera:
+        source_val = args.source
     else:
         source_path = Path(args.source)
         source_val = source_path
@@ -292,7 +382,18 @@ def main() -> None:
     
     state = SharedState()
     last_detections: dict[str, float] = {}
-    last_cleanup: float = 0.0  # Timestamp de la última limpieza de imágenes antiguas
+    last_cleanup: float = 0.0
+
+    # Inicializar colas y proceso OCR
+    input_queue = multiprocessing.Queue()
+    output_queue = multiprocessing.Queue()
+
+    ocr_process = multiprocessing.Process(
+        target=ocr_subprocess_worker,
+        args=(str(_cfg_path), input_queue, output_queue),
+        daemon=True
+    )
+    ocr_process.start()
     
     # Crear e iniciar hilos
     grabber_thread = threading.Thread(
@@ -302,12 +403,12 @@ def main() -> None:
     )
     worker_thread = threading.Thread(
         target=worker_thread_func,
-        args=(pipeline, state, args, last_detections),
+        args=(pipeline, state, args, last_detections, input_queue, output_queue),
         daemon=True
     )
     
     print("=" * 60)
-    print("Iniciando Inferencia Continua Asíncrona (Multihilo)...")
+    print("Iniciando Inferencia Continua Asíncrona (Multiprocesamiento)...")
     print(f"Origen de datos: {args.source}")
     print(f"Filtro Cooldown: {args.cooldown} segundos")
     print(f"Supabase habilitado: {cfg.supabase.enabled}")
@@ -319,15 +420,13 @@ def main() -> None:
     # Hilo de Sincronización de Cola Offline (si Supabase está habilitado)
     if pipeline.offline_queue:
         def sync_loop():
-            # Esperar 2 segundos antes de intentar sincronizar al inicio
             time.sleep(2.0)
             while state.running:
                 try:
                     pipeline.offline_queue.sync_queue()
                 except Exception as sync_err:
-                    print(f"⚠️ Error en hilo de sincronización offline: {sync_err}")
+                    print(f"Error en hilo de sincronización offline: {sync_err}")
                 
-                # Dormir 20 segundos en pequeños intervalos para apagado rápido
                 for _ in range(20):
                     if not state.running:
                         break
@@ -340,14 +439,11 @@ def main() -> None:
         sync_thread.start()
     
     # Hilo Principal: GUI Event Loop (OpenCV imshow)
-    # Siempre muestra el frame CRUDO más reciente a ~30 FPS.
-    # Las anotaciones (bbox + banner) se dibujan ENCIMA del frame crudo — sin mezcla, sin ghosting.
     _display_fps_t = time.perf_counter()
     _display_fps_count = 0
     _display_fps_label = "-- FPS"
     try:
         while state.running:
-            # Verificar condición de salida
             _producer_done_and_empty = False
             with state.lock:
                 if state.producer_done and state.inference_frame is None:
@@ -361,20 +457,16 @@ def main() -> None:
             bbox = None
 
             with state.lock:
-                # display_frame SIEMPRE tiene el frame más reciente de la cámara
-                # (el grabber lo actualiza continuamente, nunca lo borra)
                 if state.display_frame is not None:
                     frame_to_show = state.display_frame.copy()
                 overlay_info = state.plate_overlay
                 bbox = state.last_bbox
 
             if frame_to_show is not None:
-                # ── Dibujar bounding box directamente sobre el frame crudo (sin blend) ──
                 if bbox is not None:
                     x1, y1, x2, y2 = bbox
                     cv2.rectangle(frame_to_show, (x1, y1), (x2, y2), (0, 255, 80), 2)
 
-                # ── Banner superior con última patente detectada ──
                 if overlay_info:
                     plate_txt, plate_conf, inf_elapsed = overlay_info
                     banner_h = 44
@@ -389,7 +481,6 @@ def main() -> None:
                         2,
                     )
 
-                # ── FPS counter (esquina inf-derecha) ──
                 _display_fps_count += 1
                 now_t = time.perf_counter()
                 if now_t - _display_fps_t >= 1.0:
@@ -397,6 +488,15 @@ def main() -> None:
                     _display_fps_count = 0
                     _display_fps_t = now_t
                 h_f, w_f = frame_to_show.shape[:2]
+                (text_w, text_h), baseline = cv2.getTextSize(_display_fps_label, cv2.FONT_HERSHEY_SIMPLEX, 0.55, 1)
+                margin = 4
+                cv2.rectangle(
+                    frame_to_show,
+                    (w_f - 80 - margin, h_f - 10 - text_h - margin),
+                    (w_f - 80 + text_w + margin, h_f - 10 + baseline + margin),
+                    (15, 15, 15),
+                    -1
+                )
                 cv2.putText(
                     frame_to_show, _display_fps_label,
                     (w_f - 80, h_f - 10),
@@ -407,7 +507,6 @@ def main() -> None:
                     h, w = frame_to_show.shape[:2]
                     resized = cv2.resize(frame_to_show, (w // 2, h // 2))
                     cv2.imshow("Monitoreo de Acceso Vehicular - UBB", resized)
-                    # 33ms = 30 FPS máx en el display, completamente independiente de la IA
                     if cv2.waitKey(33) & 0xFF == ord("q"):
                         state.running = False
                         break
@@ -416,23 +515,28 @@ def main() -> None:
             else:
                 time.sleep(0.01)
 
-            # Limpieza de imágenes antiguas: ejecutar una vez cada 24 horas
             if cfg.supabase.enabled and (time.time() - last_cleanup) > 86400:
                 last_cleanup = time.time()
                 try:
                     eliminadas = pipeline.repository.limpiar_imagenes_antiguas(dias=30)
                     if eliminadas:
-                        print(f"[Mantenimiento] 🗑️  {eliminadas} imagen(es) antiguas eliminadas del Storage.")
+                        print(f"[Mantenimiento] {eliminadas} imagen(es) antiguas eliminadas del Storage.")
                 except Exception as err:
-                    print(f"[Mantenimiento] ⚠️  Error en limpieza de imágenes: {err}")
+                    print(f"[Mantenimiento] Error en limpieza de imágenes: {err}")
     except KeyboardInterrupt:
         print("\nSimulación interrumpida por el usuario.")
     finally:
         state.running = False
+        try:
+            input_queue.put(None)
+        except Exception:
+            pass
         cv2.destroyAllWindows()
-        # Esperar que los hilos terminen con un timeout corto
         grabber_thread.join(timeout=1.0)
         worker_thread.join(timeout=1.0)
+        if ocr_process.is_alive():
+            ocr_process.terminate()
+            ocr_process.join(timeout=1.0)
         print("Sistema de inferencia continua detenido de forma segura.")
 
 

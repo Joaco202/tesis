@@ -157,14 +157,9 @@ class VisionOCRPipeline:
             return None
 
         h, w = image.shape[:2]
-        use_gpu = False
-        device_str = "cpu"
-        if self._fallback_ocr is None:
-            try:
-                self._fallback_ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, device=device_str)
-            except TypeError:
-                self._fallback_ocr = PaddleOCR(use_angle_cls=self.cfg.ocr.use_angle_cls, lang=self.cfg.ocr.lang, use_gpu=use_gpu)
-        ocr = self._fallback_ocr
+        if getattr(self.ocr, "_ocr", None) is None:
+            return None
+        ocr = self.ocr._ocr
 
         try:
             if getattr(self.ocr, "is_paddlex", False):

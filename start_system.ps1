@@ -1,6 +1,10 @@
 # start_system.ps1
 # Script unificado para instalar dependencias e iniciar el frontend y el backend con webcam
 
+param(
+    [string]$Source = "0"
+)
+
 $ErrorActionPreference = 'Continue'
 
 Write-Host "==========================================================" -ForegroundColor Cyan
@@ -89,5 +93,5 @@ Write-Host "Iniciando script de inferencia continua..." -ForegroundColor Green
 Write-Host "Presiona 'q' en la ventana de la camara para detener el backend." -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
 
-# Ejecutar el backend con soporte de webcam (source 0) y mostrar la ventana en tiempo real
-#python -X utf8 scripts/continuous_inference.py --source 0 --show
+# Ejecutar el backend con el origen seleccionado y mostrar la ventana en tiempo real
+python -X utf8 scripts/continuous_inference.py --source $Source --show
