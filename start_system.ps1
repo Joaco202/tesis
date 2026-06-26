@@ -47,13 +47,25 @@ if (Test-Path $backendPath) {
     if (-not (Test-Path $venvPath)) {
         Write-Host "  [i] Entorno virtual (.venv) no encontrado. Creando venv..." -ForegroundColor DarkYellow
         
-        # Buscar la mejor instalacion de Python disponible
-        $pythonCmd = "python"
+        # Buscar Python 3.12 (3.14 es demasiado nuevo para paddlepaddle/opencv)
+        $pythonCmd = $null
         if (Get-Command py -ErrorAction SilentlyContinue) {
-            $pythonCmd = "py"
+            # Intentar Python 3.12 primero via py launcher
+            $py312 = py -3.12 --version 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                $pythonCmd = "py"
+                $pythonArgs = @("-3.12", "-m", "venv", ".venv")
+            } else {
+                $pythonCmd = "py"
+                $pythonArgs = @("-m", "venv", ".venv")
+            }
+        }
+        if (-not $pythonCmd) {
+            $pythonCmd = "python"
+            $pythonArgs = @("-m", "venv", ".venv")
         }
         
-        & $pythonCmd -m venv .venv
+        & $pythonCmd @pythonArgs
         if (-not (Test-Path $venvPath)) {
             Write-Error "No se pudo crear el entorno virtual con '$pythonCmd'. Asegurate de tener Python instalado y en tu PATH."
             exit 1
@@ -94,4 +106,4 @@ Write-Host "Presiona 'q' en la ventana de la camara para detener el backend." -F
 Write-Host "==========================================================" -ForegroundColor Green
 
 # Ejecutar el backend con el origen seleccionado y mostrar la ventana en tiempo real
-python -X utf8 scripts/continuous_inference.py --source $Source --show
+python -X utf8 scripts/continuous_inference.py --source 1 --show
