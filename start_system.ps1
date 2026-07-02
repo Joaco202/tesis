@@ -2,7 +2,7 @@
 # Script unificado para instalar dependencias e iniciar el frontend y el backend con webcam
 
 param(
-    [string]$Source = "0"
+    [string]$Source = "1"
 )
 
 $ErrorActionPreference = 'Continue'
@@ -28,10 +28,12 @@ if (Test-Path $frontendPath) {
             exit 1
         }
         Write-Host "  [OK] Dependencias de Frontend instaladas exitosamente." -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Host "  [OK] Dependencias de Frontend ya instaladas." -ForegroundColor Green
     }
-} else {
+}
+else {
     Write-Error "No se encontro el directorio frontend en '$frontendPath'."
     exit 1
 }
@@ -69,7 +71,8 @@ if (Test-Path $backendPath) {
         Write-Warning "Hubo algunos problemas instalando dependencias. Intentando continuar..."
     }
     Write-Host "  [OK] Backend preparado." -ForegroundColor Green
-} else {
+}
+else {
     Write-Error "No se encontro el directorio backend en '$backendPath'."
     exit 1
 }
@@ -93,5 +96,5 @@ Write-Host "Iniciando script de inferencia continua..." -ForegroundColor Green
 Write-Host "Presiona 'q' en la ventana de la camara para detener el backend." -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
 
-# Ejecutar el backend con el origen seleccionado y mostrar la ventana en tiempo real
-python -X utf8 scripts/continuous_inference.py --source $Source --show
+# Ejecutar el backend con soporte de webcam (source 0) y mostrar la ventana en tiempo real
+#python -X utf8 scripts/continuous_inference.py --source 0 --show

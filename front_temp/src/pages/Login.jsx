@@ -38,7 +38,7 @@ export const Login = () => {
     <div className="flex-center" style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '1rem' }}>
       <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '2rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ color: 'var(--ubb-blue)', fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Gestión estacionamiento</h1>
+          <h1 style={{ color: 'var(--ubb-blue)', fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>UBB Parking</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Ingreso para personal autorizado</p>
         </div>
 

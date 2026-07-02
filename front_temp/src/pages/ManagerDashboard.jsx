@@ -377,14 +377,6 @@ export const ManagerDashboard = () => {
   const [accessEndDate, setAccessEndDate] = useState(todayStr);
   const [exportingAccess, setExportingAccess] = useState(false);
 
-  // Filtro de notificaciones ('all' o 'major')
-  const [notificationPref, setNotificationPref] = useState(() => localStorage.getItem('notificationPreference') || 'all');
-  const notificationPrefRef = useRef(notificationPref);
-
-  useEffect(() => {
-    notificationPrefRef.current = notificationPref;
-  }, [notificationPref]);
-
   const fetchData = async () => {
     try {
       const startOfToday = new Date();
@@ -417,7 +409,7 @@ export const ManagerDashboard = () => {
         const [hours, minutes] = hStr.split(':').map(Number);
         const targetTime = new Date();
         targetTime.setHours(hours, minutes, 0, 0);
-
+ 
         let count = 0;
         if (accesses) {
           accesses.forEach(acc => {
@@ -434,7 +426,7 @@ export const ManagerDashboard = () => {
         return { time: hStr, ocupacion: count };
       });
       setChartData(hourlyData);
-
+ 
       // Ocupación Máxima (Pico del día)
       let maxOccupied = 0;
       let peakT = '07:00';
@@ -469,7 +461,7 @@ export const ManagerDashboard = () => {
       // 3. Fetch Incidencias
       const { data: incidentsData, error: incidentsError } = await supabase
         .from('incidencias')
-        .select('id, vehiculo_patente, tipo, descripcion, estado, fecha_creacion, solucion')
+        .select('id, vehiculo_patente, tipo, descripcion, estado, fecha_creacion')
         .order('fecha_creacion', { ascending: false });
 
       if (incidentsError) throw incidentsError;
@@ -503,28 +495,6 @@ export const ManagerDashboard = () => {
     }
   };
 
-  // Solicitar permiso de notificaciones del navegador al montar el componente
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, []);
-
-  // Cerrar modales con la tecla Escape
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        setIsModalOpen(false);
-        setIsVehicleModalOpen(false);
-        setIsEditModalOpen(false);
-        setEditingIncident(null);
-        setSelectedVehicle(null);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   useEffect(() => {
     fetchData();
 
@@ -533,29 +503,7 @@ export const ManagerDashboard = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'accesos' }, () => {
         fetchData();
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'incidencias' }, (payload) => {
-        fetchData();
-        // Disparar notificación push del navegador al recibir una nueva incidencia
-        if ('Notification' in window && Notification.permission === 'granted') {
-          const inc = payload.new;
-          // Filtrar por preferencia de notificación
-          if (notificationPrefRef.current === 'major' && inc.tipo !== 'Vehículo con problema mayor') {
-            return;
-          }
-          const patente = inc.vehiculo_patente || 'Sin patente';
-          const descripcion = inc.descripcion || 'Sin descripción';
-          const tipoIncidencia = inc.tipo || 'Incidencia';
-          new Notification(`🚨 ${tipoIncidencia} Reportada`, {
-            body: `Patente: ${patente}\n${descripcion}`,
-            icon: '/favicon.ico',
-            tag: `incidencia-${inc.id}`,
-          });
-        }
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'incidencias' }, () => {
-        fetchData();
-      })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'incidencias' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'incidencias' }, () => {
         fetchData();
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'vehiculos' }, () => {
@@ -575,7 +523,6 @@ export const ManagerDashboard = () => {
       descripcion: inc.descripcion || '',
       estado: inc.estado === 'cerrada' ? 'cerrada' : 'abierta',
       zona_id: inc.zona_id || '',
-      solucion: inc.solucion || '',
     });
     setIsEditModalOpen(true);
   };
@@ -586,10 +533,6 @@ export const ManagerDashboard = () => {
       alert('Por favor, completa la descripción.');
       return;
     }
-    if (editingIncident.estado === 'cerrada' && (!editingIncident.solucion || !editingIncident.solucion.trim())) {
-      alert('Por favor, ingresa una descripción de la solución para resolver la incidencia.');
-      return;
-    }
     try {
       const { error } = await supabase
         .from('incidencias')
@@ -597,7 +540,6 @@ export const ManagerDashboard = () => {
           descripcion: editingIncident.descripcion.trim(),
           estado: editingIncident.estado,
           zona_id: editingIncident.zona_id ? parseInt(editingIncident.zona_id) : null,
-          solucion: editingIncident.solucion ? editingIncident.solucion.trim() : null,
         })
         .eq('id', editingIncident.id);
 
@@ -827,15 +769,10 @@ export const ManagerDashboard = () => {
   };
 
   // Pagination computations for Vehicles
-  const filteredVehicles = vehicles.filter(veh => {
-    // Solo mostrar vehículos que tienen un propietario asignado (asociados)
-    if (!veh.propietario_nombre || !veh.propietario_nombre.trim()) return false;
-
-    return (
-      veh.patente.toLowerCase().includes(searchVehicle.toLowerCase()) ||
-      veh.propietario_nombre.toLowerCase().includes(searchVehicle.toLowerCase())
-    );
-  });
+  const filteredVehicles = vehicles.filter(veh => 
+    veh.patente.toLowerCase().includes(searchVehicle.toLowerCase()) ||
+    (veh.propietario_nombre && veh.propietario_nombre.toLowerCase().includes(searchVehicle.toLowerCase()))
+  );
   const totalVehiclesCount = filteredVehicles.length;
   const totalVehiclePages = Math.ceil(totalVehiclesCount / vehiclePageSize) || 1;
   const paginatedVehicles = filteredVehicles.slice(
@@ -869,23 +806,7 @@ export const ManagerDashboard = () => {
           <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>Panel Ejecutivo (Encargado)</h1>
           <p style={{ color: 'var(--text-secondary)' }}>Estadísticas, KPIs y Gestión de Incidencias en tiempo real</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Notificaciones push:</span>
-            <select
-              className="input-field"
-              style={{ height: '38px', padding: '0 0.5rem', fontSize: '0.85rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }}
-              value={notificationPref}
-              onChange={(e) => {
-                const val = e.target.value;
-                setNotificationPref(val);
-                localStorage.setItem('notificationPreference', val);
-              }}
-            >
-              <option value="all">Todas las incidencias</option>
-              <option value="major">Solo problemas mayores</option>
-            </select>
-          </div>
+        <div style={{ display: 'flex', gap: '1rem' }}>
           <button className="btn btn-secondary" onClick={fetchData}>
             <RotateCw size={18} /> Actualizar
           </button>
@@ -1016,26 +937,28 @@ export const ManagerDashboard = () => {
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table className="ubb-table">
             <thead>
-              <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Patente</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Propietario</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Observaciones</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Fecha Registro</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Acciones</th>
+              <tr>
+                <th>Patente</th>
+                <th>Propietario</th>
+                <th>Observaciones</th>
+                <th>Fecha Registro</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {paginatedVehicles.map((veh) => (
-                <tr key={veh.patente} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '1.125rem', letterSpacing: '1px', textAlign: 'center' }}>{veh.patente}</td>
-                  <td style={{ padding: '1rem 0.5rem', fontWeight: 500, textAlign: 'center' }}>{veh.propietario_nombre || ''}</td>
-                  <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>{veh.observaciones || '-'}</td>
-                  <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                <tr key={veh.patente}>
+                  <td>
+                    <span className="plate-badge">{veh.patente}</span>
+                  </td>
+                  <td style={{ fontWeight: 500 }}>{veh.propietario_nombre || 'No asignado'}</td>
+                  <td style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{veh.observaciones || '-'}</td>
+                  <td style={{ color: 'var(--text-secondary)' }}>
                     {format(new Date(veh.created_at), 'dd-MM-yyyy HH:mm')}
                   </td>
-                  <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
+                  <td>
                     <button 
                       className="btn btn-secondary" 
                       style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
@@ -1092,7 +1015,7 @@ export const ManagerDashboard = () => {
       <div className="card">
         <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            Gestión de Incidencias
+            <AlertTriangle size={20} color="var(--status-warning)" /> Gestión de Incidencias
           </h2>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1118,36 +1041,38 @@ export const ManagerDashboard = () => {
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table className="ubb-table">
             <thead>
-              <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                <th style={{ padding: '1rem 0.5rem' }}>ID</th>
-                <th style={{ padding: '1rem 0.5rem' }}>Patente</th>
-                <th style={{ padding: '1rem 0.5rem' }}>Descripción</th>
-                <th style={{ padding: '1rem 0.5rem' }}>Fecha Registro</th>
-                <th style={{ padding: '1rem 0.5rem' }}>Estado</th>
-                <th style={{ padding: '1rem 0.5rem' }}>Solución</th>
-                <th style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>Acciones</th>
+              <tr>
+                <th>ID</th>
+                <th>Patente</th>
+                <th>Descripción</th>
+                <th>Fecha Registro</th>
+                <th>Estado</th>
+                <th style={{ textAlign: 'right' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {paginatedIncidents.map((inc) => (
-                <tr key={inc.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                  <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)' }}>#{inc.id}</td>
-                  <td style={{ padding: '1rem 0.5rem', fontWeight: 600 }}>{inc.vehiculo_patente || 'N/A'}</td>
-                  <td style={{ padding: '1rem 0.5rem' }}>{inc.descripcion}</td>
-                  <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)' }}>
+                <tr key={inc.id}>
+                  <td style={{ color: 'var(--text-secondary)' }}>#{inc.id}</td>
+                  <td>
+                    {inc.vehiculo_patente ? (
+                      <span className="plate-badge">{inc.vehiculo_patente}</span>
+                    ) : (
+                      <span style={{ color: 'var(--text-secondary)' }}>N/A</span>
+                    )}
+                  </td>
+                  <td>{inc.descripcion}</td>
+                  <td style={{ color: 'var(--text-secondary)' }}>
                     {format(new Date(inc.fecha_creacion), 'dd-MM-yyyy HH:mm')}
                   </td>
-                  <td style={{ padding: '1rem 0.5rem' }}>
+                  <td>
                     <span className={`badge ${inc.estado === 'cerrada' ? 'badge-success' : 'badge-danger'}`}>
                       {inc.estado === 'cerrada' ? 'Resuelto' : 'Pendiente'}
                     </span>
                   </td>
-                  <td style={{ padding: '1rem 0.5rem', color: inc.solucion ? 'var(--text-primary)' : 'var(--text-secondary)', fontStyle: inc.solucion ? 'normal' : 'italic' }}>
-                    {inc.solucion || 'Sin especificar'}
-                  </td>
-                  <td style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>
+                  <td>
                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                       <button 
                         className="btn btn-secondary" 
@@ -1169,7 +1094,7 @@ export const ManagerDashboard = () => {
               ))}
               {paginatedIncidents.length === 0 && (
                 <tr>
-                  <td colSpan="7" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                  <td colSpan="6" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
                     No hay incidencias registradas.
                   </td>
                 </tr>
@@ -1212,8 +1137,8 @@ export const ManagerDashboard = () => {
 
       {/* Modal para Crear Incidencia */}
       {isModalOpen && (
-        <div style={modalOverlayStyle} onClick={() => setIsModalOpen(false)}>
-          <div style={modalContentStyle} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>
+        <div style={modalOverlayStyle}>
+          <div style={modalContentStyle} className="animate-fade-in">
             <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Registrar Nueva Incidencia</h3>
               <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
@@ -1270,8 +1195,8 @@ export const ManagerDashboard = () => {
 
       {/* Modal para Vincular/Editar Vehículo */}
       {isVehicleModalOpen && (
-        <div style={modalOverlayStyle} onClick={() => { setIsVehicleModalOpen(false); setSelectedVehicle(null); }}>
-          <div style={modalContentStyle} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>
+        <div style={modalOverlayStyle}>
+          <div style={modalContentStyle} className="animate-fade-in">
             <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>
                 {selectedVehicle ? 'Editar Vehículo' : 'Vincular Vehículo'}
@@ -1332,8 +1257,8 @@ export const ManagerDashboard = () => {
 
       {/* Modal para Editar Incidencia */}
       {isEditModalOpen && editingIncident && (
-        <div style={modalOverlayStyle} onClick={() => { setIsEditModalOpen(false); setEditingIncident(null); }}>
-          <div style={modalContentStyle} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>
+        <div style={modalOverlayStyle}>
+          <div style={modalContentStyle} className="animate-fade-in">
             <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Editar Incidencia</h3>
               <button onClick={() => { setIsEditModalOpen(false); setEditingIncident(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
@@ -1379,17 +1304,6 @@ export const ManagerDashboard = () => {
                   value={editingIncident.descripcion}
                   onChange={(e) => setEditingIncident(prev => ({ ...prev, descripcion: e.target.value }))}
                   required
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Descripción de la Solución</label>
-                <textarea 
-                  className="input-field" 
-                  rows="3"
-                  placeholder="Escribe la solución aplicada a esta incidencia..."
-                  value={editingIncident.solucion || ''}
-                  onChange={(e) => setEditingIncident(prev => ({ ...prev, solucion: e.target.value }))}
                 />
               </div>
               

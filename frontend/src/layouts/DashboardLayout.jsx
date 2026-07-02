@@ -94,7 +94,7 @@ export const DashboardLayout = () => {
       <aside className="glass-panel" style={sidebarStyle}>
         <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ color: 'var(--ubb-blue)', fontSize: '1.25rem', fontWeight: 700 }}>UBB Parking</h2>
+            <h2 style={{ color: 'var(--ubb-blue)', fontSize: '1.25rem', fontWeight: 700 }}>Gestión estacionamiento</h2>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Campus Fernando May</p>
           </div>
           {isMobile && (

@@ -46,7 +46,6 @@ export const GuardDashboard = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [incidentType, setIncidentType] = useState('Vehículo mal estacionado');
   const [description, setDescription] = useState('');
-  const [incidentStatus, setIncidentStatus] = useState('abierta'); // 'abierta' = En proceso, 'cerrada' = Resuelto
   const [submitting, setSubmitting] = useState(false);
 
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -57,19 +56,6 @@ export const GuardDashboard = () => {
     setSelectedImageEvent(ev);
     setIsImageModalOpen(true);
   };
-
-  // Cerrar modales con la tecla Escape
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        setIsModalOpen(false);
-        setIsImageModalOpen(false);
-        setZoomedImage(null);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   // Fetch data
   useEffect(() => {
@@ -210,7 +196,6 @@ export const GuardDashboard = () => {
     setSelectedEvent(ev);
     setIncidentType('Vehículo mal estacionado');
     setDescription('');
-    setIncidentStatus('abierta'); // por defecto "En proceso"
     setIsModalOpen(true);
   };
 
@@ -229,7 +214,7 @@ export const GuardDashboard = () => {
         descripcion: description.trim(),
         zona_id: selectedEvent.zoneId || null,
         usuario_id: user ? user.id : null,
-        estado: incidentStatus,
+        estado: 'abierta',
       };
 
       const { error } = await supabase
@@ -241,9 +226,6 @@ export const GuardDashboard = () => {
       alert('Incidencia registrada exitosamente.');
       setIsModalOpen(false);
       setSelectedEvent(null);
-      setDescription('');
-      setIncidentType('Vehículo mal estacionado');
-      setIncidentStatus('abierta');
     } catch (err) {
       console.error('Error reporting incident:', err);
       alert('Error al registrar incidencia: ' + err.message);
@@ -345,7 +327,7 @@ export const GuardDashboard = () => {
         {/* Live Feed Table */}
         <div className="card">
           <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Registro en Vivo (Cámara)</h2>
+            <h2 className="ubb-section-title" style={{ margin: 0 }}>Últimos accesos registrados</h2>
             <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
@@ -373,47 +355,80 @@ export const GuardDashboard = () => {
               </div>
             </div>
           </div>
-
+ 
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <table className="ubb-table">
               <thead>
-                <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-                  <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Patente</th>
-                  <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Movimiento</th>
-                  <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Fecha/Hora</th>
-                  <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Confianza</th>
-                  <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Acción</th>
+                <tr>
+                  <th>Patente</th>
+                  <th>Tipo</th>
+                  <th>Hora</th>
+                  <th>Cámara</th>
+                  <th>Confianza</th>
+                  <th>Estado</th>
+                  <th>Acción</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedEvents.map((ev) => (
-                  <tr key={ev.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '1rem 0.5rem', fontWeight: 600, fontSize: '1.125rem', letterSpacing: '1px', textAlign: 'center' }}>{ev.plate}</td>
-                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
-                      {ev.type === 'in'
-                        ? <span className="badge badge-success"><ArrowRight size={14} style={{ marginRight: '4px' }} /> Ingreso</span>
-                        : <span className="badge badge-warning"><ArrowLeft size={14} style={{ marginRight: '4px' }} /> Salida</span>
-                      }
+                  <tr key={ev.id}>
+                    <td>
+                      <span className="plate-badge">{ev.plate}</span>
                     </td>
-                    <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
-                        <Clock size={14} /> {format(ev.timestamp, 'dd-MM-yyyy HH:mm:ss')}
+                    <td style={{ color: '#337ab7', fontWeight: 600 }}>
+                      {ev.type === 'in' ? 'Entrada vehicular' : 'Salida vehicular'}
+                    </td>
+                    <td style={{ color: 'var(--text-secondary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <Clock size={14} /> {format(ev.timestamp, 'HH:mm:ss')}
                       </div>
                     </td>
-                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
-                      <div style={{ width: '100px', height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden', margin: '0 auto' }}>
-                        <div style={{ height: '100%', width: `${ev.confidence * 100}%`, backgroundColor: ev.confidence > 0.9 ? 'var(--status-success)' : 'var(--status-warning)' }}></div>
-                      </div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block', textAlign: 'center' }}>{(ev.confidence * 100).toFixed(1)}%</span>
+                    <td style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>
+                      {ev.zoneId === 1 ? 'CAM-01' : ev.zoneId === 2 ? 'CAM-02' : 'CAM-01'}
                     </td>
-                    <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ width: '80px', height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                          <div style={{ 
+                            height: '100%', 
+                            width: `${ev.confidence * 100}%`, 
+                            backgroundColor: ev.confidence >= 0.80 ? '#337ab7' : ev.confidence >= 0.50 ? '#dd6b20' : '#e53e3e' 
+                          }}></div>
+                        </div>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{Math.round(ev.confidence * 100)}%</span>
+                      </div>
+                    </td>
+                    <td>
+                      {ev.confidence >= 0.85 ? (
+                        <span style={{ color: '#2F855A', fontWeight: 600, fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#48BB78' }} />
+                          Registrado
+                        </span>
+                      ) : ev.confidence >= 0.70 ? (
+                        <span style={{ color: '#C05621', fontWeight: 600, fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ED8936' }} />
+                          Baja confianza
+                        </span>
+                      ) : (
+                        <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                          <span style={{ color: '#9B2C2C', fontWeight: 600, fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#E53E3E' }} />
+                            No enviado
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: '#9B2C2C', paddingLeft: '14px', lineHeight: 1 }}>
+                            ⓘ
+                          </span>
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button
                           className="btn btn-secondary"
                           style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem' }}
                           onClick={() => handleOpenModal(ev)}
                         >
-                          Reportar Incidencia
+                          Reportar
                         </button>
                         <button
                           className="btn btn-primary"
@@ -428,7 +443,7 @@ export const GuardDashboard = () => {
                 ))}
                 {filteredEvents.length === 0 && (
                   <tr>
-                    <td colSpan="5" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No se encontraron registros.</td>
+                    <td colSpan="7" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>No se encontraron registros.</td>
                   </tr>
                 )}
               </tbody>
@@ -465,12 +480,89 @@ export const GuardDashboard = () => {
             </div>
           )}
         </div>
+
+        {/* Cámaras Activas Table (del mockup) */}
+        <div className="card" style={{ marginTop: '2rem' }}>
+          <h2 className="ubb-section-title" style={{ margin: 0, marginBottom: '1.5rem' }}>Cámaras activas</h2>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="ubb-table">
+              <thead>
+                <tr>
+                  <th>Cámara</th>
+                  <th>Ubicación</th>
+                  <th>Detecciones</th>
+                  <th>Confianza prom.</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ fontWeight: 600, color: 'var(--ubb-primary-dark)' }}>CAM-01</td>
+                  <td style={{ color: 'var(--text-secondary)' }}>Acceso principal norte</td>
+                  <td style={{ fontWeight: 600 }}>{Math.max(21, events.filter(e => e.zoneId === 1 || !e.zoneId).length)}</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ width: '80px', height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: '94%', backgroundColor: '#337ab7' }} />
+                      </div>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>94%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span style={{ color: '#2F855A', fontWeight: 600, fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#48BB78' }} />
+                      Activa
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 600, color: 'var(--ubb-primary-dark)' }}>CAM-02</td>
+                  <td style={{ color: 'var(--text-secondary)' }}>Acceso secundario sur</td>
+                  <td style={{ fontWeight: 600 }}>{Math.max(16, events.filter(e => e.zoneId === 2).length)}</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ width: '80px', height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: '89%', backgroundColor: '#337ab7' }} />
+                      </div>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>89%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span style={{ color: '#2F855A', fontWeight: 600, fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#48BB78' }} />
+                      Activa
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ fontWeight: 600, color: 'var(--ubb-primary-dark)' }}>CAM-03</td>
+                  <td style={{ color: 'var(--text-secondary)' }}>Estacionamiento oriente</td>
+                  <td style={{ fontWeight: 600 }}>{Math.max(10, events.filter(e => e.zoneId === 3).length)}</td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ width: '80px', height: '8px', backgroundColor: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: '72%', backgroundColor: '#dd6b20' }} />
+                      </div>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>72%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span style={{ color: '#C05621', fontWeight: 600, fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#ED8936' }} />
+                      Degradada
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Modal para Reportar Incidencia */}
       {isModalOpen && selectedEvent && (
-        <div style={modalOverlayStyle} onClick={() => setIsModalOpen(false)}>
-          <div style={modalContentStyle} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>
+        <div style={modalOverlayStyle}>
+          <div style={modalContentStyle} className="animate-fade-in">
             <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Reportar Incidencia</h3>
               <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
@@ -496,21 +588,7 @@ export const GuardDashboard = () => {
                 >
                   <option value="Vehículo mal estacionado">Vehículo mal estacionado</option>
                   <option value="Vehículo con problema menor">Vehículo con problema menor</option>
-                  <option value="Vehículo con problema mayor">Vehículo con problema mayor</option>
                   <option value="Otro">Otro</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Estado de la Incidencia</label>
-                <select
-                  className="input-field"
-                  value={incidentStatus}
-                  onChange={(e) => setIncidentStatus(e.target.value)}
-                  required
-                >
-                  <option value="abierta">En proceso</option>
-                  <option value="cerrada">Resuelto</option>
                 </select>
               </div>
 
@@ -539,8 +617,8 @@ export const GuardDashboard = () => {
 
       {/* Modal para Ver Imágenes (Ingreso/Salida) */}
       {isImageModalOpen && selectedImageEvent && (
-        <div style={modalOverlayStyle} onClick={() => setIsImageModalOpen(false)}>
-          <div style={{ ...modalContentStyle, maxWidth: '700px' }} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>
+        <div style={modalOverlayStyle}>
+          <div style={{ ...modalContentStyle, maxWidth: '700px' }} className="animate-fade-in">
             <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Camera size={20} color="var(--ubb-blue)" />

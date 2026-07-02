@@ -15,7 +15,6 @@ comment on column public.roles.nombre is 'Nombre único del rol: administrador, 
 
 -- =========================================================
 -- TABLA: usuarios
--- Si usas Supabase Auth, idealmente id = auth.users.id
 -- =========================================================
 create table if not exists public.usuarios (
     id uuid primary key default gen_random_uuid(),
@@ -131,6 +130,7 @@ create table if not exists public.incidencias (
 
     tipo varchar(80) not null,
     descripcion text not null,
+    solucion text,
     estado varchar(30) not null default 'abierta'
         check (estado in ('abierta', 'en_revision', 'cerrada')),
     fecha_creacion timestamptz not null default now(),

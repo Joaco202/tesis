@@ -1,6 +1,6 @@
 # Vision + OCR Pipeline para Detección de Placas - Documentación Completa
 
-**Fecha de generación:** Mayo 3, 2026 · **Última actualización:** 6 de junio de 2026  
+**Fecha de generación:** Mayo 3, 2026 · **Última actualización:** 29 de junio de 2026  
 **Proyecto:** tesis (Detección de placas vehiculares con visión por computadora y reconocimiento óptico de caracteres)  
 **Estado:** ✅ GPU habilitada — PyTorch 2.11+cu128 · PaddleOCR 3.5.0 · PaddlePaddle-GPU 3.0.0 · Python 3.12.10
 
@@ -1421,7 +1421,7 @@ Esta configuración asegura portabilidad absoluta en la infraestructura de la un
 ---
 
 
-Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las **31 fases** de desarrollo completadas son:
+Este proyecto implementa un **sistema inteligente de control de estacionamiento y OCR de placas vehiculares**, compuesto por un pipeline de visión por computadora acelerado por GPU y una interfaz web corporativa interactiva integrada en tiempo real. Las **35 fases** de desarrollo completadas son:
 
 1. ✅ Ambiente configurado con Python 3.12.10 + dependencias ML.
 2. ✅ 1,000 imágenes sintéticas generadas.
@@ -1457,6 +1457,7 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 32. ✅ **Optimización de OCR (A/B Benchmark)** — Se removieron los preprocesadores de documentos de PaddleX que deformaban los recortes pequeños de patentes. En un benchmark con 90 imágenes reales del estacionamiento UBB, esta optimización aumentó la detección de patentes en un +63% y aceleró el OCR 3.3x.
 33. ✅ **Diseño de Arquitectura Remota / Desacoplada** — Se definió el flujo de conexión para pruebas en terreno donde un dispositivo local (PC 2) ejecuta la inferencia y se sincroniza mediante Supabase en la nube con un consumo mínimo de datos (variables de texto y recortes livianos).
 34. ✅ **Análisis de Normalización y Redundancias en DB** — Evaluación técnica de la tabla `incidencias` en base de datos. Se justificó la desnormalización (redundancia de `zona_id` y `vehiculo_patente`) para flexibilidad futura, estableciendo los caminos para migrar a una 3NF estricta si fuera requerido.
+35. ✅ **Notificaciones Push del Navegador para el Encargado (Tipo 3 Nivel A) con Filtro de Gravedad y Selección de Estado por el Guardia** — Integración de notificaciones push nativas del navegador (Notification API) en el panel del encargado con un selector de filtro (Todas vs Solo problemas mayores). Se solicita permiso al montar el dashboard. Al registrarse una incidencia, se evalúa la preferencia del encargado (guardada en localStorage) y se dispara el popup nativo en tiempo real si cumple con el criterio. Además, se añadió la clasificación "Vehículo con problema mayor" en las opciones seleccionables del guardia y se le habilitó a este la decisión del estado inicial de la incidencia ("En proceso" [abierta] por defecto, o "Resuelto" [cerrada]) al reportarla.
 
 ### Stack Tecnológico Final
 
@@ -1470,10 +1471,10 @@ Este proyecto implementa un **sistema inteligente de control de estacionamiento 
 | React + Vite | 8.0 / 18.x | Frontend Web |
 | Supabase | Client JS | Real-Time DB (PostgreSQL) |
 
-**Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 8 de junio de 2026  
+**Fecha de Documentación:** 3 de mayo de 2026 · **Última Actualización:** 29 de junio de 2026  
 **Versión del Proyecto:** 1.0 (Producción-ready)  
 **Estado de Producción:** ✅ Totalmente operativo  
-**Fase de Desarrollo:** 31 fases de desarrollo completadas  
+**Fase de Desarrollo:** 35 fases de desarrollo completadas  
 
 ---
 
