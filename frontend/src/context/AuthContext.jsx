@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }) => {
     // Escuchar cambios de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
+        setLoading(true); // Bloquear render hasta que el rol esté listo
         setUser(session.user);
         fetchUserRole(session.user.id);
       } else {
