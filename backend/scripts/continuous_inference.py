@@ -318,7 +318,7 @@ def main() -> None:
     parser.add_argument(
         "--cooldown",
         type=float,
-        default=5.0,
+        default=3.0,
         help="Tiempo de cooldown en segundos para evitar registrar la misma patente repetidamente.",
     )
     parser.add_argument(
