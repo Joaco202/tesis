@@ -111,7 +111,7 @@ export const PublicStatus = () => {
 
       {/* Contenido Principal */}
       <main className="container" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2rem 1rem' }}>
-        <div className="glass-panel animate-fade-in" style={{ maxWidth: '700px', margin: '0 auto', width: '100%', padding: '3rem 2rem', textAlign: 'center' }}>
+        <div className="glass-panel animate-fade-in" style={{ maxWidth: '1700px', margin: '0 auto', width: '100%', padding: '3rem 2rem', textAlign: 'center' }}>
           <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Estado del Estacionamiento</h2>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '3rem' }}>Sector Aula Magna</p>
 

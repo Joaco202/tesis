@@ -35,7 +35,7 @@ export const DashboardLayout = () => {
     borderBottom: 'none',
     borderLeft: 'none',
     backgroundColor: 'var(--bg-secondary)',
-    position: isMobile ? 'fixed' : 'sticky',
+    position: 'fixed',
     top: isMobile ? 0 : '56px',
     left: 0,
     height: isMobile ? '100vh' : 'calc(100vh - 56px)',
@@ -161,7 +161,12 @@ export const DashboardLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: isMobile ? '1rem' : '2rem', overflowY: 'auto' }}>
+      <main style={{ 
+        flex: 1, 
+        padding: isMobile ? '1rem' : '2rem', 
+        marginLeft: isMobile ? 0 : '250px', 
+        overflowY: 'auto' 
+      }}>
         <Outlet />
       </main>
       </div>
