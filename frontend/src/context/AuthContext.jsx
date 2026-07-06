@@ -43,6 +43,10 @@ export const AuthProvider = ({ children }) => {
         .eq('id', userId)
         .single();
       
+      if (error) {
+        console.warn('Error al obtener rol/estado del usuario:', error);
+      }
+      
       if (data) {
         if (data.estado === false) {
           console.warn('Usuario inactivo, cerrando sesión');
@@ -57,11 +61,9 @@ export const AuthProvider = ({ children }) => {
           const mappedRole = dbRole === 'administrador' ? 'admin' : dbRole;
           setRole(mappedRole);
         } else {
-          if (error) console.warn('Error fetching user role:', error);
           setRole('guardia'); // Fallback default
         }
       } else {
-        if (error) console.warn('Error fetching user role:', error);
         setRole('guardia'); // Fallback default
       }
     } catch (error) {
@@ -82,6 +84,10 @@ export const AuthProvider = ({ children }) => {
         .select('estado')
         .eq('id', data.user.id)
         .single();
+
+      if (userError) {
+        console.error('Error al obtener estado del usuario en login:', userError);
+      }
 
       if (userData && userData.estado === false) {
         await supabase.auth.signOut();
