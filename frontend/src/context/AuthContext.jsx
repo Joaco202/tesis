@@ -39,14 +39,27 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data, error } = await supabase
         .from('usuarios')
-        .select('rol_id, roles ( nombre )')
+        .select('rol_id, estado, roles ( nombre )')
         .eq('id', userId)
         .single();
       
-      if (data && data.roles && data.roles.nombre) {
-        const dbRole = data.roles.nombre;
-        const mappedRole = dbRole === 'administrador' ? 'admin' : dbRole;
-        setRole(mappedRole);
+      if (data) {
+        if (data.estado === false) {
+          console.warn('Usuario inactivo, cerrando sesión');
+          await supabase.auth.signOut();
+          setUser(null);
+          setRole(null);
+          return;
+        }
+
+        if (data.roles && data.roles.nombre) {
+          const dbRole = data.roles.nombre;
+          const mappedRole = dbRole === 'administrador' ? 'admin' : dbRole;
+          setRole(mappedRole);
+        } else {
+          if (error) console.warn('Error fetching user role:', error);
+          setRole('guardia'); // Fallback default
+        }
       } else {
         if (error) console.warn('Error fetching user role:', error);
         setRole('guardia'); // Fallback default
@@ -60,7 +73,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signIn = async (email, password) => {
-    return supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error };
+
+    if (data && data.user) {
+      const { data: userData, error: userError } = await supabase
+        .from('usuarios')
+        .select('estado')
+        .eq('id', data.user.id)
+        .single();
+
+      if (userData && userData.estado === false) {
+        await supabase.auth.signOut();
+        return { error: new Error('Usuario inactivo') };
+      }
+    }
+    return { data, error: null };
   };
 
   const signOut = async () => {

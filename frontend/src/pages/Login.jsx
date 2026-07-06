@@ -25,6 +25,8 @@ export const Login = () => {
       console.error(err);
       const msg = err.message === 'Invalid login credentials'
         ? 'Email y/o contraseña incorrectos'
+        : err.message === 'Usuario inactivo'
+        ? 'Tu cuenta ha sido desactivada. Comunícate con el administrador.'
         : (err.message || 'Error al iniciar sesión');
       setError(msg);
     } finally {
