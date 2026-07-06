@@ -39,7 +39,7 @@ export const DashboardLayout = () => {
     top: isMobile ? 0 : '56px',
     left: 0,
     height: isMobile ? '100vh' : 'calc(100vh - 56px)',
-    zIndex: 50,
+    zIndex: isMobile ? 150 : 50,
     transform: isMobile && !isMobileMenuOpen ? 'translateX(-100%)' : 'translateX(0)',
     transition: 'transform 0.3s ease',
     overflowY: 'auto',
@@ -86,7 +86,7 @@ export const DashboardLayout = () => {
       {isMobile && isMobileMenuOpen && (
         <div
           onClick={closeMenu}
-          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 40 }}
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 140 }}
         />
       )}
 
