@@ -871,7 +871,7 @@ export const ManagerDashboard = () => {
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Notificaciones push:</span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Notificaciones:</span>
             <select
               className="input-field"
               style={{ height: '38px', padding: '0 0.5rem', fontSize: '0.85rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }}
