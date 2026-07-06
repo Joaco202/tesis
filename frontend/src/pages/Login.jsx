@@ -8,7 +8,7 @@ export const Login = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
@@ -16,7 +16,7 @@ export const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       const { error } = await signIn(email, password);
       if (error) throw error;
@@ -45,15 +45,15 @@ export const Login = () => {
         </div>
 
         {error && (
-          <div className="badge-danger" style={{ 
-            padding: '0.75rem', 
-            borderRadius: 'var(--radius-md)', 
-            marginBottom: '1rem', 
+          <div className="badge-danger" style={{
+            padding: '0.75rem',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: '1rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '0.5rem',
-            fontSize: '0.875rem' 
+            fontSize: '0.875rem'
           }}>
             <AlertCircle size={18} style={{ flexShrink: 0 }} />
             <span>{error}</span>
@@ -63,25 +63,25 @@ export const Login = () => {
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Correo</label>
-            <input 
-              type="email" 
-              className="input-field" 
-              placeholder="usuario@ubiobio.cl" 
+            <input
+              type="email"
+              className="input-field"
+              placeholder="usuario@ubiobio.cl"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required 
+              required
             />
           </div>
-          
+
           <div>
             <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Contraseña</label>
-            <input 
-              type="password" 
-              className="input-field" 
-              placeholder="••••••••" 
+            <input
+              type="password"
+              className="input-field"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required 
+              required
             />
           </div>
 
@@ -95,3 +95,4 @@ export const Login = () => {
     </div>
   );
 };
+      
