@@ -377,13 +377,7 @@ export const ManagerDashboard = () => {
   const [accessEndDate, setAccessEndDate] = useState(todayStr);
   const [exportingAccess, setExportingAccess] = useState(false);
 
-  // Filtro de notificaciones ('all' o 'major')
-  const [notificationPref, setNotificationPref] = useState(() => localStorage.getItem('notificationPreference') || 'all');
-  const notificationPrefRef = useRef(notificationPref);
 
-  useEffect(() => {
-    notificationPrefRef.current = notificationPref;
-  }, [notificationPref]);
 
   const fetchData = async () => {
     try {
@@ -503,12 +497,7 @@ export const ManagerDashboard = () => {
     }
   };
 
-  // Solicitar permiso de notificaciones del navegador al montar el componente
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, []);
+
 
   // Cerrar modales con la tecla Escape
   useEffect(() => {
@@ -533,24 +522,8 @@ export const ManagerDashboard = () => {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'accesos' }, () => {
         fetchData();
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'incidencias' }, (payload) => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'incidencias' }, () => {
         fetchData();
-        // Disparar notificación push del navegador al recibir una nueva incidencia
-        if ('Notification' in window && Notification.permission === 'granted') {
-          const inc = payload.new;
-          // Filtrar por preferencia de notificación
-          if (notificationPrefRef.current === 'major' && inc.tipo !== 'Vehículo con problema mayor') {
-            return;
-          }
-          const patente = inc.vehiculo_patente || 'Sin patente';
-          const descripcion = inc.descripcion || 'Sin descripción';
-          const tipoIncidencia = inc.tipo || 'Incidencia';
-          new Notification(`🚨 ${tipoIncidencia} Reportada`, {
-            body: `Patente: ${patente}\n${descripcion}`,
-            icon: '/favicon.ico',
-            tag: `incidencia-${inc.id}`,
-          });
-        }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'incidencias' }, () => {
         fetchData();
@@ -870,22 +843,6 @@ export const ManagerDashboard = () => {
           <p style={{ color: 'var(--text-secondary)' }}>Estadísticas, KPIs y Gestión de Incidencias</p>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Notificaciones push:</span>
-            <select
-              className="input-field"
-              style={{ height: '38px', padding: '0 0.5rem', fontSize: '0.85rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)' }}
-              value={notificationPref}
-              onChange={(e) => {
-                const val = e.target.value;
-                setNotificationPref(val);
-                localStorage.setItem('notificationPreference', val);
-              }}
-            >
-              <option value="all">Todas las incidencias</option>
-              <option value="major">Solo problemas mayores</option>
-            </select>
-          </div>
           <button className="btn btn-secondary" onClick={fetchData}>
             <RotateCw size={18} /> Actualizar
           </button>
