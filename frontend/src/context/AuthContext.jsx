@@ -67,15 +67,8 @@ export const AuthProvider = ({ children }) => {
     return supabase.auth.signOut();
   };
 
-  // Mock function for development without Supabase connection
-  const mockSignIn = (roleType) => {
-    setUser({ id: '123', email: 'test@ubb.cl' });
-    setRole(roleType); // 'guardia', 'encargado', 'admin'
-    setLoading(false);
-  };
-
   return (
-    <AuthContext.Provider value={{ user, role, loading, signIn, signOut, mockSignIn }}>
+    <AuthContext.Provider value={{ user, role, loading, signIn, signOut }}>
       {!loading && children}
     </AuthContext.Provider>
   );

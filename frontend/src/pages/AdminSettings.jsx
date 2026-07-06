@@ -292,7 +292,7 @@ export const AdminSettings = () => {
         <div className="flex-between" style={{ marginBottom: '2rem' }}>
           <div>
             <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>Administración del Sistema</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Gestión de Usuarios y Roles (TI)</p>
+            <p style={{ color: 'var(--text-secondary)' }}>Gestión de Usuarios y Roles</p>
           </div>
           <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
             <UserPlus size={18} /> Nuevo Usuario

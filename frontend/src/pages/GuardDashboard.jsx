@@ -279,8 +279,8 @@ export const GuardDashboard = () => {
       <div className="animate-fade-in">
         <div className="flex-between" style={{ marginBottom: '2rem' }}>
           <div>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>Panel de Control (Guardia)</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Monitoreo en tiempo real del Aula Magna</p>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>Panel de Control</h1>
+            <p style={{ color: 'var(--text-secondary)' }}>Monitoreo del Aula Magna</p>
           </div>
           <div style={{ textAlign: 'right' }}>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{format(currentTime, "dd 'de' MMMM, yyyy", { locale: es })}</p>
