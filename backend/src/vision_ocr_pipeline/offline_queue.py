@@ -30,7 +30,7 @@ class OfflineQueue:
             print(f"Error writing offline queue JSON: {e}")
 
     def add_event(self, *, patente: str, event_type: str, camera_id: str, confianza: float, timestamp: datetime, image_bytes: bytes | None = None) -> str | None:
-        """Agrega un evento a la cola local y guarda la imagen en local."""
+        #Agrega un evento a la cola local y guarda la imagen en local.
         local_image_name = None
         if image_bytes is not None:
             ts_str = timestamp.strftime('%Y%m%d_%H%M%S')

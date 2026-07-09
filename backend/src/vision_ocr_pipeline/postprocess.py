@@ -8,16 +8,16 @@ import numpy as np
 from .ocr_engine import OCRText
 from .config import DEFAULT_CONFIG, OCRConfig
 
-# Patrones de patentes chilenas estrictas
-STRICT_NEW_PLATE = re.compile(r"^[BCDFGHJKLPRSTVWXYZ]{4}[0-9]{2}$")  # 18 consonantes autorizadas
-OLD_PLATE = re.compile(r"^[A-Z]{2}[0-9]{4}$")                        # Formato antiguo (permite vocales)
+#patrones de patentes chilenas estrictas
+STRICT_NEW_PLATE = re.compile(r"^[BCDFGHJKLPRSTVWXYZ]{4}[0-9]{2}$")  #18 consonantes autorizadas
+OLD_PLATE = re.compile(r"^[A-Z]{2}[0-9]{4}$")                        #formato antiguo (permite vocales)
 
 PLATE_PATTERNS = [
     STRICT_NEW_PLATE,
     OLD_PLATE,
 ]
 
-# Mapas de sustitución geométrica para corrección de caracteres confusos en OCR
+#mapas de sustitución geométrica para corrección de caracteres confusos en OCR
 CONSONANT_CORRECTION_MAP: dict[str, list[str]] = {
     "O": ["D", "G", "C"],
     "I": ["L", "T", "J"],
@@ -75,12 +75,12 @@ def check_and_invert_contrast(crop: np.ndarray) -> np.ndarray:
     if crop is None or crop.size == 0:
         return crop
 
-    # Convertir a escala de grises para analizar brillo
+    #convertir a escala de grises para analizar brillo
     gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
     h, w = gray.shape
 
-    # Calcular promedio de intensidad de los bordes (representa el fondo)
-    # Tomamos un borde delgado de 2 píxeles
+    #calcular promedio de intensidad de los bordes (representa el fondo)
+    #tomamos un borde delgado de 2 píxeles
     border_pixels = []
     border_pixels.extend(gray[0:2, :].flatten())
     border_pixels.extend(gray[h-2:h, :].flatten())
@@ -89,8 +89,8 @@ def check_and_invert_contrast(crop: np.ndarray) -> np.ndarray:
 
     avg_border = np.mean(border_pixels) if border_pixels else 128
 
-    # Si el fondo (bordes) es predominantemente oscuro (menor a 100),
-    # es muy probable que sea texto claro sobre fondo oscuro (diplomática, Zofri, etc.)
+    #si el fondo (bordes) es predominantemente oscuro (menor a 100),
+    #es muy probable que sea texto claro sobre fondo oscuro (diplomática, Zofri, etc.)
     if avg_border < 100:
         crop = cv2.bitwise_not(crop)
 
@@ -106,12 +106,12 @@ def preprocess_plate_crop(crop: np.ndarray) -> np.ndarray:
     if crop is None or crop.size == 0:
         return crop
 
-    # 1. Invertir contraste si es fondo oscuro (diplomáticas, Zofri, etc.)
+    #invertir contraste si es fondo oscuro (diplomáticas, Zofri, etc.)
     crop = check_and_invert_contrast(crop)
 
-    # 2. Redimensionar si es muy pequeña
+    #redimensionar si es muy pequeña
     h, w = crop.shape[:2]
-    # Si la altura es menor a 80 o el ancho menor a 200, reescalamos con interpolación cúbica
+    #si la altura es menor a 80 o el ancho menor a 200, reescalamos con interpolación cúbica
     if h < 80 or w < 200:
         scale = max(2.0, 80.0 / h)
         crop = cv2.resize(crop, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
@@ -120,20 +120,20 @@ def preprocess_plate_crop(crop: np.ndarray) -> np.ndarray:
 
 
 def normalize_plate_text(text: str) -> str:
-    """Elimina caracteres no alfanuméricos y convierte a mayúsculas."""
+    #elimina caracteres no alfanuméricos y convierte a mayúsculas
     return re.sub(r"[^A-Z0-9]", "", text.upper())
 
 
 def is_likely_plate(text: str) -> bool:
-    """Evalúa si una cadena tiene estructura de patente chilena.
+    #evalua si una cadena tiene estructura de patente chilena.
 
-    Acepta:
-    - Coincidencia exacta con STRICT_NEW_PLATE (LLLL+DD) o OLD_PLATE (LL+DDDD)
-    - Fallback estricto: exactamente 6 caracteres con distribución 4+2 (nuevo) o 2+4 (antiguo).
-      No se permite ninguna otra combinación.
-    """
+    #acepta:
+    #coincidencia exacta con STRICT_NEW_PLATE (LLLL+DD) o OLD_PLATE (LL+DDDD)
+    #fallback estricto: exactamente 6 caracteres con distribución 4+2 (nuevo) o 2+4 (antiguo).
+    #no se permite ninguna otra combinación.
+    
     if len(text) != 6:
-        # Los patrones chilenos son siempre de 6 caracteres
+        #los patrones chilenos son siempre de 6 caracteres
         return False
 
     if any(pattern.match(text) for pattern in PLATE_PATTERNS):
@@ -142,33 +142,32 @@ def is_likely_plate(text: str) -> bool:
     letters = sum(ch.isalpha() for ch in text)
     digits = sum(ch.isdigit() for ch in text)
 
-    # Solo permitir distribuciones coherentes con formato chileno:
-    # Nuevo: 4 letras + 2 dígitos → los 4 primeros mayoritariamente letras
-    # Antiguo: 2 letras + 4 dígitos → los 2 primeros mayoritariamente letras
+    #solo permitir distribuciones coherentes con formato chileno:
+    #nuevo: 4 letras + 2 dígitos → los 4 primeros mayoritariamente letras
+    #antiguo: 2 letras + 4 dígitos → los 2 primeros mayoritariamente letras
     if letters + digits < 6:
-        # Tiene caracteres que no son letra ni dígito → rechazar
+        #tiene caracteres que no son letra ni dígito → rechazar
         return False
 
     if letters == 4 and digits == 2:
-        # Candidato a formato nuevo: exigir que los dígitos estén al final
+        #candidato a formato nuevo: exigir que los dígitos estén al final
         return text[4:].replace("O", "0").replace("I", "1").isdigit() or text[4:].isdigit()
     if letters == 2 and digits == 4:
-        # Candidato a formato antiguo: exigir que las letras estén al inicio
+        #candidato a formato antiguo: exigir que las letras estén al inicio
         return text[:2].isalpha()
 
     return False
 
 
 def generate_corrected_variants(candidate: str, cfg: OCRConfig | None = None) -> list[str]:
-    """
-    Genera combinaciones de variantes de corrección basadas en la afinidad del formato.
-    Aplica sustituciones para llevar el texto de entrada al formato de patente oficial chilena.
-    """
+    #genera combinaciones de variantes de corrección basadas en la afinidad del formato.
+    #aplica sustituciones para llevar el texto de entrada al formato de patente oficial chilena.
+    
     if not candidate or len(candidate) != 6:
         return [candidate]
 
-    # Calcular afinidades del formato
-    # Nuevo: LLLLDD
+    #calcular afinidades del formato
+    #nuevo: LLLLDD
     score_new = 0
     for i in range(4):
         ch = candidate[i]
@@ -179,7 +178,7 @@ def generate_corrected_variants(candidate: str, cfg: OCRConfig | None = None) ->
         if ch.isdigit() or ch in {"O", "D", "Q", "C", "G", "I", "L", "T", "Z", "B", "E", "A", "S"}:
             score_new += 1
 
-    # Antiguo: LLDDDD
+    #antiguo: LLDDDD
     score_old = 0
     for i in range(2):
         ch = candidate[i]
@@ -192,48 +191,48 @@ def generate_corrected_variants(candidate: str, cfg: OCRConfig | None = None) ->
 
     target_new = score_new >= score_old
 
-    # Generar opciones por cada una de las 6 posiciones
+    #generar opciones por cada una de las 6 posiciones
     pos_options: list[list[str]] = []
     for i in range(6):
         ch = candidate[i]
         opts = [ch]
 
         if target_new:
-            # Nuevo Formato (LLLLDD)
+            #nuevo formato (LLLLDD)
             if i < 4:
-                # Se esperan consonantes válidas chilenas
+                #se esperan consonantes válidas chilenas
                 if ch not in "BCDFGHJKLPRSTVWXYZ":
                     if ch in CONSONANT_CORRECTION_MAP:
                         opts.extend(CONSONANT_CORRECTION_MAP[ch])
             else:
-                # Se esperan dígitos
+                #se esperan dígitos
                 if not ch.isdigit():
                     if ch in DIGIT_CORRECTION_MAP:
                         opts.extend(DIGIT_CORRECTION_MAP[ch])
         else:
-            # Antiguo Formato (LLDDDD)
+            #antiguo formato (LLDDDD)
             if i < 2:
-                # Se esperan letras (se permite A-Z)
+                #se esperan letras (se permite A-Z)
                 if not ch.isalpha():
                     if ch in LETTER_CORRECTION_MAP:
                         opts.extend(LETTER_CORRECTION_MAP[ch])
             else:
-                # Se esperan dígitos
+                #se esperan dígitos
                 if not ch.isdigit():
                     if ch in DIGIT_CORRECTION_MAP:
                         opts.extend(DIGIT_CORRECTION_MAP[ch])
 
         pos_options.append(opts)
 
-    # Generar todas las combinaciones posibles limitando combinatoria masiva
+    #generar todas las combinaciones posibles limitando combinatoria masiva
     variants: set[str] = set()
-    # Limitar para evitar explosión de variantes si hay muchos caracteres a corregir
+    #limitar para evitar explosión de variantes si hay muchos caracteres a corregir
     perm_count = 1
     for opts in pos_options:
         perm_count *= len(opts)
 
     if perm_count > 64:
-        # Si es demasiado ambiguo, retornar solo el candidato original
+        #si es demasiado ambiguo, retornar solo el candidato original
         return [candidate]
 
     for combo in itertools.product(*pos_options):
@@ -243,17 +242,16 @@ def generate_corrected_variants(candidate: str, cfg: OCRConfig | None = None) ->
 
 
 def _reversed_strict_variant(candidate: str) -> str | None:
-    """
-    Si el candidato de 6 caracteres NO coincide con ningún patrón estricto pero su
-    versión invertida SÍ coincide (exactamente, sin correcciones adicionales), devuelve
-    la versión invertida.  Esto cubre el caso donde el OCR lee el texto de derecha a
-    izquierda (p.ej. confunde el número de una casa con dígitos de la patente).
-    Solo se activa cuando el candidato original no encaja en ningún patrón para evitar
-    reemplazos indeseados en lecturas correctas.
-    """
+    #Si el candidato de 6 caracteres NO coincide con ningún patrón estricto pero su
+    #versión invertida SÍ coincide (exactamente, sin correcciones adicionales), devuelve
+    #la versión invertida.  Esto cubre el caso donde el OCR lee el texto de derecha a
+    #izquierda (p.ej. confunde el número de una casa con dígitos de la patente).
+    #Solo se activa cuando el candidato original no encaja en ningún patrón para evitar
+    #reemplazos indeseados en lecturas correctas.
+
     if not candidate or len(candidate) != 6:
         return None
-    # Solo actuar si el original NO es ya una patente estricta
+    #solo actuar si el original NO es ya una patente estricta
     if any(p.match(candidate) for p in PLATE_PATTERNS):
         return None
     rev = candidate[::-1]
@@ -263,37 +261,35 @@ def _reversed_strict_variant(candidate: str) -> str | None:
 
 
 def score_variant(original: str, variant: str, confidence: float) -> float:
-    """
-    Calcula una puntuación de aptitud para un candidato a patente.
-    Aplica una penalización por cada sustitución de caracteres realizada.
-    """
+    #calcula una puntuación de aptitud para un candidato a patente.
+    #aplica una penalización por cada sustitución de caracteres realizada.
+    
     subs = sum(1 for a, b in zip(original, variant) if a != b)
     penalty = 0.3 * subs
 
-    # Comprobar si la variante coincide exactamente con un patrón estricto
+    #comprobar si la variante coincide exactamente con un patrón estricto
     is_strict = any(pattern.match(variant) for pattern in PLATE_PATTERNS)
 
     if is_strict:
-        # Gran bonus de prioridad para patentes en formato oficial chileno
+        #gran bonus de prioridad para patentes en formato oficial chileno
         return confidence + 2.0 - penalty
     elif is_likely_plate(variant):
-        # Prioridad media para formatos plausibles
+        #prioridad media para formatos plausibles
         return confidence + 0.5 - penalty
 
     return confidence - penalty
 
 
-# Penalización extra para lecturas donde se detectó inversión de caracteres
+#penalización extra para lecturas donde se detectó inversión de caracteres
 _REVERSAL_PENALTY = 0.4
 
 
 def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> tuple[str | None, float | None]:
-    """
-    Analiza todos los textos detectados por el OCR y selecciona la patente más apta.
-    Aplica heurísticas de corrección de caracteres y prioriza coincidencias estrictas de formato.
-    Incluye detección de lecturas invertidas (de derecha a izquierda) que ocurren cuando el OCR
-    confunde texto del entorno con la matrícula.
-    """
+    #analiza todos los textos detectados por el OCR y selecciona la patente más apta.
+    #aplica heurísticas de corrección de caracteres y prioriza coincidencias estrictas de formato.
+    #incluye detección de lecturas invertidas (de derecha a izquierda) que ocurren cuando el OCR
+    #confunde texto del entorno con la matrícula.
+    
     best_text: str | None = None
     best_score: float = -999.0
     best_conf: float | None = None
@@ -305,7 +301,7 @@ def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> t
             normalized_items.append((cand, item.confidence))
 
     def _evaluate(cand: str, conf: float, extra_penalty: float = 0.0) -> None:
-        """Evalúa un candidato (y sus variantes corregidas) actualizando el mejor resultado."""
+        #Evalúa un candidato (y sus variantes corregidas) actualizando el mejor resultado.
         nonlocal best_score, best_text, best_conf
         variants = generate_corrected_variants(cand, cfg)
         for var in variants:
@@ -317,10 +313,10 @@ def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> t
                 best_text = var
                 best_conf = conf
 
-    # 1. Evaluar tokens individuales, sus correcciones y sus posibles lecturas invertidas
+    #1.evaluar tokens individuales, sus correcciones y sus posibles lecturas invertidas
     for cand, conf in normalized_items:
         _evaluate(cand, conf)
-        # Intentar lectura invertida solo si el candidato tiene 6 caracteres y no es ya válido
+        #intentar lectura invertida solo si el candidato tiene 6 caracteres y no es ya válido
         if len(cand) == 6:
             rev = _reversed_strict_variant(cand)
             if rev:
@@ -330,7 +326,7 @@ def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> t
                     best_text = rev
                     best_conf = conf
 
-    # 2. Evaluar composición de tokens contiguos (para patentes divididas)
+    #2.evaluar composición de tokens contiguos (para patentes divididas)
     for i in range(len(normalized_items)):
         token_text = ""
         token_conf_sum = 0.0
@@ -341,7 +337,7 @@ def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> t
             avg_conf = token_conf_sum / (j - i + 1)
 
             _evaluate(token_text, avg_conf)
-            # Intentar lectura invertida para tokens concatenados de longitud 6
+            #intentar lectura invertida para tokens concatenados de longitud 6
             if len(token_text) == 6:
                 rev = _reversed_strict_variant(token_text)
                 if rev:
@@ -351,7 +347,7 @@ def best_plate_from_ocr(items: list[OCRText], cfg: OCRConfig | None = None) -> t
                         best_text = rev
                         best_conf = avg_conf
 
-    # Umbral mínimo de validación para retornar un resultado
+    #umbral mínimo de validación para retornar un resultado
     if best_text and best_score >= 0.0:
         return best_text, best_conf
 

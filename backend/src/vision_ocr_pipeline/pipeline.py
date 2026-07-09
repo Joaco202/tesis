@@ -42,8 +42,8 @@ class VisionOCRPipeline:
         self._fallback_ocr = None
         self.offline_queue = None
 
-        # Warmup de GPU: fuerza la compilación de shaders CUDA en el primer frame
-        # para que las inferencias reales sean inmediatas (~7ms en RTX 5070)
+        #warmup de GPU: fuerza la compilación de shaders CUDA en el primer frame
+        #para que las inferencias reales sean inmediatas (~7ms en RTX 5070)
         if cfg.runtime.device not in ("cpu", ""):
             try:
                 import numpy as _np
@@ -77,15 +77,6 @@ class VisionOCRPipeline:
         return image, results
 
     def process_frame(self, image: np.ndarray, run_ocr: bool = True, run_fallback: bool = True) -> list[DetectionResult]:
-        """Procesa un frame del pipeline de detección y OCR.
-
-        Args:
-            image: Frame de entrada (BGR numpy array).
-            run_ocr: Si False, solo corre YOLO (~7ms GPU) y omite el OCR y el fallback.
-                     Útil para mantener el display fluido cuando no se necesita leer la patente.
-            run_fallback: Si False, no ejecuta el escaneo pesado por regiones de OCR en caso de falla de YOLO.
-                          Recomendado en modo video/webcam continuo para evitar latencias de 2s.
-        """
         detections = sorted(self.detector.detect(image), key=lambda det: det.confidence, reverse=True)
         output: list[DetectionResult] = []
 
@@ -145,12 +136,6 @@ class VisionOCRPipeline:
         return output
 
     def _detect_plate_via_ocr_regions(self, image: np.ndarray) -> DetectionResult | None:
-        """
-        Fallback: Detectar patente analizando regiones de texto en la imagen.
-        Usa OCR para encontrar cajas de texto, filtra por geometría (aspect ratio, área),
-        luego busca patentes válidas dentro de cada región candidata.
-        Opción 5: Para casos donde YOLO no detecta pero hay texto visible.
-        """
         try:
             from paddleocr import PaddleOCR
         except ImportError:
@@ -382,7 +367,6 @@ class VisionOCRPipeline:
 
     @staticmethod
     def _merge_horizontally_close_boxes(boxes: list[tuple[int, int, int, int]]) -> list[tuple[int, int, int, int]]:
-        """Agrupar cajas de texto que están en la misma línea y cercanas."""
         if not boxes:
             return []
         boxes = sorted(boxes, key=lambda b: (b[1], b[0]))
@@ -408,7 +392,6 @@ class VisionOCRPipeline:
 
     @staticmethod
     def _expand_box(box: tuple[int, int, int, int], w: int, h: int, padx: float = 0.12, pady: float = 0.35) -> tuple[int, int, int, int]:
-        """Expandir caja de texto para capturar contexto alrededor."""
         x1, y1, x2, y2 = box
         bw = x2 - x1
         bh = y2 - y1

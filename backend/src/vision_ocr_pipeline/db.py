@@ -61,7 +61,6 @@ class SupabaseClient:
         bucket: str,
         remote_path: str,
     ) -> dict[str, Any]:
-        """Elimina un archivo del Storage de Supabase usando la Storage API REST."""
         base = self.base_url.rstrip("/")
         url = f"{base}/storage/v1/object/{bucket}/{remote_path}"
         headers = {

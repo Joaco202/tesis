@@ -14,7 +14,6 @@ class OCRText:
 
 
 def _detect_gpu_available() -> bool:
-    """Detecta si hay GPU disponible via paddle o torch."""
     try:
         import paddle
         return paddle.device.is_compiled_with_cuda() and paddle.device.cuda.device_count() > 0
@@ -29,18 +28,10 @@ def _detect_gpu_available() -> bool:
 
 
 def normalize_ocr_output(raw_result) -> list[list[tuple[list[list[float]], tuple[str, float]]]]:
-    """Convierte la salida de PaddleOCR (tanto formato 2.x de listas como 3.x de diccionarios)
-    a una estructura uniforme de tipo 2.x:
-    [
-        [
-            [poly, (text, confidence)], ...
-        ]
-    ]
-    """
+    
     if not raw_result:
         return []
         
-    # Si es formato 3.x (lista que contiene un diccionario de PaddleX)
     if isinstance(raw_result, list) and len(raw_result) > 0 and isinstance(raw_result[0], dict):
         res_dict = raw_result[0]
         rec_texts = res_dict.get("rec_texts", [])
@@ -58,7 +49,6 @@ def normalize_ocr_output(raw_result) -> list[list[tuple[list[list[float]], tuple
             
         return [line_items] if line_items else []
         
-    # Si ya es formato 2.x (listas anidadas)
     return raw_result
 
 
@@ -75,14 +65,12 @@ class PaddleOCREngine:
                 "paddleocr no esta instalado. Ejecuta: pip install -r requirements.txt"
             ) from exc
 
-        # Forzar CPU para PaddleOCR debido a incompatibilidades de precisión en la GPU RTX 5070 con CUDA 12.8
         gpu_available = False
         device_str = "cpu"
 
         print("[INFO] PaddleOCR inicializando en CPU (GPU desactivada por estabilidad).")
 
         try:
-            # PaddleOCR 3.x — usa parámetro `device`
             self._ocr = PaddleOCR(
                 use_angle_cls=cfg.use_angle_cls,
                 lang=cfg.lang,
@@ -92,7 +80,6 @@ class PaddleOCREngine:
             self.is_paddlex = True
         except TypeError:
             try:
-                # PaddleOCR 2.x — usa parámetro `use_gpu`
                 self._ocr = PaddleOCR(
                     use_angle_cls=cfg.use_angle_cls,
                     lang=cfg.lang,
@@ -132,8 +119,6 @@ class PaddleOCREngine:
 
         try:
             if self.is_paddlex:
-                # Optimización de velocidad extrema para PaddleX: omitir clasificación
-                # de orientación del documento y enderezado 3D (unwarping) para recortes
                 result = list(self._ocr.predict(
                     image,
                     use_doc_orientation_classify=False,
@@ -143,7 +128,6 @@ class PaddleOCREngine:
             else:
                 result = self._ocr.ocr(image)
         except Exception as exc:
-            # Fallback en caso de fallo en predict con PaddleX
             try:
                 result = self._ocr.ocr(image)
             except Exception as exc2:

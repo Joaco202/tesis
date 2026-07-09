@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field, model_validator
 class OCRConfig(BaseModel):
     lang: str = "es"
     use_angle_cls: bool = True
-    # Mapa de confusiones OCR por defecto (digit -> letter)
+    # Mapa de confusiones OCR por defecto 
     confusion_map: dict[str, str] = {
         "0": "O",
         "1": "I",
@@ -26,7 +26,7 @@ class OCRConfig(BaseModel):
     }
     # Número máximo de sustituciones a probar cuando se generan variantes
     max_confusion_subs: int = 2
-    # Si true, probar sustituciones en ambas direcciones (digit->letter y letter->digit)
+    # Si true, probar sustituciones en ambas direcciones 
     aggressive_confusion: bool = False
 
 

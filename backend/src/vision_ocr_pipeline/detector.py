@@ -23,7 +23,6 @@ class YoloDetector:
         self.cfg = cfg
         self.device = device
         
-        # Fallback a CPU si CUDA no está disponible en PyTorch
         if "cuda" in self.device or self.device == "gpu":
             try:
                 import torch
@@ -40,19 +39,16 @@ class YoloDetector:
                 "ultralytics no esta instalado. Ejecuta: pip install -r requirements.txt"
             ) from exc
 
-        # Try to use trained plate detector model if available, fallback to default
         model_path = self._find_best_model(cfg.model)
         self._model = YOLO(model_path)
         self._model_path = model_path
 
     @staticmethod
     def _find_best_model(default_model: str) -> str:
-        """Find the best trained plate detector model, fallback to default."""
         from pathlib import Path
         
         runs_dir = Path("runs/detect")
         if runs_dir.exists():
-            # Look for latest training run with best.pt recursively
             models = sorted(runs_dir.glob("**/weights/best.pt"), key=lambda x: x.stat().st_mtime, reverse=True)
             if models:
                 return str(models[0].absolute())
