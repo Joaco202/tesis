@@ -61,14 +61,14 @@ export const AuthProvider = ({ children }) => {
           const mappedRole = dbRole === 'administrador' ? 'admin' : dbRole;
           setRole(mappedRole);
         } else {
-          setRole('guardia'); // Fallback default
+          setRole('guardia'); 
         }
       } else {
-        setRole('guardia'); // Fallback default
+        setRole('guardia');
       }
     } catch (error) {
       console.warn('Error fetching role, defaulting to guardia:', error);
-      setRole('guardia'); // Fallback if table doesn't exist yet
+      setRole('guardia'); 
     } finally {
       setLoading(false);
     }
