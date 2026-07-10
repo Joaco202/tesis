@@ -499,6 +499,8 @@ export const AdminSettings = () => {
             </form>
           </div>
         </div>
+      )}
+
       {/* Modal para Editar Usuario */}
       {isEditModalOpen && (
         <div style={modalOverlayStyle}>
