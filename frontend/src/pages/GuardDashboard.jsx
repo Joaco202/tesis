@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car, ArrowRight, ArrowLeft, Clock, Search, X, Eye, Camera, Plus } from 'lucide-react';
+import { Car, ArrowRight, ArrowLeft, Clock, Search, X, Eye, Camera, Plus, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { supabase } from '../lib/supabase';
@@ -49,6 +49,12 @@ export const GuardDashboard = () => {
     zonaId: '',
   });
   const [submittingManual, setSubmittingManual] = useState(false);
+
+  // Edit plate states
+  const [isEditPlateModalOpen, setIsEditPlateModalOpen] = useState(false);
+  const [editingPlateEvent, setEditingPlateEvent] = useState(null);
+  const [newPlateValue, setNewPlateValue] = useState('');
+  const [submittingEditPlate, setSubmittingEditPlate] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -313,6 +319,69 @@ export const GuardDashboard = () => {
       alert('Error al registrar acceso manual: ' + err.message);
     } finally {
       setSubmittingManual(false);
+    }
+  };
+
+  const handleOpenEditPlateModal = (ev) => {
+    setEditingPlateEvent(ev);
+    setNewPlateValue(ev.plate);
+    setIsEditPlateModalOpen(true);
+  };
+
+  const handleEditPlate = async (e) => {
+    e.preventDefault();
+    if (!editingPlateEvent || !newPlateValue.trim()) return;
+
+    const cleanPlate = newPlateValue.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    
+    // Validar formato chileno (patentes de autos/motos antiguas y nuevas, e institucionales)
+    const formatAutoOld = /^[A-Z]{2}\d{4}$/; // AA1234
+    const formatAutoNew = /^[A-Z]{4}\d{2}$/; // AAAA12
+    const formatMoto = /^[A-Z]{2,3}\d{2,3}$/; // AA123, AAA12, etc.
+    const formatCarabineros = /^(Z|M|RP|AP|B|C|CB|AG|A)\d{4}$/; // Z1234, RP1234, etc.
+
+    const isValidChilean = formatAutoOld.test(cleanPlate) || 
+                           formatAutoNew.test(cleanPlate) || 
+                           formatMoto.test(cleanPlate) || 
+                           formatCarabineros.test(cleanPlate);
+
+    if (!isValidChilean) {
+      alert('La patente no cumple con un formato chileno válido (ejemplos: AA1234, AAAA12, patentes de moto o patentes institucionales de Carabineros como RP1234, Z1234).');
+      return;
+    }
+
+    setSubmittingEditPlate(true);
+    try {
+      // 1. Asegurar que el vehículo existe en la base de datos para no violar la FK en 'accesos'
+      const { error: vehError } = await supabase
+        .from('vehiculos')
+        .upsert({ patente: cleanPlate }, { onConflict: 'patente' });
+
+      if (vehError) throw vehError;
+
+      // 2. Actualizar el registro en 'accesos'
+      const { error: accError } = await supabase
+        .from('accesos')
+        .update({ vehiculo_patente: cleanPlate })
+        .eq('id', editingPlateEvent.accessId);
+
+      if (accError) throw accError;
+
+      // 3. Actualizar incidencias relacionadas que tengan el acceso_id (para consistencia)
+      await supabase
+        .from('incidencias')
+        .update({ vehiculo_patente: cleanPlate })
+        .eq('acceso_id', editingPlateEvent.accessId);
+
+      alert('Patente corregida y actualizada con éxito.');
+      setIsEditPlateModalOpen(false);
+      setEditingPlateEvent(null);
+      fetchDashboardData();
+    } catch (err) {
+      console.error('Error al editar patente:', err);
+      alert('Error al actualizar la patente: ' + err.message);
+    } finally {
+      setSubmittingEditPlate(false);
     }
   };
 
@@ -648,6 +717,14 @@ export const GuardDashboard = () => {
                           onClick={() => handleOpenImageModal(ev)}
                         >
                           <Eye size={14} /> Fotos
+                        </button>
+                        <button
+                          className="btn btn-secondary"
+                          style={{ padding: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}
+                          onClick={() => handleOpenEditPlateModal(ev)}
+                          title="Editar Patente"
+                        >
+                          <Edit size={14} />
                         </button>
                       </div>
                     </td>
@@ -994,6 +1071,44 @@ export const GuardDashboard = () => {
                 <button type="button" className="btn btn-secondary" onClick={() => setIsManualModalOpen(false)}>Cancelar</button>
                 <button type="submit" className="btn btn-primary" disabled={submittingManual}>
                   {submittingManual ? 'Registrando...' : 'Registrar Acceso'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Modal para Editar Patente */}
+      {isEditPlateModalOpen && editingPlateEvent && (
+        <div style={modalOverlayStyle}>
+          <div style={modalContentStyle} className="animate-fade-in">
+            <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Corregir Patente</h3>
+              <button onClick={() => { setIsEditPlateModalOpen(false); setEditingPlateEvent(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditPlate} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div>
+                <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+                  Corrige la patente registrada para este movimiento.
+                </p>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Nueva Patente *</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Ej. ABCD12"
+                  value={newPlateValue}
+                  onChange={(e) => setNewPlateValue(e.target.value.toUpperCase())}
+                  required
+                  style={{ textTransform: 'uppercase', letterSpacing: '1px', fontSize: '1.125rem', fontWeight: 700 }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => { setIsEditPlateModalOpen(false); setEditingPlateEvent(null); }}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" disabled={submittingEditPlate}>
+                  {submittingEditPlate ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
               </div>
             </form>
