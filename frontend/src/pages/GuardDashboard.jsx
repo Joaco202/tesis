@@ -574,7 +574,7 @@ export const GuardDashboard = () => {
                   
                   {filterMode === 'in' ? 'Solo Ingresos' : 
                    filterMode === 'out' ? 'Solo Salidas' : 
-                   'Movimientos (Todos)'}
+                   'Todos'}
                 </button>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
