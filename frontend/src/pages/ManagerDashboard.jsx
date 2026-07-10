@@ -928,7 +928,7 @@ export const ManagerDashboard = () => {
             <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
               <XAxis dataKey="time" stroke="var(--text-secondary)" fontSize={12} />
-              <YAxis stroke="var(--text-secondary)" fontSize={12} allowDecimals={false} />
+              <YAxis stroke="var(--text-secondary)" fontSize={12} allowDecimals={false} domain={[0, 130]} />
               <Tooltip 
                 contentStyle={{ backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}
               />

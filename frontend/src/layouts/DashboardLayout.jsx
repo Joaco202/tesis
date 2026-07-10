@@ -1,13 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogOut, LayoutDashboard, BarChart3, Users, Menu, X } from 'lucide-react';
+import { LogOut, LayoutDashboard, BarChart3, Users, Menu, X, Sun, Moon } from 'lucide-react';
 
 export const DashboardLayout = () => {
   const { role, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -138,14 +153,24 @@ export const DashboardLayout = () => {
             </NavLink>
           )}
           
-          <NavLink 
-            to="/" 
-            onClick={closeMenu}
-            className="btn btn-secondary"
-            style={{ justifyContent: 'flex-start', padding: '0.75rem 1rem', marginTop: 'auto' }}
-          >
-             Vista Pública
-          </NavLink>
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto', width: '100%' }}>
+            <NavLink 
+              to="/" 
+              onClick={closeMenu}
+              className="btn btn-secondary"
+              style={{ flex: 1, justifyContent: 'center', padding: '0.75rem 0.5rem', minWidth: 0, fontSize: '0.875rem' }}
+            >
+               Vista Pública
+            </NavLink>
+            <button
+              onClick={toggleTheme}
+              className="btn btn-secondary"
+              style={{ padding: '0.75rem', width: '42px', height: '42px', flexShrink: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}
+              title={theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+          </div>
         </nav>
 
         <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>

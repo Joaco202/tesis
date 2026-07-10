@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car, ArrowRight, ArrowLeft, Clock, Search, X, Eye, Camera } from 'lucide-react';
+import { Car, ArrowRight, ArrowLeft, Clock, Search, X, Eye, Camera, Plus } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { supabase } from '../lib/supabase';
@@ -41,6 +41,15 @@ export const GuardDashboard = () => {
   const [zones, setZones] = useState([]);
   const [selectedZoneId, setSelectedZoneId] = useState(null); // null = todas
 
+  // Manual access registration states
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [manualForm, setManualForm] = useState({
+    patente: '',
+    tipo: 'entrada', // 'entrada' | 'salida'
+    zonaId: '',
+  });
+  const [submittingManual, setSubmittingManual] = useState(false);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [search, pageSize]);
@@ -74,109 +83,109 @@ export const GuardDashboard = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Fetch data
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const startOfToday = new Date();
-        startOfToday.setHours(0, 0, 0, 0);
-        const todayIso = startOfToday.toISOString();
+  // Fetch data function (explicita en el cuerpo del componente para poder llamarse tras acciones manuales)
+  const fetchDashboardData = async () => {
+    try {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const todayIso = startOfToday.toISOString();
 
-        // Fetch all zones
-        const { data: allZones, error: zonesError } = await supabase
-          .from('zonas')
-          .select('id, nombre, capacidad')
-          .eq('estado', true)
-          .order('nombre');
+      // Fetch all zones
+      const { data: allZones, error: zonesError } = await supabase
+        .from('zonas')
+        .select('id, nombre, capacidad')
+        .eq('estado', true)
+        .order('nombre');
 
-        let defaultZoneId = null;
-        if (!zonesError && allZones && allZones.length > 0) {
-          setZones(allZones);
-          const aulaMagna = allZones.find(z => z.nombre === 'Aula Magna');
-          if (aulaMagna) {
-            defaultZoneId = aulaMagna.id;
-            setSelectedZoneId(prev => prev ?? aulaMagna.id);
-            setOccupancy(prev => ({ ...prev, max: aulaMagna.capacidad }));
-          } else {
-            setOccupancy(prev => ({ ...prev, max: allZones[0].capacidad }));
-          }
+      let defaultZoneId = null;
+      if (!zonesError && allZones && allZones.length > 0) {
+        setZones(allZones);
+        const aulaMagna = allZones.find(z => z.nombre === 'Aula Magna');
+        if (aulaMagna) {
+          defaultZoneId = aulaMagna.id;
+          setSelectedZoneId(prev => prev ?? aulaMagna.id);
+          setOccupancy(prev => ({ ...prev, max: aulaMagna.capacidad }));
+        } else {
+          setOccupancy(prev => ({ ...prev, max: allZones[0].capacidad }));
         }
-
-        const { count, error: countError } = await supabase
-          .from('accesos')
-          .select('*', { count: 'exact', head: true })
-          .is('fecha_salida', null);
-
-        if (!countError && count !== null) {
-          setOccupancy(prev => ({ ...prev, current: count }));
-        }
-
-        const { count: entriesCount, error: entriesError } = await supabase
-          .from('accesos')
-          .select('*', { count: 'exact', head: true })
-          .gte('fecha_entrada', todayIso);
-
-        if (!entriesError && entriesCount !== null) {
-          setDailyTotals(prev => ({ ...prev, entries: entriesCount }));
-        }
-
-        const { count: exitsCount, error: exitsError } = await supabase
-          .from('accesos')
-          .select('*', { count: 'exact', head: true })
-          .gte('fecha_salida', todayIso);
-
-        if (!exitsError && exitsCount !== null) {
-          setDailyTotals(prev => ({ ...prev, exits: exitsCount }));
-        }
-
-        const { data, error: dataError } = await supabase
-          .from('accesos')
-          .select('id, vehiculo_patente, fecha_entrada, fecha_salida, confianza_ocr, zona_id, imagen_origen, imagen_origen_salida')
-          .order('fecha_entrada', { ascending: false })
-          .limit(500);
-
-        if (!dataError && data) {
-          let timeline = [];
-          data.forEach(row => {
-            if (row.fecha_entrada) {
-              timeline.push({
-                id: row.id + '-in',
-                accessId: row.id,
-                zoneId: row.zona_id,
-                plate: row.vehiculo_patente,
-                type: 'in',
-                timestamp: new Date(row.fecha_entrada),
-                confidence: row.confianza_ocr || 0.95,
-                imagen_origen: row.imagen_origen,
-                imagen_origen_salida: row.imagen_origen_salida,
-                fecha_salida: row.fecha_salida
-              });
-            }
-
-            if (row.fecha_salida) {
-              timeline.push({
-                id: row.id + '-out',
-                accessId: row.id,
-                zoneId: row.zona_id,
-                plate: row.vehiculo_patente,
-                type: 'out',
-                timestamp: new Date(row.fecha_salida),
-                confidence: row.confianza_ocr || 0.95,
-                imagen_origen: row.imagen_origen,
-                imagen_origen_salida: row.imagen_origen_salida,
-                fecha_salida: row.fecha_salida
-              });
-            }
-          });
-
-          timeline.sort((a, b) => b.timestamp - a.timestamp);
-          setEvents(timeline);
-        }
-      } catch (err) {
-        console.error('Error fetching guard dashboard data:', err);
       }
-    };
 
+      const { count, error: countError } = await supabase
+        .from('accesos')
+        .select('*', { count: 'exact', head: true })
+        .is('fecha_salida', null);
+
+      if (!countError && count !== null) {
+        setOccupancy(prev => ({ ...prev, current: count }));
+      }
+
+      const { count: entriesCount, error: entriesError } = await supabase
+        .from('accesos')
+        .select('*', { count: 'exact', head: true })
+        .gte('fecha_entrada', todayIso);
+
+      if (!entriesError && entriesCount !== null) {
+        setDailyTotals(prev => ({ ...prev, entries: entriesCount }));
+      }
+
+      const { count: exitsCount, error: exitsError } = await supabase
+        .from('accesos')
+        .select('*', { count: 'exact', head: true })
+        .gte('fecha_salida', todayIso);
+
+      if (!exitsError && exitsCount !== null) {
+        setDailyTotals(prev => ({ ...prev, exits: exitsCount }));
+      }
+
+      const { data, error: dataError } = await supabase
+        .from('accesos')
+        .select('id, vehiculo_patente, fecha_entrada, fecha_salida, confianza_ocr, zona_id, imagen_origen, imagen_origen_salida')
+        .order('fecha_entrada', { ascending: false })
+        .limit(500);
+
+      if (!dataError && data) {
+        let timeline = [];
+        data.forEach(row => {
+          if (row.fecha_entrada) {
+            timeline.push({
+              id: row.id + '-in',
+              accessId: row.id,
+              zoneId: row.zona_id,
+              plate: row.vehiculo_patente,
+              type: 'in',
+              timestamp: new Date(row.fecha_entrada),
+              confidence: row.confianza_ocr || 0.95,
+              imagen_origen: row.imagen_origen,
+              imagen_origen_salida: row.imagen_origen_salida,
+              fecha_salida: row.fecha_salida
+            });
+          }
+
+          if (row.fecha_salida) {
+            timeline.push({
+              id: row.id + '-out',
+              accessId: row.id,
+              zoneId: row.zona_id,
+              plate: row.vehiculo_patente,
+              type: 'out',
+              timestamp: new Date(row.fecha_salida),
+              confidence: row.confianza_ocr || 0.95,
+              imagen_origen: row.imagen_origen,
+              imagen_origen_salida: row.imagen_origen_salida,
+              fecha_salida: row.fecha_salida
+            });
+          }
+        });
+
+        timeline.sort((a, b) => b.timestamp - a.timestamp);
+        setEvents(timeline);
+      }
+    } catch (err) {
+      console.error('Error fetching guard dashboard data:', err);
+    }
+  };
+
+  useEffect(() => {
     fetchDashboardData();
 
     const channel = supabase.channel('guard:accesos')
@@ -189,6 +198,126 @@ export const GuardDashboard = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const handleOpenManualModal = () => {
+    setManualForm({
+      patente: '',
+      tipo: 'entrada',
+      zonaId: selectedZoneId ? selectedZoneId.toString() : (zones[0]?.id?.toString() || ''),
+    });
+    setIsManualModalOpen(true);
+  };
+
+  const handleManualRegister = async (e) => {
+    e.preventDefault();
+    if (!manualForm.patente.trim()) {
+      alert('Por favor, ingresa una patente.');
+      return;
+    }
+    if (!manualForm.zonaId) {
+      alert('Por favor, selecciona un estacionamiento.');
+      return;
+    }
+
+    const cleanPlate = manualForm.patente.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    
+    // Validar formato chileno (patentes de autos/motos antiguas y nuevas, e institucionales)
+    const formatAutoOld = /^[A-Z]{2}\d{4}$/; // AA1234
+    const formatAutoNew = /^[A-Z]{4}\d{2}$/; // AAAA12
+    const formatMoto = /^[A-Z]{2,3}\d{2,3}$/; // AA123, AAA12, AAA123, etc.
+    const formatCarabineros = /^(Z|M|RP|AP|B|C|CB|AG|A)\d{4}$/; // Z1234, RP1234, etc.
+    
+    const isValidChilean = formatAutoOld.test(cleanPlate) || 
+                           formatAutoNew.test(cleanPlate) || 
+                           formatMoto.test(cleanPlate) || 
+                           formatCarabineros.test(cleanPlate);
+    
+    if (!isValidChilean) {
+      alert('La patente no cumple con un formato chileno válido (ejemplos: AA1234, AAAA12, patentes de moto o patentes institucionales de Carabineros como RP1234, Z1234).');
+      return;
+    }
+
+    setSubmittingManual(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Asegurar que el vehículo esté registrado para evitar errores de Foreign Key
+      const { error: vehError } = await supabase
+        .from('vehiculos')
+        .upsert({ patente: cleanPlate }, { onConflict: 'patente' });
+
+      if (vehError) throw vehError;
+
+      const selectedZoneInt = parseInt(manualForm.zonaId);
+      const nowStr = new Date().toISOString();
+
+      if (manualForm.tipo === 'entrada') {
+        const { error: accError } = await supabase
+          .from('accesos')
+          .insert([{
+            vehiculo_patente: cleanPlate,
+            zona_id: selectedZoneInt,
+            camera_id: 'Registro Manual',
+            fecha_entrada: nowStr,
+            confianza_ocr: 1.0,
+            creado_por: user ? user.id : null,
+          }]);
+
+        if (accError) throw accError;
+        alert('Ingreso manual registrado con éxito.');
+      } else {
+        // Salida
+        const { data: openAccesses, error: fetchError } = await supabase
+          .from('accesos')
+          .select('id')
+          .eq('vehiculo_patente', cleanPlate)
+          .eq('zona_id', selectedZoneInt)
+          .is('fecha_salida', null)
+          .order('fecha_entrada', { ascending: false })
+          .limit(1);
+
+        if (fetchError) throw fetchError;
+
+        if (openAccesses && openAccesses.length > 0) {
+          // Actualizar acceso abierto existente
+          const { error: accError } = await supabase
+            .from('accesos')
+            .update({
+              fecha_salida: nowStr,
+              camera_salida_id: 'Registro Manual',
+              confianza_ocr_salida: 1.0
+            })
+            .eq('id', openAccesses[0].id);
+
+          if (accError) throw accError;
+          alert('Salida manual registrada con éxito (se cerró el ingreso previo).');
+        } else {
+          // Registrar salida huérfana
+          const { error: accError } = await supabase
+            .from('accesos')
+            .insert([{
+              vehiculo_patente: cleanPlate,
+              zona_id: selectedZoneInt,
+              camera_salida_id: 'Registro Manual',
+              fecha_salida: nowStr,
+              confianza_ocr_salida: 1.0,
+              creado_por: user ? user.id : null,
+            }]);
+
+          if (accError) throw accError;
+          alert('Salida manual registrada con éxito (sin entrada previa asociada).');
+        }
+      }
+
+      setIsManualModalOpen(false);
+      fetchDashboardData();
+    } catch (err) {
+      console.error('Error al registrar acceso manual:', err);
+      alert('Error al registrar acceso manual: ' + err.message);
+    } finally {
+      setSubmittingManual(false);
+    }
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -299,14 +428,23 @@ export const GuardDashboard = () => {
   return (
     <>
       <div className="animate-fade-in">
-        <div className="flex-between" style={{ marginBottom: '2rem' }}>
+        <div className="flex-between" style={{ marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--text-primary)' }}>Panel de Control</h1>
             <p style={{ color: 'var(--text-secondary)' }}>Monitoreo del Aula Magna</p>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{format(currentTime, "dd 'de' MMMM, yyyy", { locale: es })}</p>
-            <p style={{ fontSize: '1.25rem', fontWeight: 600 }}>{format(currentTime, "HH:mm:ss")}</p>
+          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button 
+              className="btn btn-primary" 
+              onClick={handleOpenManualModal}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', height: '42px' }}
+            >
+              <Plus size={18} /> Registrar Acceso Manual
+            </button>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{format(currentTime, "dd 'de' MMMM, yyyy", { locale: es })}</p>
+              <p style={{ fontSize: '1.25rem', fontWeight: 600 }}>{format(currentTime, "HH:mm:ss")}</p>
+            </div>
           </div>
         </div>
 
@@ -784,6 +922,84 @@ export const GuardDashboard = () => {
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
               }} 
             />
+          </div>
+        </div>
+      )}
+      {/* Modal para Registrar Acceso Manual */}
+      {isManualModalOpen && (
+        <div style={modalOverlayStyle}>
+          <div style={modalContentStyle} className="animate-fade-in">
+            <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Registrar Acceso Manual</h3>
+              <button onClick={() => setIsManualModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleManualRegister} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Patente *</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  placeholder="Ej. ABCD12"
+                  value={manualForm.patente}
+                  onChange={(e) => setManualForm(prev => ({ ...prev, patente: e.target.value.toUpperCase() }))}
+                  required
+                  style={{ textTransform: 'uppercase', letterSpacing: '1px', fontSize: '1rem', fontWeight: 600 }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Tipo de Acceso *</label>
+                <div style={{ display: 'flex', gap: '1.5rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                    <input
+                      type="radio"
+                      name="tipoAcceso"
+                      value="entrada"
+                      checked={manualForm.tipo === 'entrada'}
+                      onChange={() => setManualForm(prev => ({ ...prev, tipo: 'entrada' }))}
+                      style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                    />
+                    Ingreso
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                    <input
+                      type="radio"
+                      name="tipoAcceso"
+                      value="salida"
+                      checked={manualForm.tipo === 'salida'}
+                      onChange={() => setManualForm(prev => ({ ...prev, tipo: 'salida' }))}
+                      style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                    />
+                    Salida
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>Estacionamiento *</label>
+                <select
+                  className="input-field"
+                  value={manualForm.zonaId}
+                  onChange={(e) => setManualForm(prev => ({ ...prev, zonaId: e.target.value }))}
+                  required
+                >
+                  <option value="" disabled>Selecciona un estacionamiento</option>
+                  {zones.map(z => (
+                    <option key={z.id} value={z.id.toString()}>{z.nombre}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setIsManualModalOpen(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" disabled={submittingManual}>
+                  {submittingManual ? 'Registrando...' : 'Registrar Acceso'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

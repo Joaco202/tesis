@@ -49,6 +49,15 @@
   }
 }
 
+[data-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --glass-shadow: 0 8px 32px 0 rgba(0, 75, 135, 0.1);
+}
+
 [data-theme="dark"] {
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
@@ -87,6 +96,10 @@ body {
   .glass-panel {
     background: rgba(30, 41, 59, 0.7);
   }
+}
+
+[data-theme="light"] .glass-panel {
+  background: rgba(255, 255, 255, 0.7);
 }
 
 [data-theme="dark"] .glass-panel {
