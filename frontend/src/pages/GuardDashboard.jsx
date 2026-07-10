@@ -622,7 +622,7 @@ export const GuardDashboard = () => {
                       <Car size={32} style={{ opacity: 0.3, marginBottom: '0.5rem', margin: '0 auto' }} />
                       <span style={{ fontSize: '0.875rem', display: 'block' }}>
                         {selectedImageEvent.type === 'in' && !selectedImageEvent.fecha_salida
-                          ? 'Vehículo aún dentro'
+                          ? 'Vehículo no registra salida'
                           : 'Sin imagen de salida'}
                       </span>
                     </div>
