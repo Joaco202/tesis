@@ -251,7 +251,26 @@ export const GuardDashboard = () => {
       const selectedZoneInt = parseInt(manualForm.zonaId);
       const nowStr = new Date().toISOString();
 
+      // Consultar si ya existe un acceso abierto para esta patente en este estacionamiento
+      const { data: openAccesses, error: fetchError } = await supabase
+        .from('accesos')
+        .select('id')
+        .eq('vehiculo_patente', cleanPlate)
+        .eq('zona_id', selectedZoneInt)
+        .is('fecha_salida', null)
+        .order('fecha_entrada', { ascending: false })
+        .limit(1);
+
+      if (fetchError) throw fetchError;
+      const hasOpenAccess = openAccesses && openAccesses.length > 0;
+
       if (manualForm.tipo === 'entrada') {
+        if (hasOpenAccess) {
+          alert(`El vehículo con patente ${cleanPlate} ya tiene un ingreso activo registrado en este estacionamiento.`);
+          setSubmittingManual(false);
+          return;
+        }
+
         const { error: accError } = await supabase
           .from('accesos')
           .insert([{
@@ -267,46 +286,24 @@ export const GuardDashboard = () => {
         alert('Ingreso manual registrado con éxito.');
       } else {
         // Salida
-        const { data: openAccesses, error: fetchError } = await supabase
-          .from('accesos')
-          .select('id')
-          .eq('vehiculo_patente', cleanPlate)
-          .eq('zona_id', selectedZoneInt)
-          .is('fecha_salida', null)
-          .order('fecha_entrada', { ascending: false })
-          .limit(1);
-
-        if (fetchError) throw fetchError;
-
-        if (openAccesses && openAccesses.length > 0) {
-          // Actualizar acceso abierto existente
-          const { error: accError } = await supabase
-            .from('accesos')
-            .update({
-              fecha_salida: nowStr,
-              camera_salida_id: 'Registro Manual',
-              confianza_ocr_salida: 1.0
-            })
-            .eq('id', openAccesses[0].id);
-
-          if (accError) throw accError;
-          alert('Salida manual registrada con éxito.');
-        } else {
-          // Registrar salida huérfana
-          const { error: accError } = await supabase
-            .from('accesos')
-            .insert([{
-              vehiculo_patente: cleanPlate,
-              zona_id: selectedZoneInt,
-              camera_salida_id: 'Registro Manual',
-              fecha_salida: nowStr,
-              confianza_ocr_salida: 1.0,
-              creado_por: user ? user.id : null,
-            }]);
-
-          if (accError) throw accError;
-          alert('Salida manual registrada con éxito.');
+        if (!hasOpenAccess) {
+          alert(`El vehículo con patente ${cleanPlate} no registra ningún ingreso activo en este estacionamiento, por lo que no puede registrar una salida.`);
+          setSubmittingManual(false);
+          return;
         }
+
+        // Actualizar acceso abierto existente
+        const { error: accError } = await supabase
+          .from('accesos')
+          .update({
+            fecha_salida: nowStr,
+            camera_salida_id: 'Registro Manual',
+            confianza_ocr_salida: 1.0
+          })
+          .eq('id', openAccesses[0].id);
+
+        if (accError) throw accError;
+        alert('Salida manual registrada con éxito.');
       }
 
       setIsManualModalOpen(false);
