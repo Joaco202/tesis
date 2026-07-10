@@ -149,12 +149,18 @@ export const AdminSettings = () => {
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     nombre: '',
     email: '',
     password: '',
     rol: 'guardia' // default role
+  });
+  const [editForm, setEditForm] = useState({
+    nombre: '',
+    rol: 'guardia'
   });
 
   const fetchUsersAndRoles = async () => {
@@ -164,6 +170,7 @@ export const AdminSettings = () => {
       const { data: usersData, error: usersError } = await supabase
         .from('usuarios')
         .select('id, nombre, email, estado, rol_id, roles ( id, nombre )')
+        .eq('eliminado', false)
         .order('created_at', { ascending: false });
 
       if (usersError) throw usersError;
@@ -213,7 +220,7 @@ export const AdminSettings = () => {
     try {
       const { error } = await supabase
         .from('usuarios')
-        .delete()
+        .update({ eliminado: true })
         .eq('id', userId);
 
       if (error) throw error;
@@ -224,6 +231,50 @@ export const AdminSettings = () => {
     } catch (err) {
       console.error('Error deleting user:', err);
       alert('Error al eliminar el usuario: ' + err.message);
+    }
+  };
+
+  const handleOpenEditModal = (user) => {
+    setEditingUser(user);
+    setEditForm({
+      nombre: user.nombre,
+      rol: user.roles?.nombre || 'guardia'
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditUser = async (e) => {
+    e.preventDefault();
+    if (!editForm.nombre.trim()) {
+      alert('Por favor, completa el nombre.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const selectedRole = roles.find(r => r.nombre === editForm.rol);
+      if (!selectedRole) {
+        throw new Error('Rol seleccionado no válido.');
+      }
+
+      const { error } = await supabase
+        .from('usuarios')
+        .update({
+          nombre: editForm.nombre.trim(),
+          rol_id: selectedRole.id
+        })
+        .eq('id', editingUser.id);
+
+      if (error) throw error;
+
+      alert('Usuario actualizado con éxito.');
+      setIsEditModalOpen(false);
+      setEditingUser(null);
+      fetchUsersAndRoles();
+    } catch (err) {
+      console.error('Error updating user:', err);
+      alert('Error al actualizar el usuario: ' + err.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -357,6 +408,14 @@ export const AdminSettings = () => {
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
                           <button 
                             className="btn btn-secondary" 
+                            style={{ padding: '0.25rem', color: 'var(--text-secondary)' }} 
+                            title="Editar usuario"
+                            onClick={() => handleOpenEditModal(u)}
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button 
+                            className="btn btn-secondary" 
                             style={{ padding: '0.25rem', color: 'var(--status-danger)' }} 
                             title="Eliminar de la aplicación"
                             onClick={() => handleDeleteUser(u.id)}
@@ -435,6 +494,46 @@ export const AdminSettings = () => {
                 <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancelar</button>
                 <button type="submit" className="btn btn-primary" disabled={submitting}>
                   {submitting ? 'Creando...' : 'Crear Usuario'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      {/* Modal para Editar Usuario */}
+      {isEditModalOpen && (
+        <div style={modalOverlayStyle}>
+          <div style={modalContentStyle} className="animate-fade-in">
+            <div className="flex-between" style={{ marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Editar usuario</h3>
+              <button onClick={() => { setIsEditModalOpen(false); setEditingUser(null); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditUser} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <FloatingInput 
+                label="Nombre Completo *"
+                placeholder="Ej. Juan Pérez"
+                value={editForm.nombre}
+                onChange={(e) => setEditForm(prev => ({ ...prev, nombre: e.target.value }))}
+                required
+              />
+
+              <FloatingSelect 
+                label="Rol del Usuario *"
+                value={editForm.rol}
+                onChange={(e) => setEditForm(prev => ({ ...prev, rol: e.target.value }))}
+                options={roles.map(r => ({
+                  value: r.nombre,
+                  label: r.nombre.charAt(0).toUpperCase() + r.nombre.slice(1)
+                }))}
+                required
+              />
+              
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+                <button type="button" className="btn btn-secondary" onClick={() => { setIsEditModalOpen(false); setEditingUser(null); }}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
               </div>
             </form>

@@ -1,24 +1,9 @@
-CREATE OR REPLACE FUNCTION public.clean_old_access_images()
-RETURNS void AS $$
-BEGIN
-
-  DELETE FROM storage.objects
-  WHERE bucket_id = 'access-images'
-    AND created_at < (now() - INTERVAL '30 days');
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
-CREATE OR REPLACE FUNCTION public.trg_func_clean_old_images()
-RETURNS trigger AS $$
-BEGIN
-  PERFORM public.clean_old_access_images();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_clean_old_images ON public.accesos;
-
-CREATE TRIGGER trg_clean_old_images
-AFTER INSERT ON public.accesos
-FOR EACH STATEMENT
-EXECUTE FUNCTION public.trg_func_clean_old_images();
+-- =========================================================
+-- POLÍTICAS DE ACCESO AL BUCKET "access-images"
+-- =========================================================
+-- Permite lectura pública (el bucket ya está marcado como PUBLIC en Supabase).
+-- La limpieza periódica de imágenes antiguas (>30 días) se realiza
+-- desde el script Python `continuous_inference.py` mediante la función
+-- `repository.limpiar_imagenes_antiguas()`, que usa la Storage API oficial.
+-- No se utiliza un trigger SQL para evitar ejecuciones redundantes
+-- en cada INSERT y posibles inconsistencias con el almacenamiento físico.

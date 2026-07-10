@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data, error } = await supabase
         .from('usuarios')
-        .select('rol_id, estado, roles ( nombre )')
+        .select('rol_id, estado, eliminado, roles ( nombre )')
         .eq('id', userId)
         .single();
       
@@ -48,8 +48,8 @@ export const AuthProvider = ({ children }) => {
       }
       
       if (data) {
-        if (data.estado === false) {
-          console.warn('Usuario inactivo, cerrando sesión');
+        if (data.estado === false || data.eliminado === true) {
+          console.warn('Usuario inactivo o eliminado, cerrando sesión');
           await supabase.auth.signOut();
           setUser(null);
           setRole(null);
@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
     if (data && data.user) {
       const { data: userData, error: userError } = await supabase
         .from('usuarios')
-        .select('estado')
+        .select('estado, eliminado')
         .eq('id', data.user.id)
         .single();
 
@@ -89,9 +89,9 @@ export const AuthProvider = ({ children }) => {
         console.error('Error al obtener estado del usuario en login:', userError);
       }
 
-      if (userData && userData.estado === false) {
+      if (userData && (userData.estado === false || userData.eliminado === true)) {
         await supabase.auth.signOut();
-        return { error: new Error('Usuario inactivo') };
+        return { error: new Error('Usuario inactivo o eliminado') };
       }
     }
     return { data, error: null };

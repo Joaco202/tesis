@@ -37,6 +37,9 @@ export const GuardDashboard = () => {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [filterMode, setFilterMode] = useState('all'); // 'all' | 'inside'
+  const [zones, setZones] = useState([]);
+  const [selectedZoneId, setSelectedZoneId] = useState(null); // null = todas
 
   useEffect(() => {
     setCurrentPage(1);
@@ -79,6 +82,26 @@ export const GuardDashboard = () => {
         startOfToday.setHours(0, 0, 0, 0);
         const todayIso = startOfToday.toISOString();
 
+        // Fetch all zones
+        const { data: allZones, error: zonesError } = await supabase
+          .from('zonas')
+          .select('id, nombre, capacidad')
+          .eq('estado', true)
+          .order('nombre');
+
+        let defaultZoneId = null;
+        if (!zonesError && allZones && allZones.length > 0) {
+          setZones(allZones);
+          const aulaMagna = allZones.find(z => z.nombre === 'Aula Magna');
+          if (aulaMagna) {
+            defaultZoneId = aulaMagna.id;
+            setSelectedZoneId(prev => prev ?? aulaMagna.id);
+            setOccupancy(prev => ({ ...prev, max: aulaMagna.capacidad }));
+          } else {
+            setOccupancy(prev => ({ ...prev, max: allZones[0].capacidad }));
+          }
+        }
+
         const { count, error: countError } = await supabase
           .from('accesos')
           .select('*', { count: 'exact', head: true })
@@ -86,16 +109,6 @@ export const GuardDashboard = () => {
 
         if (!countError && count !== null) {
           setOccupancy(prev => ({ ...prev, current: count }));
-        }
-
-        const { data: zoneData, error: zoneError } = await supabase
-          .from('zonas')
-          .select('capacidad')
-          .eq('nombre', 'Aula Magna')
-          .single();
-
-        if (!zoneError && zoneData) {
-          setOccupancy(prev => ({ ...prev, max: zoneData.capacidad }));
         }
 
         const { count: entriesCount, error: entriesError } = await supabase
@@ -201,7 +214,17 @@ export const GuardDashboard = () => {
     };
   }, [zoomedImage, isImageModalOpen]);
 
-  const filteredEvents = events.filter(e => e.plate.toLowerCase().includes(search.toLowerCase()));
+  const filteredEvents = events.filter(e => {
+    // Filtro por patente
+    if (search && !e.plate.toLowerCase().includes(search.toLowerCase())) return false;
+    // Filtro por zona
+    if (selectedZoneId !== null && e.zoneId !== selectedZoneId) return false;
+    // Filtro "Solo dentro": mostrar solo eventos de ingreso sin salida registrada
+    if (filterMode === 'inside') {
+      return e.type === 'in' && !e.fecha_salida;
+    }
+    return true;
+  });
   const totalItems = filteredEvents.length;
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
   const paginatedEvents = filteredEvents.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -344,32 +367,85 @@ export const GuardDashboard = () => {
 
         {/* Live Feed Table */}
         <div className="card">
-          <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Registro en Vivo (Cámara)</h2>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => setPageSize(Number(e.target.value))}
-                  className="input-field"
-                  style={{ width: '80px', padding: '0.25rem 0.5rem', height: '38px' }}
-                >
-                  <option value={20}>20</option>
-                  <option value={30}>30</option>
-                  <option value={50}>50</option>
-                </select>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <div className="flex-between" style={{ flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 600 }}>Registro en Vivo (Cámara)</h2>
+                {zones.length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.4rem' }}>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Estacionamiento:</span>
+                    <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+                      {zones.map(z => (
+                        <button
+                          key={z.id}
+                          onClick={() => { setSelectedZoneId(z.id); setCurrentPage(1); }}
+                          style={{
+                            padding: '0.2rem 0.7rem',
+                            borderRadius: '9999px',
+                            border: '1px solid',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            borderColor: selectedZoneId === z.id ? 'var(--ubb-blue)' : 'var(--border-color)',
+                            backgroundColor: selectedZoneId === z.id ? 'var(--ubb-blue)' : 'transparent',
+                            color: selectedZoneId === z.id ? '#fff' : 'var(--text-secondary)',
+                          }}
+                        >
+                          {z.nombre}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div style={{ position: 'relative' }}>
-                <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-                <input
-                  type="text"
-                  placeholder="Buscar patente..."
-                  className="input-field"
-                  style={{ paddingLeft: '2.5rem', width: '220px', height: '38px' }}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                {/* Toggle Solo Dentro */}
+                <button
+                  onClick={() => { setFilterMode(prev => prev === 'inside' ? 'all' : 'inside'); setCurrentPage(1); }}
+                  style={{
+                    padding: '0.35rem 1rem',
+                    borderRadius: '9999px',
+                    border: '1.5px solid',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    borderColor: filterMode === 'inside' ? 'var(--status-success)' : 'var(--border-color)',
+                    backgroundColor: filterMode === 'inside' ? 'var(--status-success-bg)' : 'transparent',
+                    color: filterMode === 'inside' ? 'var(--status-success)' : 'var(--text-secondary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                  }}
+                >
+                  <Car size={14} />
+                  {filterMode === 'inside' ? `Dentro (${filteredEvents.length})` : 'Ver solo dentro'}
+                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    className="input-field"
+                    style={{ width: '80px', padding: '0.25rem 0.5rem', height: '38px' }}
+                  >
+                    <option value={20}>20</option>
+                    <option value={30}>30</option>
+                    <option value={50}>50</option>
+                  </select>
+                </div>
+                <div style={{ position: 'relative' }}>
+                  <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                  <input
+                    type="text"
+                    placeholder="Buscar patente..."
+                    className="input-field"
+                    style={{ paddingLeft: '2.5rem', width: '220px', height: '38px' }}
+                    value={search}
+                    onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+                  />
+                </div>
               </div>
             </div>
           </div>

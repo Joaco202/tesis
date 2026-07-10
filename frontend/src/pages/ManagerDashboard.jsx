@@ -470,6 +470,7 @@ export const ManagerDashboard = () => {
       const { data: incidentsData, error: incidentsError } = await supabase
         .from('incidencias')
         .select('id, vehiculo_patente, tipo, descripcion, estado, fecha_creacion, solucion')
+        .eq('eliminado', false)
         .order('fecha_creacion', { ascending: false });
 
       if (incidentsError) throw incidentsError;
@@ -618,7 +619,7 @@ export const ManagerDashboard = () => {
     try {
       const { error } = await supabase
         .from('incidencias')
-        .delete()
+        .update({ eliminado: true })
         .eq('id', incidentId);
 
       if (error) throw error;

@@ -22,6 +22,7 @@ create table if not exists public.usuarios (
     email varchar(120) not null unique,
     rol_id bigint not null references public.roles(id) on update cascade on delete restrict,
     estado boolean not null default true,
+    eliminado boolean not null default false,
     created_at timestamptz not null default now()
 );
 
@@ -133,6 +134,7 @@ create table if not exists public.incidencias (
     solucion text,
     estado varchar(30) not null default 'abierta'
         check (estado in ('abierta', 'en_revision', 'cerrada')),
+    eliminado boolean not null default false,
     fecha_creacion timestamptz not null default now(),
     fecha_cierre timestamptz,
 
@@ -243,7 +245,7 @@ select
     (select count(*)::integer from public.vehiculos) as total_vehiculos_registrados,
     (select count(*)::integer from public.accesos) as total_eventos_acceso,
     (select count(*)::integer from public.accesos where fecha_salida is null and fecha_entrada is not null) as vehiculos_actualmente_dentro,
-    (select count(*)::integer from public.incidencias where estado <> 'cerrada') as incidencias_abiertas;
+    (select count(*)::integer from public.incidencias where estado <> 'cerrada' and eliminado = false) as incidencias_abiertas;
 
 comment on view public.dashboard_kpis is 'Vista simple de KPIs generales para panel ejecutivo.';
 
