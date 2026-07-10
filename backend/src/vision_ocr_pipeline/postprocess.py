@@ -11,10 +11,14 @@ from .config import DEFAULT_CONFIG, OCRConfig
 #patrones de patentes chilenas estrictas
 STRICT_NEW_PLATE = re.compile(r"^[BCDFGHJKLPRSTVWXYZ]{4}[0-9]{2}$")  #18 consonantes autorizadas
 OLD_PLATE = re.compile(r"^[A-Z]{2}[0-9]{4}$")                        #formato antiguo (permite vocales)
+MOTO_PLATE = re.compile(r"^[A-Z]{2,3}[0-9]{2,3}$")                     #motos chilenas
+CARABINEROS_PLATE = re.compile(r"^(Z|M|RP|AP|B|C|CB|AG|A)[0-9]{4}$")   #Carabineros de Chile
 
 PLATE_PATTERNS = [
     STRICT_NEW_PLATE,
     OLD_PLATE,
+    MOTO_PLATE,
+    CARABINEROS_PLATE,
 ]
 
 #mapas de sustitución geométrica para corrección de caracteres confusos en OCR
@@ -132,29 +136,31 @@ def is_likely_plate(text: str) -> bool:
     #fallback estricto: exactamente 6 caracteres con distribución 4+2 (nuevo) o 2+4 (antiguo).
     #no se permite ninguna otra combinación.
     
-    if len(text) != 6:
-        #los patrones chilenos son siempre de 6 caracteres
+    if len(text) not in (5, 6):
+        # los patrones chilenos son de 5 o 6 caracteres (motos, autos, carabineros)
         return False
 
     if any(pattern.match(text) for pattern in PLATE_PATTERNS):
         return True
 
-    letters = sum(ch.isalpha() for ch in text)
-    digits = sum(ch.isdigit() for ch in text)
+    # Solo evaluar fallback de letras/dígitos si tiene longitud 6
+    if len(text) == 6:
+        letters = sum(ch.isalpha() for ch in text)
+        digits = sum(ch.isdigit() for ch in text)
 
-    #solo permitir distribuciones coherentes con formato chileno:
-    #nuevo: 4 letras + 2 dígitos → los 4 primeros mayoritariamente letras
-    #antiguo: 2 letras + 4 dígitos → los 2 primeros mayoritariamente letras
-    if letters + digits < 6:
-        #tiene caracteres que no son letra ni dígito → rechazar
-        return False
+        #solo permitir distribuciones coherentes con formato chileno:
+        #nuevo: 4 letras + 2 dígitos → los 4 primeros mayoritariamente letras
+        #antiguo: 2 letras + 4 dígitos → los 2 primeros mayoritariamente letras
+        if letters + digits < 6:
+            #tiene caracteres que no son letra ni dígito → rechazar
+            return False
 
-    if letters == 4 and digits == 2:
-        #candidato a formato nuevo: exigir que los dígitos estén al final
-        return text[4:].replace("O", "0").replace("I", "1").isdigit() or text[4:].isdigit()
-    if letters == 2 and digits == 4:
-        #candidato a formato antiguo: exigir que las letras estén al inicio
-        return text[:2].isalpha()
+        if letters == 4 and digits == 2:
+            #candidato a formato nuevo: exigir que los dígitos estén al final
+            return text[4:].replace("O", "0").replace("I", "1").isdigit() or text[4:].isdigit()
+        if letters == 2 and digits == 4:
+            #candidato a formato antiguo: exigir que las letras estén al inicio
+            return text[:2].isalpha()
 
     return False
 
