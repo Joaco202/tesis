@@ -290,7 +290,7 @@ export const GuardDashboard = () => {
             .eq('id', openAccesses[0].id);
 
           if (accError) throw accError;
-          alert('Salida manual registrada con éxito (se cerró el ingreso previo).');
+          alert('Salida manual registrada con éxito.');
         } else {
           // Registrar salida huérfana
           const { error: accError } = await supabase
@@ -305,7 +305,7 @@ export const GuardDashboard = () => {
             }]);
 
           if (accError) throw accError;
-          alert('Salida manual registrada con éxito (sin entrada previa asociada).');
+          alert('Salida manual registrada con éxito.');
         }
       }
 
