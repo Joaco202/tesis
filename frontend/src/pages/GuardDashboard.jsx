@@ -219,10 +219,9 @@ export const GuardDashboard = () => {
     if (search && !e.plate.toLowerCase().includes(search.toLowerCase())) return false;
     // Filtro por zona
     if (selectedZoneId !== null && e.zoneId !== selectedZoneId) return false;
-    // Filtro "Solo dentro": mostrar solo eventos de ingreso sin salida registrada
-    if (filterMode === 'inside') {
-      return e.type === 'in' && !e.fecha_salida;
-    }
+    // Filtro por tipo de movimiento (in / out / all)
+    if (filterMode === 'in') return e.type === 'in';
+    if (filterMode === 'out') return e.type === 'out';
     return true;
   });
   const totalItems = filteredEvents.length;
@@ -400,9 +399,12 @@ export const GuardDashboard = () => {
                 )}
               </div>
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                {/* Toggle Solo Dentro */}
+                {/* Botón Tri-estado de Filtro de Movimientos */}
                 <button
-                  onClick={() => { setFilterMode(prev => prev === 'inside' ? 'all' : 'inside'); setCurrentPage(1); }}
+                  onClick={() => {
+                    setFilterMode(prev => prev === 'all' ? 'in' : prev === 'in' ? 'out' : 'all');
+                    setCurrentPage(1);
+                  }}
                   style={{
                     padding: '0.35rem 1rem',
                     borderRadius: '9999px',
@@ -411,16 +413,30 @@ export const GuardDashboard = () => {
                     fontWeight: 600,
                     cursor: 'pointer',
                     transition: 'all 0.2s',
-                    borderColor: filterMode === 'inside' ? 'var(--status-success)' : 'var(--border-color)',
-                    backgroundColor: filterMode === 'inside' ? 'var(--status-success-bg)' : 'transparent',
-                    color: filterMode === 'inside' ? 'var(--status-success)' : 'var(--text-secondary)',
+                    borderColor: 
+                      filterMode === 'in' ? 'var(--status-success)' : 
+                      filterMode === 'out' ? 'var(--ubb-orange)' : 
+                      'var(--border-color)',
+                    backgroundColor: 
+                      filterMode === 'in' ? 'rgba(16, 185, 129, 0.1)' : 
+                      filterMode === 'out' ? 'rgba(245, 158, 11, 0.1)' : 
+                      'transparent',
+                    color: 
+                      filterMode === 'in' ? 'var(--status-success)' : 
+                      filterMode === 'out' ? 'var(--ubb-orange)' : 
+                      'var(--text-secondary)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.4rem',
                   }}
                 >
-                  <Car size={14} />
-                  {filterMode === 'inside' ? `Dentro (${filteredEvents.length})` : 'Ver solo dentro'}
+                  {filterMode === 'in' && <ArrowRight size={14} />}
+                  {filterMode === 'out' && <ArrowLeft size={14} />}
+                  {filterMode === 'all' && <Car size={14} />}
+                  
+                  {filterMode === 'in' ? 'Solo Ingresos' : 
+                   filterMode === 'out' ? 'Solo Salidas' : 
+                   'Movimientos (Todos)'}
                 </button>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Mostrar:</span>
