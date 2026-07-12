@@ -4,6 +4,27 @@ import { Download, AlertTriangle, Filter, Plus, X, Check, Clock as ClockIcon, Ca
 import { supabase } from '../lib/supabase';
 import { format } from 'date-fns';
 
+const formatResolutionTime = (created, closed) => {
+  if (!closed) return '-';
+  const diffMs = new Date(closed) - new Date(created);
+  if (diffMs < 0) return '0 min';
+  
+  const diffMins = Math.round(diffMs / (1000 * 60));
+  if (diffMins < 60) {
+    return `${diffMins} min`;
+  }
+  
+  const diffHours = Math.floor(diffMins / 60);
+  const remainingMins = diffMins % 60;
+  if (diffHours < 24) {
+    return `${diffHours} h ${remainingMins} min`;
+  }
+  
+  const diffDays = Math.floor(diffHours / 24);
+  const remainingHours = diffHours % 24;
+  return `${diffDays} d ${remainingHours} h`;
+};
+
 const modalOverlayStyle = {
   position: 'fixed',
   top: 0,
@@ -469,7 +490,7 @@ export const ManagerDashboard = () => {
       // 3. Fetch Incidencias
       const { data: incidentsData, error: incidentsError } = await supabase
         .from('incidencias')
-        .select('id, vehiculo_patente, tipo, descripcion, estado, fecha_creacion, solucion')
+        .select('id, vehiculo_patente, tipo, descripcion, estado, fecha_creacion, fecha_cierre, solucion')
         .eq('eliminado', false)
         .order('fecha_creacion', { ascending: false });
 
@@ -574,7 +595,7 @@ export const ManagerDashboard = () => {
       id: inc.id,
       vehiculo_patente: inc.vehiculo_patente || '',
       descripcion: inc.descripcion || '',
-      estado: inc.estado === 'cerrada' ? 'cerrada' : 'abierta',
+      estado: inc.estado || 'abierta',
       zona_id: inc.zona_id || '',
       solucion: inc.solucion || '',
     });
@@ -599,6 +620,7 @@ export const ManagerDashboard = () => {
           estado: editingIncident.estado,
           zona_id: editingIncident.zona_id ? parseInt(editingIncident.zona_id) : null,
           solucion: editingIncident.solucion ? editingIncident.solucion.trim() : null,
+          fecha_cierre: editingIncident.estado === 'cerrada' ? new Date().toISOString() : null,
         })
         .eq('id', editingIncident.id);
 
@@ -735,10 +757,11 @@ export const ManagerDashboard = () => {
 
   const exportReport = () => {
     let csvContent = 'data:text/csv;charset=utf-8,\uFEFF';
-    csvContent += 'ID,Patente,Descripcion,Fecha,Estado\n';
+    csvContent += 'ID,Patente,Descripcion,Fecha Creacion,Fecha Cierre,T. Resolucion,Estado,Solucion\n';
     
     incidents.forEach(inc => {
-      csvContent += `"${inc.id}","${inc.vehiculo_patente || 'N/A'}","${inc.descripcion.replace(/"/g, '""')}","${inc.fecha_creacion}","${inc.estado}"\n`;
+      const duration = formatResolutionTime(inc.fecha_creacion, inc.fecha_cierre);
+      csvContent += `"${inc.id}","${inc.vehiculo_patente || 'N/A'}","${inc.descripcion.replace(/"/g, '""')}","${inc.fecha_creacion}","${inc.fecha_cierre || ''}","${duration}","${inc.estado}","${(inc.solucion || '').replace(/"/g, '""')}"\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -1126,6 +1149,7 @@ export const ManagerDashboard = () => {
                 <th style={{ padding: '1rem 0.5rem' }}>Patente</th>
                 <th style={{ padding: '1rem 0.5rem' }}>Descripción</th>
                 <th style={{ padding: '1rem 0.5rem' }}>Fecha Registro</th>
+                <th style={{ padding: '1rem 0.5rem' }}>T. Resolución</th>
                 <th style={{ padding: '1rem 0.5rem' }}>Estado</th>
                 <th style={{ padding: '1rem 0.5rem' }}>Solución</th>
                 <th style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>Acciones</th>
@@ -1139,6 +1163,9 @@ export const ManagerDashboard = () => {
                   <td style={{ padding: '1rem 0.5rem' }}>{inc.descripcion}</td>
                   <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)' }}>
                     {format(new Date(inc.fecha_creacion), 'dd-MM-yyyy HH:mm')}
+                  </td>
+                  <td style={{ padding: '1rem 0.5rem', color: 'var(--text-secondary)', fontStyle: inc.fecha_cierre ? 'normal' : 'italic' }}>
+                    {formatResolutionTime(inc.fecha_creacion, inc.fecha_cierre)}
                   </td>
                   <td style={{ padding: '1rem 0.5rem' }}>
                     <span className={`badge ${inc.estado === 'cerrada' ? 'badge-success' : 'badge-danger'}`}>
