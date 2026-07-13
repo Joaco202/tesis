@@ -737,15 +737,11 @@ export const GuardDashboard = () => {
                         >
                           <Edit size={14} />
                         </button>
-                        {(role === 'admin' || role === 'encargado') && (
+                         {(role === 'admin' || role === 'encargado') && (
                           <span 
                             style={{ 
                               fontSize: '0.7rem', 
                               color: 'var(--text-secondary)', 
-                              backgroundColor: 'rgba(148, 163, 184, 0.1)', 
-                              border: '1px solid var(--border-color)', 
-                              padding: '0.15rem 0.4rem', 
-                              borderRadius: '4px',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px',
@@ -754,7 +750,7 @@ export const GuardDashboard = () => {
                             }} 
                             title={ev.creador_nombre ? `Registrado/Corregido por: ${ev.creador_nombre}` : "Registrado automáticamente por la cámara OCR"}
                           >
-                            {ev.creador_nombre ? `👤 ${ev.creador_nombre}` : "🤖 Auto"}
+                            {ev.creador_nombre ? ev.creador_nombre : "Cámara"}
                           </span>
                         )}
                       </div>
