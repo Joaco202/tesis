@@ -3,6 +3,7 @@ import { Car, ArrowRight, ArrowLeft, Clock, Search, X, Eye, Camera, Plus, Edit }
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 
 const modalOverlayStyle = {
   position: 'fixed',
@@ -30,6 +31,7 @@ const modalContentStyle = {
 };
 
 export const GuardDashboard = () => {
+  const { role } = useAuth();
   const [occupancy, setOccupancy] = useState({ current: 0, max: 50 });
   const [dailyTotals, setDailyTotals] = useState({ entries: 0, exits: 0 });
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -145,7 +147,7 @@ export const GuardDashboard = () => {
 
       const { data, error: dataError } = await supabase
         .from('accesos')
-        .select('id, vehiculo_patente, fecha_entrada, fecha_salida, confianza_ocr, zona_id, imagen_origen, imagen_origen_salida')
+        .select('id, vehiculo_patente, fecha_entrada, fecha_salida, confianza_ocr, zona_id, imagen_origen, imagen_origen_salida, creado_por, usuarios!creado_por(nombre)')
         .order('fecha_entrada', { ascending: false })
         .limit(500);
 
@@ -163,7 +165,9 @@ export const GuardDashboard = () => {
               confidence: row.confianza_ocr || 0.95,
               imagen_origen: row.imagen_origen,
               imagen_origen_salida: row.imagen_origen_salida,
-              fecha_salida: row.fecha_salida
+              fecha_salida: row.fecha_salida,
+              creado_por: row.creado_por,
+              creador_nombre: row.usuarios?.nombre || null
             });
           }
 
@@ -178,7 +182,9 @@ export const GuardDashboard = () => {
               confidence: row.confianza_ocr || 0.95,
               imagen_origen: row.imagen_origen,
               imagen_origen_salida: row.imagen_origen_salida,
-              fecha_salida: row.fecha_salida
+              fecha_salida: row.fecha_salida,
+              creado_por: row.creado_por,
+              creador_nombre: row.usuarios?.nombre || null
             });
           }
         });
@@ -352,6 +358,8 @@ export const GuardDashboard = () => {
 
     setSubmittingEditPlate(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+
       // 1. Asegurar que el vehículo existe en la base de datos para no violar la FK en 'accesos'
       const { error: vehError } = await supabase
         .from('vehiculos')
@@ -359,10 +367,13 @@ export const GuardDashboard = () => {
 
       if (vehError) throw vehError;
 
-      // 2. Actualizar el registro en 'accesos'
+      // 2. Actualizar el registro en 'accesos' y registrar el usuario que corrige la patente
       const { error: accError } = await supabase
         .from('accesos')
-        .update({ vehiculo_patente: cleanPlate })
+        .update({ 
+          vehiculo_patente: cleanPlate,
+          creado_por: user ? user.id : null
+        })
         .eq('id', editingPlateEvent.accessId);
 
       if (accError) throw accError;
@@ -718,7 +729,7 @@ export const GuardDashboard = () => {
                         >
                           <Eye size={14} /> Fotos
                         </button>
-                        <button
+                         <button
                           className="btn btn-secondary"
                           style={{ padding: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}
                           onClick={() => handleOpenEditPlateModal(ev)}
@@ -726,6 +737,26 @@ export const GuardDashboard = () => {
                         >
                           <Edit size={14} />
                         </button>
+                        {(role === 'admin' || role === 'encargado') && (
+                          <span 
+                            style={{ 
+                              fontSize: '0.7rem', 
+                              color: 'var(--text-secondary)', 
+                              backgroundColor: 'rgba(148, 163, 184, 0.1)', 
+                              border: '1px solid var(--border-color)', 
+                              padding: '0.15rem 0.4rem', 
+                              borderRadius: '4px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              marginLeft: '4px',
+                              whiteSpace: 'nowrap'
+                            }} 
+                            title={ev.creador_nombre ? `Registrado/Corregido por: ${ev.creador_nombre}` : "Registrado automáticamente por la cámara OCR"}
+                          >
+                            {ev.creador_nombre ? `👤 ${ev.creador_nombre}` : "🤖 Auto"}
+                          </span>
+                        )}
                       </div>
                     </td>
                   </tr>
