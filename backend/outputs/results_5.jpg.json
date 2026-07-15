@@ -1,0 +1,14 @@
+[
+  {
+    "file": "inputs\\raw\\5.jpg",
+    "plate_text": "CRJC39",
+    "confidence": 0.8899638652801514,
+    "ocr_confidence": 0.8899638652801514,
+    "bbox": [
+      194,
+      179,
+      683,
+      492
+    ]
+  }
+]

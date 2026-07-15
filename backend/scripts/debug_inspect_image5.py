@@ -19,7 +19,6 @@ for i, r in enumerate(results):
     for o in r.ocr:
         print('  ->', repr(o.text), o.confidence)
 
-# Also show normalized tokens and pattern check
 from src.vision_ocr_pipeline.postprocess import normalize_plate_text, is_likely_plate
 
 for r in results:
@@ -28,7 +27,6 @@ for r in results:
     for t in tokens:
         print(t, 'is_likely_plate=', is_likely_plate(t))
 
-# Extra: try detector with lower confidence thresholds
 from src.vision_ocr_pipeline.config import DetectionConfig
 from src.vision_ocr_pipeline.detector import YoloDetector
 import cv2

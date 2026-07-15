@@ -86,19 +86,16 @@ create table if not exists public.accesos (
     vehiculo_patente varchar(10) not null references public.vehiculos(patente) on update cascade on delete restrict,
     zona_id bigint references public.zonas(id) on update cascade on delete set null,
 
-    -- Evento inicial
     camera_id varchar(100) not null,
     fecha_entrada timestamptz,
     confianza_ocr double precision,
     imagen_origen text,
 
-    -- Evento de cierre
     fecha_salida timestamptz,
     camera_salida_id varchar(100),
     confianza_ocr_salida double precision,
     imagen_origen_salida text,
 
-    -- Metadatos
     creado_por uuid references public.usuarios(id) on update cascade on delete set null,
     created_at timestamptz not null default now(),
 
@@ -259,13 +256,11 @@ values
     ('encargado', 'Revisa reportes, estadísticas e incidencias')
 on conflict (nombre) do nothing;
 
--- Ejemplo de zonas
 insert into public.zonas (nombre, descripcion, capacidad)
 values
-    ('Aula Magna', 'Zona principal de estacionamiento del Aula Magna', 170)
+    ('Aula Magna', 'Zona principal de estacionamiento del Aula Magna', 130)
 on conflict (nombre) do nothing;
 
--- Ejemplo de cámaras
 insert into public.camaras (camera_id, nombre, zona_id, tipo_evento_default)
 select 'camara-1', 'Cámara 1 - Acceso Aula Magna', z.id, 'entrada'
 from public.zonas z

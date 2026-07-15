@@ -59,7 +59,7 @@ def run_infer(
         except Exception as e:
             results.append({'file': str(img_path), 'error': str(e)})
             if debug:
-                console.print(f"[yellow]⚠ {img_path.name}: {e}[/yellow]")
+                console.print(f"[yellow] {img_path.name}: {e}[/yellow]")
             continue
         
         if not detection_results:
@@ -99,13 +99,13 @@ def run_infer(
         cv2.imwrite(str(ann_file), annotated)
         
         if debug:
-            console.print(f"[green]✓ {img_path.name}: {primary.plate_text}[/green]")
+            console.print(f"[green] {img_path.name}: {primary.plate_text}[/green]")
     
     output_file = output_dir / f'results_{source.name}.json'
     with open(output_file, 'w') as f:
         json.dump(results, f, indent=2)
     
-    console.print(f"\n[green]✓ Processed {len(results)} images[/green]")
+    console.print(f"\n[green] Processed {len(results)} images[/green]")
     console.print(f"   Results: {output_file}")
     console.print(f"   Annotated: {annot_dir}")
 
@@ -144,13 +144,13 @@ def run_option5(
                     'plate_text': result.plate_text,
                     'confidence': result.plate_confidence
                 })
-                console.print(f"[green]✓ {img_path.name}: {result.plate_text} (conf={result.plate_confidence:.2f})[/green]")
+                console.print(f"[green] {img_path.name}: {result.plate_text} (conf={result.plate_confidence:.2f})[/green]")
             else:
                 results.append({'file': str(img_path), 'plate_text': None})
                 console.print(f"[yellow]○ {img_path.name}: no plate found[/yellow]")
         except Exception as e:
             results.append({'file': str(img_path), 'error': str(e)})
-            console.print(f"[red]✗ {img_path.name}: {e}[/red]")
+            console.print(f"[red] {img_path.name}: {e}[/red]")
     
     if debug:
         console.print(json.dumps(results, indent=2))
@@ -162,7 +162,7 @@ def verify_cuda() -> None:
         from scripts.archived.verify_cuda import main as verify_main
         verify_main()
     except Exception as e:
-        console.print(f"[red]✗ CUDA check failed: {e}[/red]")
+        console.print(f"[red] CUDA check failed: {e}[/red]")
         raise typer.Exit(1)
 
 if __name__ == "__main__":

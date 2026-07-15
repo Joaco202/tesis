@@ -15,7 +15,7 @@ for i in range(12):
     times.append(elapsed)
     print(f"  Inferencia {i+1}: {elapsed*1000:.1f} ms")
 
-# Excluir primera (warmup) y segunda (primer warm) para promedio real
+#excluir primera (warmup) y segunda (primer warm) para promedio real
 real_times = times[2:]
 print(f"\nPromedio real (sin warmup): {sum(real_times)/len(real_times)*1000:.1f} ms")
 print(f"Min: {min(real_times)*1000:.1f} ms | Max: {max(real_times)*1000:.1f} ms")

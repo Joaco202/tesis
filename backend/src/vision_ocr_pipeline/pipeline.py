@@ -427,10 +427,10 @@ class VisionOCRPipeline:
 
             plate = item.plate_text.strip().upper()
             
-            # Validación estricta de formato chileno antes de cualquier acción de persistencia
+            #validación estricta de formato chileno antes de cualquier acción de persistencia
             is_valid_format = any(pattern.match(plate) for pattern in PLATE_PATTERNS)
             if not is_valid_format:
-                print(f"[pipeline] ⚠ Lectura descartada (formato inválido): [ {plate} ]")
+                print(f"[pipeline] Lectura descartada (formato inválido): [ {plate} ]")
                 continue
 
             if not plate or plate in seen_plates:

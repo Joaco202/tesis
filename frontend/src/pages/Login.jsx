@@ -20,7 +20,7 @@ export const Login = () => {
     try {
       const { error } = await signIn(email, password);
       if (error) throw error;
-      navigate('/dashboard/guardia'); // Default redirect, protected route will handle unauthorized
+      navigate('/dashboard/guardia'); 
     } catch (err) {
       console.error(err);
       const msg = err.message === 'Invalid login credentials'

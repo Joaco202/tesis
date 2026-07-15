@@ -362,7 +362,6 @@ export const ManagerDashboard = () => {
   const [incidents, setIncidents] = useState([]);
   const [zones, setZones] = useState([]);
   
-  // Vehicle management states
   const [vehicles, setVehicles] = useState([]);
   const [searchVehicle, setSearchVehicle] = useState('');
   const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
@@ -376,7 +375,6 @@ export const ManagerDashboard = () => {
   });
   const [submittingVehicle, setSubmittingVehicle] = useState(false);
   
-  // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newIncident, setNewIncident] = useState({
     plate: '',
@@ -386,19 +384,16 @@ export const ManagerDashboard = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingIncident, setEditingIncident] = useState(null);
 
-  // Pagination states
   const [vehiclePageSize, setVehiclePageSize] = useState(20);
   const [vehicleCurrentPage, setVehicleCurrentPage] = useState(1);
   const [incidentPageSize, setIncidentPageSize] = useState(20);
   const [incidentCurrentPage, setIncidentCurrentPage] = useState(1);
 
-  // Access report date filters
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const [accessStartDate, setAccessStartDate] = useState(todayStr);
   const [accessEndDate, setAccessEndDate] = useState(todayStr);
   const [exportingAccess, setExportingAccess] = useState(false);
 
-  // Filtro de notificaciones ('all' o 'major')
   const [notificationPref, setNotificationPref] = useState(() => localStorage.getItem('notificationPreference') || 'all');
   const notificationPrefRef = useRef(notificationPref);
 
@@ -412,7 +407,6 @@ export const ManagerDashboard = () => {
       startOfToday.setHours(0, 0, 0, 0);
       const todayIso = startOfToday.toISOString();
 
-      // 1. Fetch Zones
       let maxCapacity = 50;
       const { data: zoneCapacityData, error: zoneErr } = await supabase
         .from('zonas')
@@ -424,7 +418,6 @@ export const ManagerDashboard = () => {
         if (amZone) maxCapacity = amZone.capacidad;
       }
 
-      // 2. Fetch Accesses (para gráficos y KPIs)
       const { data: accesses, error: accessesError } = await supabase
         .from('accesos')
         .select('id, vehiculo_patente, fecha_entrada, fecha_salida')
@@ -432,7 +425,6 @@ export const ManagerDashboard = () => {
 
       if (accessesError) throw accessesError;
 
-      // Calcular tramos horarios (07:00 a 19:00)
       const hoursList = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
       const hourlyData = hoursList.map(hStr => {
         const [hours, minutes] = hStr.split(':').map(Number);
@@ -456,7 +448,6 @@ export const ManagerDashboard = () => {
       });
       setChartData(hourlyData);
 
-      // Ocupación Máxima (Pico del día)
       let maxOccupied = 0;
       let peakT = '07:00';
       hourlyData.forEach(pt => {
@@ -467,12 +458,10 @@ export const ManagerDashboard = () => {
       });
       const peakOccupancyPercentage = ((maxOccupied / maxCapacity) * 100).toFixed(1);
 
-      // Vehículos Únicos hoy
       const todayEntries = accesses ? accesses.filter(acc => acc.fecha_entrada && new Date(acc.fecha_entrada) >= startOfToday) : [];
       const uniquePlates = new Set(todayEntries.map(acc => acc.vehiculo_patente));
       const totalUnique = uniquePlates.size;
 
-      // Tiempo Promedio Estadía hoy
       const todayExits = accesses ? accesses.filter(acc => acc.fecha_salida && new Date(acc.fecha_salida) >= startOfToday) : [];
       let totalDurationMs = 0;
       let closedCount = 0;
@@ -487,7 +476,6 @@ export const ManagerDashboard = () => {
         ? (totalDurationMs / closedCount / (1000 * 60 * 60)).toFixed(1) 
         : '0.0';
 
-      // 3. Fetch Incidencias
       const { data: incidentsData, error: incidentsError } = await supabase
         .from('incidencias')
         .select('id, vehiculo_patente, tipo, descripcion, estado, fecha_creacion, fecha_cierre, solucion')
@@ -500,7 +488,6 @@ export const ManagerDashboard = () => {
 
       const activeIncidents = incidentsData ? incidentsData.filter(inc => inc.estado !== 'cerrada').length : 0;
 
-      // 4. Fetch Vehicles
       const { data: vehiclesData, error: vehiclesError } = await supabase
         .from('vehiculos')
         .select('*')
@@ -525,14 +512,12 @@ export const ManagerDashboard = () => {
     }
   };
 
-  // Solicitar permiso de notificaciones del navegador al montar el componente
   useEffect(() => {
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
   }, []);
 
-  // Cerrar modales con la tecla Escape
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -550,17 +535,14 @@ export const ManagerDashboard = () => {
   useEffect(() => {
     fetchData();
 
-    // Suscribirse a cambios en accesos, incidencias y vehículos
     const updatesChannel = supabase.channel('manager:updates')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'accesos' }, () => {
         fetchData();
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'incidencias' }, (payload) => {
         fetchData();
-        // Disparar notificación push del navegador al recibir una nueva incidencia
         if ('Notification' in window && Notification.permission === 'granted') {
           const inc = payload.new;
-          // Filtrar por preferencia de notificación
           if (notificationPrefRef.current === 'major' && inc.tipo !== 'Vehículo con problema mayor') {
             return;
           }
@@ -663,7 +645,6 @@ export const ManagerDashboard = () => {
       let plateUpper = null;
       if (newIncident.plate) {
         plateUpper = newIncident.plate.toUpperCase().trim();
-        // Asegurar que la patente existe en la tabla de vehículos para evitar falla de clave foránea
         await supabase
           .from('vehiculos')
           .upsert([{ patente: plateUpper }]);
@@ -800,7 +781,7 @@ export const ManagerDashboard = () => {
         return;
       }
 
-      let csvContent = '\uFEFF'; // UTF-8 BOM
+      let csvContent = '\uFEFF'; 
       csvContent += 'ID,Patente,Camara Entrada,Fecha Entrada,Confianza Entrada,Fecha Salida,Camara Salida,Confianza Salida\n';
       
       data.forEach(acc => {
@@ -832,7 +813,7 @@ export const ManagerDashboard = () => {
   };
 
   const exportVehiclesReport = () => {
-    let csvContent = '\uFEFF'; // UTF-8 BOM para soporte directo de Excel en español
+    let csvContent = '\uFEFF'; // UTF-8 BOM para soporte directo de Excel 
     csvContent += 'Patente,Propietario,Observaciones,Fecha Registro\n';
     
     vehicles.forEach(veh => {
@@ -850,9 +831,7 @@ export const ManagerDashboard = () => {
     document.body.removeChild(link);
   };
 
-  // Pagination computations for Vehicles
   const filteredVehicles = vehicles.filter(veh => {
-    // Solo mostrar vehículos que tienen un propietario asignado (asociados)
     if (!veh.propietario_nombre || !veh.propietario_nombre.trim()) return false;
 
     return (
@@ -867,7 +846,6 @@ export const ManagerDashboard = () => {
     vehicleCurrentPage * vehiclePageSize
   );
 
-  // Pagination computations for Incidents
   const totalIncidentsCount = incidents.length;
   const totalIncidentPages = Math.ceil(totalIncidentsCount / incidentPageSize) || 1;
   const paginatedIncidents = incidents.slice(
@@ -919,7 +897,6 @@ export const ManagerDashboard = () => {
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         <div className="card">
           <h3 style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Ocupación Máxima (Día)</h3>
@@ -943,7 +920,6 @@ export const ManagerDashboard = () => {
         </div>
       </div>
 
-      {/* Charts */}
       <div className="card" style={{ marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1.5rem' }}>Curva de Ocupación Diaria</h2>
         <div style={{ height: '300px', width: '100%' }}>
@@ -961,7 +937,6 @@ export const ManagerDashboard = () => {
         </div>
       </div>
 
-      {/* Exportador de Accesos Históricos */}
       <div className="card" style={{ marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Download size={20} color="var(--ubb-blue)" /> Exportador Histórico de Accesos
@@ -993,7 +968,6 @@ export const ManagerDashboard = () => {
         </div>
       </div>
 
-      {/* Gestión de Vehículos y Funcionarios */}
       <div className="card" style={{ marginBottom: '2rem' }}>
         <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1081,7 +1055,6 @@ export const ManagerDashboard = () => {
           </table>
         </div>
 
-        {/* Controles de paginación de vehículos */}
         {filteredVehicles.length > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', justifyContent: 'space-between', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
             <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
@@ -1112,7 +1085,6 @@ export const ManagerDashboard = () => {
         )}
       </div>
 
-      {/* Incidents Table */}
       <div className="card">
         <div className="flex-between" style={{ marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1206,7 +1178,6 @@ export const ManagerDashboard = () => {
           </table>
         </div>
 
-        {/* Controles de paginación de incidencias */}
         {totalIncidentsCount > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', justifyContent: 'space-between', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
             <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
@@ -1238,7 +1209,6 @@ export const ManagerDashboard = () => {
       </div>
     </div>
 
-      {/* Modal para Crear Incidencia */}
       {isModalOpen && (
         <div style={modalOverlayStyle} onClick={() => setIsModalOpen(false)}>
           <div style={modalContentStyle} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>
@@ -1296,7 +1266,6 @@ export const ManagerDashboard = () => {
         </div>
       )}
 
-      {/* Modal para Vincular/Editar Vehículo */}
       {isVehicleModalOpen && (
         <div style={modalOverlayStyle} onClick={() => { setIsVehicleModalOpen(false); setSelectedVehicle(null); }}>
           <div style={modalContentStyle} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>
@@ -1358,7 +1327,6 @@ export const ManagerDashboard = () => {
         </div>
       )}
 
-      {/* Modal para Editar Incidencia */}
       {isEditModalOpen && editingIncident && (
         <div style={modalOverlayStyle} onClick={() => { setIsEditModalOpen(false); setEditingIncident(null); }}>
           <div style={modalContentStyle} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>

@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* UBB Corporate Colors */
   --ubb-blue: #004b87;
   --ubb-blue-light: #0060ad;
   --ubb-blue-dark: #003661;
@@ -9,14 +8,12 @@
   --ubb-orange-light: #f56c25;
   --ubb-orange-dark: #c04200;
   
-  /* Neutral Colors */
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --text-primary: #1e293b;
   --text-secondary: #64748b;
   --border-color: #e2e8f0;
   
-  /* Status Colors */
   --status-success: #10b981;
   --status-success-bg: #d1fae5;
   --status-warning: #eab308;
@@ -24,20 +21,17 @@
   --status-danger: #ef4444;
   --status-danger-bg: #fee2e2;
 
-  /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --glass-shadow: 0 8px 32px 0 rgba(0, 75, 135, 0.1);
   
-  /* Radii */
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
 }
 
-/* Dark Mode Native & Data-theme */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-primary: #0f172a;
@@ -82,7 +76,6 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Glassmorphism Utilities */
 .glass-panel {
   background: rgba(var(--bg-secondary-rgb, 255, 255, 255), 0.7);
   backdrop-filter: blur(12px);
@@ -106,7 +99,6 @@ body {
   background: rgba(30, 41, 59, 0.7);
 }
 
-/* Base Components */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -182,7 +174,6 @@ body {
   box-shadow: 0 0 0 3px rgba(0, 75, 135, 0.1);
 }
 
-/* Badge */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -197,7 +188,6 @@ body {
 .badge-danger { background-color: var(--status-danger-bg); color: var(--status-danger); }
 .badge-primary { background-color: rgba(0, 75, 135, 0.1); color: var(--ubb-blue); }
 
-/* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -216,7 +206,6 @@ body {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Sliding Animations for Calendar */
 @keyframes slideInFromRight {
   from { transform: translateX(50px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
@@ -235,7 +224,6 @@ body {
   animation: slideInFromLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Layout helpers */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -254,7 +242,6 @@ body {
   justify-content: space-between;
 }
 
-/* Responsiveness */
 @media (max-width: 768px) {
   .flex-between {
     flex-direction: column;

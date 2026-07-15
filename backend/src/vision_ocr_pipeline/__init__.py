@@ -1,5 +1,3 @@
-"""Vision OCR pipeline package."""
-
 from __future__ import annotations
 
 import os

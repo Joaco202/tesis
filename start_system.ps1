@@ -1,6 +1,3 @@
-# start_system.ps1
-# Script unificado para instalar dependencias e iniciar el frontend y el backend con webcam
-
 param(
     [string]$Source = "1"
 )
@@ -49,7 +46,7 @@ if (Test-Path $backendPath) {
     if (-not (Test-Path $venvPath)) {
         Write-Host "  [i] Entorno virtual (.venv) no encontrado. Creando venv..." -ForegroundColor DarkYellow
         
-        # Buscar Python 3.12 (3.14 es demasiado nuevo para paddlepaddle/opencv)
+        # Buscar Python 3.12 (3.14 es demasiado)
         $pythonCmd = $null
         if (Get-Command py -ErrorAction SilentlyContinue) {
             # Intentar Python 3.12 primero via py launcher
@@ -108,5 +105,5 @@ Write-Host "Iniciando script de inferencia continua..." -ForegroundColor Green
 Write-Host "Presiona 'q' en la ventana de la camara para detener el backend." -ForegroundColor Green
 Write-Host "==========================================================" -ForegroundColor Green
 
-# Ejecutar el backend con soporte de webcam (source 0) y mostrar la ventana en tiempo real
+#ejecutar el backend con soporte de webcam (source 0) y mostrar la ventana en tiempo real, descomentar la siguiente linea para usar la camara
 #python -X utf8 scripts/continuous_inference.py --source 0 --show

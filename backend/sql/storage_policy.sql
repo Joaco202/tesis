@@ -1,9 +1,0 @@
--- =========================================================
--- POLÍTICAS DE ACCESO AL BUCKET "access-images"
--- =========================================================
--- Permite lectura pública (el bucket ya está marcado como PUBLIC en Supabase).
--- La limpieza periódica de imágenes antiguas (>30 días) se realiza
--- desde el script Python `continuous_inference.py` mediante la función
--- `repository.limpiar_imagenes_antiguas()`, que usa la Storage API oficial.
--- No se utiliza un trigger SQL para evitar ejecuciones redundantes
--- en cada INSERT y posibles inconsistencias con el almacenamiento físico.

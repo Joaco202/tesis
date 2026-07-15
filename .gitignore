@@ -1,4 +1,3 @@
-# Python bytecode and caches
 __pycache__/
 *.pyc
 *.py[cod]
@@ -6,61 +5,36 @@ __pycache__/
 *.pyd
 *.so
 
-# Virtual environments
 .venv/
 .venv*/
 venv/
 env/
 ENV/
 
-# Build and packaging artifacts
 build/
 dist/
 *.egg-info/
 .eggs/
 
-# Test and coverage
 .pytest_cache/
 .coverage
 .coverage.*
 htmlcov/
 
-# Type checker and lint caches
 .mypy_cache/
 .ruff_cache/
 
-# IDE/editor
 .vscode/
 .idea/
 
-# OS files
 .DS_Store
 Thumbs.db
 
-# Local output artifacts
-#outputs/
-
-#inputs/
 
 data/
 
-CCPD2019.tar.xz
-
-APT_JoaquinContreras.pdf
-
 runs/
 
-# Training logs
-train_log.txt
-train_quick.txt
-
-# Environment Variables
 .env
 .env.*
 *.env
-
-# README
-PROJECT_SUMMARY.md
-
-thesis_carrasco_rivera_summary.txt
-thesis_extracted.txt

@@ -1,180 +1,156 @@
-# Vision OCR Pipeline (CPU only)
+# Vision + OCR Pipeline para Detección de Placas y Gestión de Estacionamientos
 
-Proyecto base en Python para deteccion de objetos con YOLOv8, recorte por bounding boxes con OpenCV y lectura OCR con PaddleOCR.
+Este proyecto implementa un sistema inteligente y automatizado para la gestión de accesos vehiculares en la Universidad del Bío-Bío, Campus Fernando May. El sistema consta de un pipeline de visión por computadora para la detección y lectura de patentes (OCR), integrado con una base de datos Supabase y un panel de control web responsivo para guardias y administradores.
 
-## Requisitos
+---
 
-- Python 3.12
-- CPU-only (pensado para servidor modesto)
+## Estructura del Sistema
 
-Nota: el entorno recomendado y validado para OCR completo es Python 3.12, con `paddleocr==2.8.1` y `paddlepaddle==2.6.2`.
+El proyecto está dividido en dos partes principales:
 
-## Instalacion
+1. **Backend (Visión & OCR)**:
+   * **Detección (YOLOv8)**: Localiza la patente en las imágenes capturadas.
+   * **Lectura (PaddleOCR)**: Reconoce los caracteres alfanuméricos de la patente utilizando preprocesamiento de OpenCV.
+   * **Persistencia**: Registra automáticamente los ingresos, salidas y niveles de confianza en la base de datos Supabase.
 
-### Windows PowerShell
+2. **Frontend (Dashboard React + Vite)**:
+   * **Panel de Guardia**: Monitoreo en tiempo real de accesos, registro de ingresos/salidas manuales, corrección de patentes leídas erróneamente por la cámara y reporte de incidencias.
+   * **Panel de Administrador/Encargado**: Visualización de estadísticas de uso (KPIs), historial de accesos, gestión de vehículos/funcionarios y resolución de incidencias.
+   * **Pantalla Pública**: Visualización en vivo de cupos libres y estado de ocupación del estacionamiento.
 
+---
+
+## Requisitos y Especificaciones Técnicas
+
+* **Python**: 3.12+ (Entorno recomendado y validado con `paddleocr==3.5.0` y `paddlepaddle-gpu==3.0.0` para aceleración gráfica)
+* **Node.js**: 18+ (Para el frontend en React)
+* **Aceleración por GPU**: Compatible con CUDA 12.8 y arquitectura Blackwell (NVIDIA RTX 5070) para inferencias ultra rápidas. También soporta ejecución en CPU.
+* **Base de datos**: Supabase (PostgreSQL) con tablas de accesos, vehículos, zonas de estacionamiento e incidencias.
+
+---
+
+## Instalación y Configuración
+
+### 1. Configuración del Backend
+
+#### Instalación Automática (Windows PowerShell)
+Desde la raíz del proyecto, ejecuta el script de configuración del entorno virtual e instalación de dependencias:
 ```powershell
+cd backend
 .\setup.ps1
 ```
+*Si tienes GPU NVIDIA y quieres habilitar aceleración CUDA, puedes configurar el entorno usando `.\env_gpu.ps1`.*
 
-### Instalacion manual
-
-```bash
-python -m venv .venv
-.venv\\Scripts\\activate
-pip install --upgrade pip
-pip install -r requirements.txt
+#### Configuración de Variables de Entorno
+Crea un archivo `.env` dentro de la carpeta `backend/` (usa `.env.example` como base) con tus credenciales de Supabase:
+```env
+SUPABASE_ENABLED=true
+SUPABASE_URL=https://tu-proyecto.supabase.co
+SUPABASE_SERVICE_KEY=tu-service-key-secreta
+SUPABASE_TIMEOUT_SECONDS=10
+SUPABASE_VEHICLES_TABLE=vehiculos
+SUPABASE_ACCESSES_TABLE=accesos
 ```
 
-## Ejecucion
+### 2. Configuración del Frontend
 
-El proyecto ahora usa un CLI unificado que consolida 18+ scripts en subcomandos organizados:
+#### Instalación de Dependencias
+Navega a la carpeta `frontend/` e instala las dependencias de npm:
+```bash
+cd frontend
+npm install
+```
+
+#### Configuración de Variables de Entorno
+Crea un archivo `.env` dentro de la carpeta `frontend/` con las claves públicas de Supabase:
+```env
+VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=tu-anon-key-publica
+```
+
+---
+
+## Ejecución del Sistema
+
+### 1. Iniciar el Backend (CLI Unificado)
+
+El backend cuenta con una interfaz de comandos (CLI) unificada para todas las tareas:
 
 ```bash
+# Activar entorno virtual
+cd backend
+.venv\Scripts\activate
+
+# Ver todos los comandos disponibles
 python -m vision_ocr_pipeline --help
 ```
 
-### Generar o procesar datasets
+#### Comandos Principales:
+* **Ejecutar Inferencia (Procesar Imagen/Directorio)**:
+  ```bash
+  python -m vision_ocr_pipeline run infer --source inputs/raw --output outputs
+  ```
+* **Ejecutar con Fallback OCR (Opción 5 - cuando YOLO falla)**:
+  ```bash
+  python -m vision_ocr_pipeline run option5 --source inputs/raw/5.jpg
+  ```
+* **Generar Imágenes Sintéticas de Patentes**:
+  ```bash
+  python -m vision_ocr_pipeline generate synthetic --count 1000 --output data/synthetic
+  ```
+* **Entrenar Modelo YOLOv8**:
+  ```bash
+  # Entrenamiento rápido para validar
+  python -m vision_ocr_pipeline train quick
+  
+  # Entrenamiento completo en GPU
+  python -m vision_ocr_pipeline train full-gpu
+  ```
 
+### 2. Iniciar el Frontend (React Dev Server)
+
+Inicia el servidor de desarrollo para interactuar con la aplicación web:
 ```bash
-# Generar 1000 imagenes sinteticas de patentes
-python -m vision_ocr_pipeline generate synthetic --count 1000 --output data/synthetic
+cd frontend
+npm run dev
+```
+La aplicación estará disponible por defecto en [http://localhost:5173](http://localhost:5173).
 
-# Descargar CCPD2019 (necesita ~40 GB)
-python -m vision_ocr_pipeline generate download
+---
 
-# Procesar anotaciones CCPD2019 a formato estandar
-python -m vision_ocr_pipeline generate process --input data/CCPD2019
+## Estructura de Directorios
 
-# Convertir anotaciones COCO a formato YOLO
-python -m vision_ocr_pipeline generate convert --input data
-
-# Crear splits train/val/test y data.yaml para YOLO
-python -m vision_ocr_pipeline generate split
+```
+tesis/
+├── backend/                       # Directorio del pipeline de IA y scripts del servidor
+│   ├── src/vision_ocr_pipeline/   # Código fuente del pipeline de visión y base de datos
+│   │   ├── pipeline.py            # Orquestador del flujo YOLO + OpenCV + OCR + Supabase
+│   │   ├── detector.py            # Integración de YOLOv8 para localización de placas
+│   │   ├── ocr_engine.py          # Extracción de texto con PaddleOCR
+│   │   ├── repository.py          # Lógica de base de datos (accesos, vehículos)
+│   │   └── db.py                  # Cliente HTTP de Supabase (PostgREST)
+│   ├── scripts/                   # Scripts utilitarios (entrenamiento, debug)
+│   ├── inputs/                    # Carpeta para colocar imágenes de entrada
+│   ├── outputs/                   # Resultados del procesamiento (JSON + imágenes anotadas)
+│   └── requirements.txt           # Dependencias de Python
+│
+├── frontend/                      # Cliente web (React + Vite)
+│   ├── src/
+│   │   ├── pages/                 # Páginas de la aplicación (GuardDashboard, ManagerDashboard, etc.)
+│   │   ├── context/               # Manejo de estado de autenticación (AuthContext.jsx)
+│   │   └── lib/                   # Cliente inicializado de Supabase (supabase.js)
+│   └── package.json               # Dependencias de Node
+│
+├── README.md                      # Esta guía de documentación general
+└── PROJECT_SUMMARY.md             # Resumen técnico detallado de especificaciones del sistema
 ```
 
-### Entrenar modelos
+---
 
-```bash
-# Entrenamiento rapido (2 epochs) para validar pipeline
-python -m vision_ocr_pipeline train short
+## Soporte y Base de Datos
 
-# Entrenamiento rapido (6 epochs) para mejora baseline
-python -m vision_ocr_pipeline train quick
-
-# Entrenamiento completo en CPU (lento pero portable)
-python -m vision_ocr_pipeline train full-cpu
-
-# Entrenamiento completo en GPU (si hay GPU disponible)
-python -m vision_ocr_pipeline train full-gpu
-```
-
-### Inferencia y evaluacion
-
-```bash
-# Procesar imagen o directorio con pipeline standard
-python -m vision_ocr_pipeline run infer --source inputs/raw --output outputs
-
-# Usar fallback OCR cuando YOLO no detecta (opcion 5)
-python -m vision_ocr_pipeline run option5 --source inputs/raw/5.jpg
-
-# Comparar modelo base (yolov8n.pt) vs mejor modelo entrenado
-python -m vision_ocr_pipeline run compare --source inputs/raw
-
-# Con debug output
-python -m vision_ocr_pipeline run infer --source inputs/raw --debug
-```
-
-### Verificacion del sistema
-
-```bash
-# Verificar soporte CUDA y GPU
-python -m vision_ocr_pipeline verify --check cuda
-```
-
-### CLI Legacy (single-image inference)
-
-Para procesamiento de una imagen con configuracion avanzada:
-
-```bash
-python -m vision_ocr_pipeline run --source ruta/a/imagen.jpg --config config.example.yaml --output outputs
-python -m vision_ocr_pipeline run --source ruta/a/imagen.jpg --event-type entrada --camera-id camara-1 --output outputs
-```
-
-O instalado como comando:
-
-```bash
-vision-ocr run --source ruta/a/imagen.jpg --config config.example.yaml --output outputs
-```
-
-## Salidas
-
-- JSON de evento (camara, tipo entrada/salida, timestamp, detecciones, OCR y patente normalizada) en `outputs/<nombre>.json`
-- Imagen anotada en `outputs/<nombre>_annotated.jpg`
-- Si Supabase esta activo, el JSON incluye bloque `database` con resultados de persistencia.
-
-## Scripts consolidados bajo CLI
-
-El proyecto ha consolidado 18+ scripts individuales bajo un CLI unificado. Si necesitas referencia de funcionalidad antigua:
-
-| Script antiguo | Comando CLI actual |
-|---|---|
-| `generate_synthetic_plates.py` | `python -m vision_ocr_pipeline generate synthetic` |
-| `download_ccpd.py` | `python -m vision_ocr_pipeline generate download` |
-| `process_ccpd.py` | `python -m vision_ocr_pipeline generate process` |
-| `batch_convert_coco.py` | `python -m vision_ocr_pipeline generate convert` |
-| `create_dataset_yaml_and_splits.py` | `python -m vision_ocr_pipeline generate split` |
-| `train_yolo_short.py` | `python -m vision_ocr_pipeline train short` |
-| `train_yolo_quick_6epochs.py` | `python -m vision_ocr_pipeline train quick` |
-| `train_yolo_full_cpu_optimized.py` | `python -m vision_ocr_pipeline train full-cpu` |
-| `train_yolo_full_gpu.py` | `python -m vision_ocr_pipeline train full-gpu` |
-| `run_on_inputs.py` | `python -m vision_ocr_pipeline run infer --source inputs` |
-| `run_on_inputs_raw.py` | `python -m vision_ocr_pipeline run infer --source inputs/raw` |
-| `try_option5_image5.py` | `python -m vision_ocr_pipeline run option5 --source inputs/raw` |
-| `compare_models.py` | `python -m vision_ocr_pipeline run compare` |
-| `verify_cuda.py` | `python -m vision_ocr_pipeline verify --check cuda` |
-
-Scripts utilitarios que se mantienen separados:
-- `test_detector_integration.py`: prueba de integracion del detector
-- `debug_inspect_image5.py`: herramienta de debug para imagen especifica
-
-## Supabase (opcional)
-
-Puedes configurar Supabase en `config.example.yaml` o por variables de entorno:
-
-- `SUPABASE_ENABLED=true`
-- `SUPABASE_URL=https://TU-PROYECTO.supabase.co`
-- `SUPABASE_SERVICE_KEY=...`
-- `SUPABASE_TIMEOUT_SECONDS=10`
-- `SUPABASE_VEHICLES_TABLE=vehiculos`
-- `SUPABASE_ACCESSES_TABLE=accesos`
-
-La integracion agrega una capa en dos modulos:
-
-- `src/vision_ocr_pipeline/db.py`: cliente HTTP simple para PostgREST (Supabase).
-- `src/vision_ocr_pipeline/repository.py`: reglas de persistencia (`guardar_vehiculo_si_no_existe`, `registrar_entrada`, `registrar_salida`).
-
-Desde el pipeline/CLI se invoca `guardar_acceso(...)` justo despues del OCR.
-
-## Estructura
-
-- `src/vision_ocr_pipeline/config.py`: configuracion tipada (Pydantic)
-- `src/vision_ocr_pipeline/db.py`: cliente DB para Supabase REST
-- `src/vision_ocr_pipeline/detector.py`: wrapper YOLOv8
-- `src/vision_ocr_pipeline/ocr_engine.py`: wrapper PaddleOCR (CPU)
-- `src/vision_ocr_pipeline/pipeline.py`: flujo de inferencia y persistencia
-- `src/vision_ocr_pipeline/repository.py`: repositorio de accesos/vehiculos
-- `src/vision_ocr_pipeline/cli.py`: interfaz CLI con Typer
-
-## Proximo ajuste con tu PDF
-
-Cambios aplicados segun tesis:
-
-- Flujo orientado a reconocimiento de patentes.
-- Preprocesamiento OpenCV sobre el recorte antes de OCR.
-- Registro de evento con `event_type` (entrada/salida), `camera_id` y `timestamp_utc`.
-- Salida JSON estructurada para enviar al backend.
-
-Pendiente para siguiente iteracion:
-
-- Conectar streaming de camara y reglas online para decidir automaticamente entrada/salida.
+El diseño del esquema de la base de datos se encuentra detallado en [backend/sql/schema.sql](file:///c:/Users/joako/Documents/GitHub/tesis/backend/sql/schema.sql). La integración de base de datos maneja:
+* **Entrada**: Guarda la fecha de ingreso, ID de la cámara de entrada, confianza del OCR y la imagen de origen.
+* **Salida**: Registra la salida en el mismo registro calculando el tiempo de estadía, confianza y cámara de salida.
+* **Vehículos**: Almacena información de vehículos autorizados, tipo de vehículo e información de funcionarios.
+* **Incidencias**: Permite reportar problemas detectados en los estacionamientos y hacer seguimiento de su resolución.

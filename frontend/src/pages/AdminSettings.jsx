@@ -147,7 +147,6 @@ export const AdminSettings = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   
-  // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -156,7 +155,7 @@ export const AdminSettings = () => {
     nombre: '',
     email: '',
     password: '',
-    rol: 'guardia' // default role
+    rol: 'guardia' 
   });
   const [editForm, setEditForm] = useState({
     nombre: '',
@@ -166,7 +165,6 @@ export const AdminSettings = () => {
   const fetchUsersAndRoles = async () => {
     try {
       setLoading(true);
-      // Fetch users with role details
       const { data: usersData, error: usersError } = await supabase
         .from('usuarios')
         .select('id, nombre, email, estado, rol_id, roles ( id, nombre )')
@@ -176,7 +174,6 @@ export const AdminSettings = () => {
       if (usersError) throw usersError;
       setUsers(usersData || []);
 
-      // Fetch roles
       const { data: rolesData, error: rolesError } = await supabase
         .from('roles')
         .select('*')
@@ -205,7 +202,6 @@ export const AdminSettings = () => {
 
       if (error) throw error;
       
-      // Update local state
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, estado: newStatus } : u));
     } catch (err) {
       console.error('Error toggling user status:', err);
@@ -225,7 +221,6 @@ export const AdminSettings = () => {
 
       if (error) throw error;
 
-      // Update local state
       setUsers(prev => prev.filter(u => u.id !== userId));
       alert('Usuario eliminado de la aplicación con éxito.');
     } catch (err) {
@@ -294,15 +289,12 @@ export const AdminSettings = () => {
         throw new Error('No se encontraron las variables de configuración de Supabase.');
       }
 
-      // Crear un cliente temporal con persistSession: false
-      // Esto previene que se reemplace la sesión del administrador activo
       const tempClient = createClient(supabaseUrl, supabaseAnonKey, {
         auth: {
           persistSession: false
         }
       });
 
-      // Registrar el usuario en Supabase Auth pasándole los metadatos de nombre y rol
       const { data, error: authError } = await tempClient.auth.signUp({
         email: form.email.trim(),
         password: form.password.trim(),
@@ -321,7 +313,6 @@ export const AdminSettings = () => {
       setIsModalOpen(false);
       setForm({ nombre: '', email: '', password: '', rol: 'guardia' });
       
-      // Volver a cargar la lista de usuarios
       fetchUsersAndRoles();
     } catch (err) {
       console.error('Error creating user:', err);
@@ -440,7 +431,6 @@ export const AdminSettings = () => {
         </div>
       </div>
 
-      {/* Modal para Crear Usuario */}
       {isModalOpen && (
         <div style={modalOverlayStyle}>
           <div style={modalContentStyle} className="animate-fade-in">
@@ -501,7 +491,6 @@ export const AdminSettings = () => {
         </div>
       )}
 
-      {/* Modal para Editar Usuario */}
       {isEditModalOpen && (
         <div style={modalOverlayStyle}>
           <div style={modalContentStyle} className="animate-fade-in">

@@ -6,11 +6,11 @@ import time
 import threading
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-import numpy  # Evita OverflowError al inicializar float128 en Windows importándolo antes que OpenCV
+import numpy  #evita OverflowError al inicializar float128 en Windows importándolo antes que OpenCV
 import cv2
 import queue
 
-# Agregar carpeta base al PATH
+#agregar carpeta base al PATH
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from src.vision_ocr_pipeline.config import load_config
@@ -22,13 +22,13 @@ class SharedState:
     def __init__(self):
         self.running = True
         self.producer_done = False
-        # Buffer para el hilo WORKER (se consume: el worker lo pone en None al leerlo)
+        #buffer para el hilo WORKER (se consume: el worker lo pone en None al leerlo)
         self.inference_frame = None
-        # Buffer para el DISPLAY (nunca se borra, solo el grabber lo sobreescribe).
-        # El display SIEMPRE tiene el frame más reciente de la cámara → 30 FPS garantizados.
+        #buffer para el DISPLAY (nunca se borra, solo el grabber lo sobreescribe).
+        #El display SIEMPRE tiene el frame más reciente de la cámara → 30 FPS garantizados.
         self.display_frame = None
-        self.last_bbox = None            # Último bounding box: (x1, y1, x2, y2) o None
-        self.plate_overlay = None        # (texto, confianza, elapsed) del último acierto
+        self.last_bbox = None            #último bounding box: (x1, y1, x2, y2) o None
+        self.plate_overlay = None        #(texto, confianza, elapsed) del último acierto
         self.lock = threading.Lock()
 
 
@@ -38,12 +38,12 @@ def grabber_thread_func(state: SharedState, is_video: bool, is_camera: bool, sou
         if is_camera or is_video:
             if is_camera:
                 if isinstance(source_val, int):
-                    # Usar CAP_DSHOW en Windows para inicio rápido de webcam local
+                    #usar CAP_DSHOW en Windows para inicio rápido de webcam local
                     cap = cv2.VideoCapture(source_val, cv2.CAP_DSHOW)
                     if not cap.isOpened():
                         cap = cv2.VideoCapture(source_val)
                 else:
-                    # Cámara IP (http, https, rtsp)
+                    #cámara IP (http, https, rtsp)
                     cap = cv2.VideoCapture(source_val)
             else:
                 cap = cv2.VideoCapture(str(source_val))
@@ -52,7 +52,7 @@ def grabber_thread_func(state: SharedState, is_video: bool, is_camera: bool, sou
                 print(f"Error: No se pudo abrir el origen de captura: {source_val}")
                 return
                 
-            frame_interval = 10 if is_video else 1  # Sin saltarse frames en webcam
+            frame_interval = 10 if is_video else 1  #sin saltarse frames en webcam
             frame_count = 0
             
             try:
@@ -70,10 +70,10 @@ def grabber_thread_func(state: SharedState, is_video: bool, is_camera: bool, sou
                     
                     frame_copy = frame.copy()
                     with state.lock:
-                        # display_frame: siempre el más reciente, NUNCA se pone en None
+                        #display_frame: siempre el más reciente, NUNCA se pone en None
                         state.display_frame = frame_copy
-                        # inference_frame: solo se actualiza si el worker ya consumió el anterior
-                        # (evita que el grabber sature al worker con frames que no puede procesar)
+                        #inference_frame: solo se actualiza si el worker ya consumió el anterior
+                        #(evita que el grabber sature al worker con frames que no puede procesar)
                         if state.inference_frame is None:
                             state.inference_frame = frame_copy
                     if is_video:
@@ -81,12 +81,12 @@ def grabber_thread_func(state: SharedState, is_video: bool, is_camera: bool, sou
             finally:
                 cap.release()
         else:
-            # Directorio de imágenes
+            #directorio de imágenes
             source_path = Path(source_val)
             valid_exts = {".jpg", ".jpeg", ".png"}
             all_images = [p for p in source_path.iterdir() if p.suffix.lower() in valid_exts]
             
-            # Priorizar imágenes de WhatsApp si existen
+            #priorizar imágenes si existen
             whatsapp_images = [p for p in all_images if "whatsapp" in p.name.lower()]
             if whatsapp_images:
                 images = sorted(whatsapp_images, key=lambda x: x.name)
@@ -121,7 +121,7 @@ def ocr_subprocess_worker(config_path, input_queue, output_queue):
     import time
     from pathlib import Path
     
-    # Asegurar que el PATH incluya el backend
+    #asegurar que el PATH incluya el backend
     backend_dir = Path(__file__).resolve().parents[1]
     if str(backend_dir) not in sys.path:
         sys.path.insert(0, str(backend_dir))
@@ -131,10 +131,10 @@ def ocr_subprocess_worker(config_path, input_queue, output_queue):
     from src.vision_ocr_pipeline.ocr_engine import PaddleOCREngine
     from src.vision_ocr_pipeline.postprocess import preprocess_plate_crop, best_plate_from_ocr
     
-    # Cargar configuración
+    #cargar configuración
     cfg = load_config(config_path)
     
-    # Forzar CPU en este proceso secundario para máxima estabilidad
+    #forzar CPU en este proceso secundario para máxima estabilidad
     ocr_engine = PaddleOCREngine(cfg.ocr, use_gpu=False)
     
     print("[OCR Process] Inicializado correctamente en CPU.")
@@ -146,7 +146,7 @@ def ocr_subprocess_worker(config_path, input_queue, output_queue):
             break
             
         if item is None:
-            # Señal de apagado
+            #señal de apagado
             break
             
         crop, det_info, frame, img_origin, now_t = item
@@ -197,7 +197,7 @@ def worker_thread_func(pipeline: VisionOCRPipeline, state: SharedState, args, la
                 if plate_text:
                     plate = plate_text.strip().upper()
                     
-                    # Validación de formato estricto chileno
+                    #validación de formato estricto chileno
                     is_valid_format = bool(STRICT_NEW_PLATE.match(plate) or OLD_PLATE.match(plate))
                     
                     if not is_valid_format:
@@ -279,7 +279,7 @@ def worker_thread_func(pipeline: VisionOCRPipeline, state: SharedState, args, la
             with state.lock:
                 state.last_bbox = bbox_found
                 
-            # Delegar OCR al proceso secundario si está libre y fuera de cooldown
+            #delegar OCR al proceso secundario si está libre y fuera de cooldown
             now_t = time.time()
             if not ocr_in_progress and (now_t - last_ocr_time >= OCR_INTERVAL):
                 crop = frame[max(d.y1, 0) : max(d.y2, 0), max(d.x1, 0) : max(d.x2, 0)]
@@ -352,13 +352,13 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    # Cargar configuración
+    #cargar configuración
     _cfg_path = Path(__file__).resolve().parents[1] / "config.yaml"
     cfg = load_config(str(_cfg_path))
     if args.no_persist:
         cfg.supabase.enabled = False
 
-    # Cargar pipeline
+    #cargar pipeline
     pipeline = VisionOCRPipeline(cfg)
     
     is_ip_camera = args.source.startswith("http://") or args.source.startswith("https://") or args.source.startswith("rtsp://")
@@ -384,7 +384,7 @@ def main() -> None:
     last_detections: dict[str, float] = {}
     last_cleanup: float = 0.0
 
-    # Inicializar colas y proceso OCR
+    #inicializar colas y proceso OCR
     input_queue = multiprocessing.Queue()
     output_queue = multiprocessing.Queue()
 
@@ -395,7 +395,7 @@ def main() -> None:
     )
     ocr_process.start()
     
-    # Crear e iniciar hilos
+    #crear e iniciar hilos
     grabber_thread = threading.Thread(
         target=grabber_thread_func,
         args=(state, is_video, is_camera, source_val, args.delay, args.limit),
@@ -417,7 +417,7 @@ def main() -> None:
     grabber_thread.start()
     worker_thread.start()
     
-    # Hilo de Sincronización de Cola Offline (si Supabase está habilitado)
+    #hilo de sincronización de cola offline (si Supabase está habilitado)
     if pipeline.offline_queue:
         def sync_loop():
             time.sleep(2.0)
@@ -438,7 +438,7 @@ def main() -> None:
         )
         sync_thread.start()
     
-    # Hilo Principal: GUI Event Loop (OpenCV imshow)
+    #hilo principal: GUI event loop (openCV imshow)
     _display_fps_t = time.perf_counter()
     _display_fps_count = 0
     _display_fps_label = "-- FPS"

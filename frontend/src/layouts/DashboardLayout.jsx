@@ -63,7 +63,6 @@ export const DashboardLayout = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
 
-      {/* ── Header Corporativo UBB (ancho completo) ── */}
       <header style={{
         backgroundColor: 'var(--ubb-blue)',
         padding: '0.65rem 1.5rem',
@@ -83,7 +82,6 @@ export const DashboardLayout = () => {
             <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.75)', margin: 0 }}>Campus Fernando May</p>
           </div>
         </div>
-        {/* Botón hamburguesa en mobile */}
         {isMobile && (
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -94,10 +92,8 @@ export const DashboardLayout = () => {
         )}
       </header>
 
-      {/* ── Contenedor horizontal: sidebar + main ── */}
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
-      {/* Overlay for mobile */}
       {isMobile && isMobileMenuOpen && (
         <div
           onClick={closeMenu}
@@ -105,7 +101,6 @@ export const DashboardLayout = () => {
         />
       )}
 
-      {/* Sidebar */}
       <aside className="glass-panel" style={sidebarStyle}>
         <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
@@ -185,7 +180,6 @@ export const DashboardLayout = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main style={{ 
         flex: 1, 
         padding: isMobile ? '1rem' : '2rem', 

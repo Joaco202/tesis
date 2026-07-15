@@ -4,7 +4,7 @@ import { Car, Clock, ShieldAlert } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const PublicStatus = () => {
-  const [occupancy, setOccupancy] = useState({ current: 0, max: 170 }); // Mock default max 170
+  const [occupancy, setOccupancy] = useState({ current: 0, max: 130 });
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [updatedText, setUpdatedText] = useState('Hace instantes');
@@ -12,7 +12,6 @@ export const PublicStatus = () => {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        // Llamar a la función segura RPC
         const { data, error } = await supabase
           .rpc('obtener_ocupacion_publica');
           
@@ -85,7 +84,6 @@ export const PublicStatus = () => {
     statusColor = 'var(--status-warning)';
     statusText = 'Ocupación Media';
   }
-  // Circular progress calculations
   const radius = 108;
   const circumference = 2 * Math.PI * radius;
   const clampedPercentage = Math.min(100, Math.max(0, occupancyPercentage));
@@ -93,7 +91,6 @@ export const PublicStatus = () => {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', display: 'flex', flexDirection: 'column' }}>
-      {/* Header Corporativo */}
       <header style={{ backgroundColor: 'var(--ubb-blue)', padding: '1rem', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <img 
@@ -109,7 +106,6 @@ export const PublicStatus = () => {
         <Link to="/login" style={{ color: 'white', textDecoration: 'none', fontSize: '0.875rem', opacity: 0.8 }}>Acceso Personal</Link>
       </header>
 
-      {/* Contenido Principal */}
       <main className="container" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '2rem 1rem' }}>
         <div className="glass-panel animate-fade-in" style={{ maxWidth: '1700px', margin: '0 auto', width: '100%', padding: '3rem 2rem', textAlign: 'center' }}>
           <h2 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Estado del Estacionamiento</h2>
@@ -121,9 +117,7 @@ export const PublicStatus = () => {
             </div>
           ) : (
             <>
-              {/* Indicador Principal */}
               <div style={{ position: 'relative', width: '240px', height: '240px', margin: '0 auto 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                {/* SVG Circular Progress */}
                 <svg width="240" height="240" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
                   <circle 
                     cx="120" cy="120" r={radius}
@@ -143,7 +137,6 @@ export const PublicStatus = () => {
                   />
                 </svg>
                 
-                {/* Contenido Central */}
                 <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', filter: `drop-shadow(0 0 20px ${statusColor}40)` }}>
                   <span style={{ fontSize: '4rem', fontWeight: 800, color: statusColor, lineHeight: 1 }}>{availableSpots}</span>
                   <span style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 500, marginTop: '0.5rem' }}>CUPOS LIBRES</span>
@@ -154,7 +147,6 @@ export const PublicStatus = () => {
                 {statusText}
               </div>
 
-              {/* Info Extra */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', textAlign: 'left' }}>
                 <div className="card" style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <Car size={24} color="var(--ubb-blue)" />

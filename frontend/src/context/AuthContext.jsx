@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar sesión actual
+    //verificar sesión actual
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUser(session.user);
@@ -19,10 +19,9 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
-    // Escuchar cambios de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        setLoading(true); // Bloquear render hasta que el rol esté listo
+        setLoading(true); //bloquear render hasta que el rol esté listo
         setUser(session.user);
         fetchUserRole(session.user.id);
       } else {

@@ -1,5 +1,5 @@
-# PyTorch 2.7+ con CUDA 12.8 — necesario para RTX 5070 (Blackwell sm_120)
-# Instalar con: pip install -r requirements.txt --index-url https://download.pytorch.org/whl/cu128
+#PyTorch 2.7+ con CUDA 12.8 — necesario para RTX 5070 (Blackwell sm_120)
+#instalar con: pip install -r requirements.txt --index-url https://download.pytorch.org/whl/cu128
 torch>=2.7.0
 torchvision
 torchaudio

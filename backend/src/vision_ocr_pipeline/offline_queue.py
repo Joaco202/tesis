@@ -57,7 +57,6 @@ class OfflineQueue:
         return local_image_name
 
     def sync_queue(self) -> int:
-        """Intenta sincronizar los eventos guardados en la cola local con Supabase."""
         queue = self._read_queue()
         if not queue:
             return 0

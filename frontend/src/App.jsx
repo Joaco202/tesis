@@ -15,14 +15,11 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Rutas Públicas */}
           <Route path="/" element={<PublicStatus />} />
           <Route path="/login" element={<Login />} />
 
-          {/* Rutas Protegidas - Dashboards */}
           <Route path="/dashboard" element={<DashboardLayout />}>
             
-            {/* Guardia, Encargado y Admin pueden ver el panel de guardia */}
             <Route 
               path="guardia" 
               element={
@@ -32,7 +29,6 @@ function App() {
               } 
             />
 
-            {/* Solo Encargado y Admin pueden ver KPIs */}
             <Route 
               path="encargado" 
               element={
@@ -42,7 +38,6 @@ function App() {
               } 
             />
 
-            {/* Solo Admin puede ver Settings */}
             <Route 
               path="admin" 
               element={
@@ -52,11 +47,9 @@ function App() {
               } 
             />
             
-            {/* Redirección por defecto dentro del dashboard */}
             <Route path="" element={<Navigate to="/dashboard/guardia" replace />} />
           </Route>
 
-          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

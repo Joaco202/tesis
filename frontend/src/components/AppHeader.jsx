@@ -26,7 +26,6 @@ export const AppHeader = () => {
         flexShrink: 0,
       }}
     >
-      {/* Logo + nombre institución */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
         <img
           src="/logoUBB2.png"
@@ -43,7 +42,6 @@ export const AppHeader = () => {
         </div>
       </div>
 
-      {/* Info de sesión + botón salir */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
         {user && (
           <div style={{ textAlign: 'right' }}>

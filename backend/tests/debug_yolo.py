@@ -7,19 +7,19 @@ model_path = r"runs/detect/runs/detect/train-gpu-rtx5070/weights/best.pt"
 print(f"Cargando modelo YOLO: {model_path}")
 model = YOLO(model_path)
 
-# Buscar la primera imagen de WhatsApp
+# Buscar la primera imagen
 valid_exts = {".jpg", ".jpeg", ".png"}
 source_dir = Path("inputs/raw")
 images = [p for p in source_dir.iterdir() if p.suffix.lower() in valid_exts and "whatsapp" in p.name.lower()]
 
 if not images:
-    print("No se encontraron imágenes de WhatsApp.")
+    print("No se encontraron imágenes")
 else:
     img_path = images[0]
     print(f"Procesando imagen: {img_path.name}")
     img = cv2.imread(str(img_path))
     
-    # Predecir con confianza muy baja
+    #predecir con confianza muy baja
     results = model.predict(source=img, conf=0.01, device="cuda")
     
     print("Detecciones encontradas:")
@@ -32,7 +32,7 @@ else:
             xyxy = box.xyxy[0].tolist()
             print(f"  Caja [{b_idx}]: Clase {cls}, Confianza {conf:.4f}, BBox: {xyxy}")
             
-    # Probar también con el PaddleOCR en toda la imagen para ver qué lee
+    #probar también con el PaddleOCR en toda la imagen para ver que lee
     from paddleocr import PaddleOCR
     print("Inicializando PaddleOCR...")
     ocr = PaddleOCR(use_angle_cls=True, lang="es", device="cpu")

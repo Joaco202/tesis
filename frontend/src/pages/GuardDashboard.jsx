@@ -39,20 +39,18 @@ export const GuardDashboard = () => {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
-  const [filterMode, setFilterMode] = useState('all'); // 'all' | 'inside'
+  const [filterMode, setFilterMode] = useState('all'); 
   const [zones, setZones] = useState([]);
-  const [selectedZoneId, setSelectedZoneId] = useState(null); // null = todas
+  const [selectedZoneId, setSelectedZoneId] = useState(null); 
 
-  // Manual access registration states
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [manualForm, setManualForm] = useState({
     patente: '',
-    tipo: 'entrada', // 'entrada' | 'salida'
+    tipo: 'entrada', 
     zonaId: '',
   });
   const [submittingManual, setSubmittingManual] = useState(false);
 
-  // Edit plate states
   const [isEditPlateModalOpen, setIsEditPlateModalOpen] = useState(false);
   const [editingPlateEvent, setEditingPlateEvent] = useState(null);
   const [newPlateValue, setNewPlateValue] = useState('');
@@ -66,7 +64,7 @@ export const GuardDashboard = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [incidentType, setIncidentType] = useState('Vehículo mal estacionado');
   const [description, setDescription] = useState('');
-  const [incidentStatus, setIncidentStatus] = useState('abierta'); // 'abierta' = En proceso, 'cerrada' = Resuelto
+  const [incidentStatus, setIncidentStatus] = useState('abierta'); 
   const [submitting, setSubmitting] = useState(false);
 
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -78,7 +76,6 @@ export const GuardDashboard = () => {
     setIsImageModalOpen(true);
   };
 
-  // Cerrar modales con la tecla Escape
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -91,14 +88,12 @@ export const GuardDashboard = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Fetch data function (explicita en el cuerpo del componente para poder llamarse tras acciones manuales)
   const fetchDashboardData = async () => {
     try {
       const startOfToday = new Date();
       startOfToday.setHours(0, 0, 0, 0);
       const todayIso = startOfToday.toISOString();
 
-      // Fetch all zones
       const { data: allZones, error: zonesError } = await supabase
         .from('zonas')
         .select('id, nombre, capacidad')
@@ -233,11 +228,10 @@ export const GuardDashboard = () => {
 
     const cleanPlate = manualForm.patente.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
     
-    // Validar formato chileno (patentes de autos/motos antiguas y nuevas, e institucionales)
-    const formatAutoOld = /^[A-Z]{2}\d{4}$/; // AA1234
-    const formatAutoNew = /^[A-Z]{4}\d{2}$/; // AAAA12
-    const formatMoto = /^[A-Z]{2,3}\d{2,3}$/; // AA123, AAA12, AAA123, etc.
-    const formatCarabineros = /^(Z|M|RP|AP|B|C|CB|AG|A)\d{4}$/; // Z1234, RP1234, etc.
+    const formatAutoOld = /^[A-Z]{2}\d{4}$/; 
+    const formatAutoNew = /^[A-Z]{4}\d{2}$/; 
+    const formatMoto = /^[A-Z]{2,3}\d{2,3}$/; 
+    const formatCarabineros = /^(Z|M|RP|AP|B|C|CB|AG|A)\d{4}$/; 
     
     const isValidChilean = formatAutoOld.test(cleanPlate) || 
                            formatAutoNew.test(cleanPlate) || 
@@ -253,7 +247,6 @@ export const GuardDashboard = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Asegurar que el vehículo esté registrado para evitar errores de Foreign Key
       const { error: vehError } = await supabase
         .from('vehiculos')
         .upsert({ patente: cleanPlate }, { onConflict: 'patente' });
@@ -263,7 +256,6 @@ export const GuardDashboard = () => {
       const selectedZoneInt = parseInt(manualForm.zonaId);
       const nowStr = new Date().toISOString();
 
-      // Consultar si ya existe un acceso abierto para esta patente en este estacionamiento
       const { data: openAccesses, error: fetchError } = await supabase
         .from('accesos')
         .select('id')
@@ -297,14 +289,12 @@ export const GuardDashboard = () => {
         if (accError) throw accError;
         alert('Ingreso manual registrado con éxito.');
       } else {
-        // Salida
         if (!hasOpenAccess) {
           alert(`El vehículo con patente ${cleanPlate} no registra ningún ingreso activo en este estacionamiento, por lo que no puede registrar una salida.`);
           setSubmittingManual(false);
           return;
         }
 
-        // Actualizar acceso abierto existente
         const { error: accError } = await supabase
           .from('accesos')
           .update({
@@ -340,11 +330,10 @@ export const GuardDashboard = () => {
 
     const cleanPlate = newPlateValue.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
     
-    // Validar formato chileno (patentes de autos/motos antiguas y nuevas, e institucionales)
-    const formatAutoOld = /^[A-Z]{2}\d{4}$/; // AA1234
-    const formatAutoNew = /^[A-Z]{4}\d{2}$/; // AAAA12
-    const formatMoto = /^[A-Z]{2,3}\d{2,3}$/; // AA123, AAA12, etc.
-    const formatCarabineros = /^(Z|M|RP|AP|B|C|CB|AG|A)\d{4}$/; // Z1234, RP1234, etc.
+    const formatAutoOld = /^[A-Z]{2}\d{4}$/; 
+    const formatAutoNew = /^[A-Z]{4}\d{2}$/; 
+    const formatMoto = /^[A-Z]{2,3}\d{2,3}$/; 
+    const formatCarabineros = /^(Z|M|RP|AP|B|C|CB|AG|A)\d{4}$/; 
 
     const isValidChilean = formatAutoOld.test(cleanPlate) || 
                            formatAutoNew.test(cleanPlate) || 
@@ -360,14 +349,12 @@ export const GuardDashboard = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
-      // 1. Asegurar que el vehículo existe en la base de datos para no violar la FK en 'accesos'
       const { error: vehError } = await supabase
         .from('vehiculos')
         .upsert({ patente: cleanPlate }, { onConflict: 'patente' });
 
       if (vehError) throw vehError;
 
-      // 2. Actualizar el registro en 'accesos' y registrar el usuario que corrige la patente
       const { error: accError } = await supabase
         .from('accesos')
         .update({ 
@@ -378,7 +365,6 @@ export const GuardDashboard = () => {
 
       if (accError) throw accError;
 
-      // 3. Actualizar incidencias relacionadas que tengan el acceso_id (para consistencia)
       await supabase
         .from('incidencias')
         .update({ vehiculo_patente: cleanPlate })
@@ -403,7 +389,6 @@ export const GuardDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Cerrar modales al presionar la tecla Escape
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
@@ -421,11 +406,8 @@ export const GuardDashboard = () => {
   }, [zoomedImage, isImageModalOpen]);
 
   const filteredEvents = events.filter(e => {
-    // Filtro por patente
     if (search && !e.plate.toLowerCase().includes(search.toLowerCase())) return false;
-    // Filtro por zona
     if (selectedZoneId !== null && e.zoneId !== selectedZoneId) return false;
-    // Filtro por tipo de movimiento (in / out / all)
     if (filterMode === 'in') return e.type === 'in';
     if (filterMode === 'out') return e.type === 'out';
     return true;
@@ -438,7 +420,7 @@ export const GuardDashboard = () => {
     setSelectedEvent(ev);
     setIncidentType('Vehículo mal estacionado');
     setDescription('');
-    setIncidentStatus('abierta'); // por defecto "En proceso"
+    setIncidentStatus('abierta'); 
     setIsModalOpen(true);
   };
 
@@ -525,9 +507,7 @@ export const GuardDashboard = () => {
           </div>
         </div>
 
-        {/* Top Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-          {/* Occupancy Card */}
           <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
             <div style={{ position: 'relative', width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="120" height="120" style={{ position: 'absolute', top: 0, left: 0, transform: 'rotate(-90deg)' }}>
@@ -559,7 +539,6 @@ export const GuardDashboard = () => {
             </div>
           </div>
 
-          {/* Quick Actions / Stats */}
           <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <h3 style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Resumen del Día</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -579,7 +558,6 @@ export const GuardDashboard = () => {
           </div>
         </div>
 
-        {/* Live Feed Table */}
         <div className="card">
           <div style={{ marginBottom: '1.5rem' }}>
             <div className="flex-between" style={{ flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
@@ -614,7 +592,6 @@ export const GuardDashboard = () => {
                 )}
               </div>
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                {/* Botón Tri-estado de Filtro de Movimientos */}
                 <button
                   onClick={() => {
                     setFilterMode(prev => prev === 'all' ? 'in' : prev === 'in' ? 'out' : 'all');
@@ -766,7 +743,6 @@ export const GuardDashboard = () => {
             </table>
           </div>
 
-          {/* Pagination Controls */}
           {filteredEvents.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', justifyContent: 'space-between', flexWrap: 'wrap', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
               <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
@@ -798,7 +774,6 @@ export const GuardDashboard = () => {
         </div>
       </div>
 
-      {/* Modal para Reportar Incidencia */}
       {isModalOpen && selectedEvent && (
         <div style={modalOverlayStyle} onClick={() => setIsModalOpen(false)}>
           <div style={modalContentStyle} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>
@@ -868,7 +843,6 @@ export const GuardDashboard = () => {
         </div>
       )}
 
-      {/* Modal para Ver Imágenes (Ingreso/Salida) */}
       {isImageModalOpen && selectedImageEvent && (
         <div style={modalOverlayStyle} onClick={() => setIsImageModalOpen(false)}>
           <div style={{ ...modalContentStyle, maxWidth: '700px' }} className="animate-fade-in" onClick={(e) => e.stopPropagation()}>
@@ -885,7 +859,6 @@ export const GuardDashboard = () => {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-              {/* Columna Ingreso */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, textAlign: 'center' }}>
                   Ingreso
@@ -921,7 +894,6 @@ export const GuardDashboard = () => {
                 </div>
               </div>
 
-              {/* Columna Salida */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <h4 style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0, textAlign: 'center' }}>
                   Salida
@@ -971,7 +943,6 @@ export const GuardDashboard = () => {
         </div>
       )}
 
-      {/* Modal para Zoom de Imagen Completa */}
       {zoomedImage && (
         <div 
           style={{
@@ -1026,7 +997,6 @@ export const GuardDashboard = () => {
           </div>
         </div>
       )}
-      {/* Modal para Registrar Acceso Manual */}
       {isManualModalOpen && (
         <div style={modalOverlayStyle}>
           <div style={modalContentStyle} className="animate-fade-in">
@@ -1104,7 +1074,6 @@ export const GuardDashboard = () => {
           </div>
         </div>
       )}
-      {/* Modal para Editar Patente */}
       {isEditPlateModalOpen && editingPlateEvent && (
         <div style={modalOverlayStyle}>
           <div style={modalContentStyle} className="animate-fade-in">
