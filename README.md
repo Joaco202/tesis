@@ -1,9 +1,5 @@
 # Vision + OCR Pipeline para Detección de Placas y Gestión de Estacionamientos
 
-Este proyecto implementa un sistema inteligente y automatizado para la gestión de accesos vehiculares en la Universidad del Bío-Bío, Campus Fernando May. El sistema consta de un pipeline de visión por computadora para la detección y lectura de patentes (OCR), integrado con una base de datos Supabase y un panel de control web responsivo para guardias y administradores.
-
----
-
 ## Estructura del Sistema
 
 El proyecto está dividido en dos partes principales:
@@ -15,7 +11,8 @@ El proyecto está dividido en dos partes principales:
 
 2. **Frontend (Dashboard React + Vite)**:
    * **Panel de Guardia**: Monitoreo en tiempo real de accesos, registro de ingresos/salidas manuales, corrección de patentes leídas erróneamente por la cámara y reporte de incidencias.
-   * **Panel de Administrador/Encargado**: Visualización de estadísticas de uso (KPIs), historial de accesos, gestión de vehículos/funcionarios y resolución de incidencias.
+   * **Panel de Encargado (Gestión)**: Visualización de estadísticas de uso (KPIs), historial de accesos, gestión de vehículos/funcionarios y resolución de incidencias.
+   * **Panel de Administrador (Configuración)**: Control de usuarios de la aplicación, asignación de roles (guardia, encargado, admin) y configuraciones de seguridad.
    * **Pantalla Pública**: Visualización en vivo de cupos libres y estado de ocupación del estacionamiento.
 
 ---
@@ -47,11 +44,11 @@ cd backend
 ```
 
 #### Configuración de Variables de Entorno
-Crea un archivo `.env` dentro de la carpeta `backend/` con tus credenciales de Supabase:
+Crea un archivo `.env` dentro de la carpeta `backend/` con  credenciales de Supabase:
 ```env
 SUPABASE_ENABLED=true
-SUPABASE_URL=https://tu-proyecto.supabase.co
-SUPABASE_SERVICE_KEY=tu-service-key-secreta
+SUPABASE_URL=https://proyecto.supabase.co
+SUPABASE_SERVICE_KEY=service-key-secreta
 SUPABASE_TIMEOUT_SECONDS=10
 SUPABASE_VEHICLES_TABLE=vehiculos
 SUPABASE_ACCESSES_TABLE=accesos
@@ -60,7 +57,7 @@ SUPABASE_ACCESSES_TABLE=accesos
 ### 2. Configuración del Frontend
 
 #### Instalación de Dependencias
-Navega a la carpeta `frontend/` e instala las dependencias de npm:
+Ve a la carpeta `frontend/` e instala las dependencias de npm:
 ```bash
 cd frontend
 npm install
@@ -69,8 +66,8 @@ npm install
 #### Configuración de Variables de Entorno
 Crea un archivo `.env` dentro de la carpeta `frontend/` con las claves públicas de Supabase:
 ```env
-VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
-VITE_SUPABASE_ANON_KEY=tu-anon-key-publica
+VITE_SUPABASE_URL=https://proyecto.supabase.co
+VITE_SUPABASE_ANON_KEY=anon-key-publica
 ```
 
 ---
